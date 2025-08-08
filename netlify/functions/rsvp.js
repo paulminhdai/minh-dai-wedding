@@ -89,7 +89,16 @@ exports.handler = async (event, context) => {
             return {
                 statusCode: 400,
                 headers,
-                body: JSON.stringify({ error: 'Missing required fields' })
+                body: JSON.stringify({ error: 'Names, phone number, and attendance status are required.' })
+            };
+        }
+
+        // Validate guest count if attending
+        if (data.attending === 'yes' && (!data.guests || data.guests < 1 || data.guests > 8)) {
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ error: 'Please specify the number of guests (1-8 people).' })
             };
         }
 
@@ -98,11 +107,19 @@ exports.handler = async (event, context) => {
             names: utils.sanitizeInput(data.names),
             phone: utils.sanitizeInput(data.phone),
             attending: data.attending,
-            guests: data.guests ? parseInt(data.guests) : undefined,
-            dietary: data.dietary ? utils.sanitizeInput(data.dietary) : undefined,
-            message: data.message ? utils.sanitizeInput(data.message) : undefined,
             timestamp: new Date().toISOString()
         };
+
+        // Add additional fields if attending
+        if (data.attending === 'yes') {
+            sanitizedData.guests = parseInt(data.guests) || 1;
+            if (data.dietary) {
+                sanitizedData.dietary = utils.sanitizeInput(data.dietary);
+            }
+            if (data.message) {
+                sanitizedData.message = utils.sanitizeInput(data.message);
+            }
+        }
 
         // Validate phone number
         if (!utils.isValidPhone(sanitizedData.phone)) {

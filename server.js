@@ -143,13 +143,23 @@ app.post('/api/rsvp', rsvpLimiter, async (req, res) => {
             guestCode = '',
             names,
             phone,
-            attending
+            attending,
+            guests,
+            dietary,
+            message
         } = req.body;
 
         // Validate required fields
         if (!names || !phone || !attending) {
             return res.status(400).json({
                 error: 'Names, phone number, and attendance status are required.'
+            });
+        }
+
+        // Validate guest count if attending
+        if (attending === 'yes' && (!guests || guests < 1 || guests > 8)) {
+            return res.status(400).json({
+                error: 'Please specify the number of guests (1-8 people).'
             });
         }
 
@@ -162,6 +172,17 @@ app.post('/api/rsvp', rsvpLimiter, async (req, res) => {
             timestamp: new Date().toISOString(),
             ipAddress: req.ip || req.connection.remoteAddress || 'unknown'
         };
+
+        // Add additional fields if attending
+        if (attending === 'yes') {
+            sanitizedData.guests = parseInt(guests) || 1;
+            if (dietary) {
+                sanitizedData.dietary = utils.sanitizeInput(dietary);
+            }
+            if (message) {
+                sanitizedData.message = utils.sanitizeInput(message);
+            }
+        }
 
         // Validate phone number format (basic validation)
         if (!utils.isValidPhone(sanitizedData.phone)) {
@@ -234,7 +255,7 @@ app.get('/api/admin/rsvps', async (req, res) => {
     try {
         // Simple password protection (in production, use proper authentication)
         const password = req.query.password;
-        if (password !== 'wedding2026admin') {
+        if (password !== '061722') {
             return res.status(401).json({ error: 'Unauthorized' });
         }
 
@@ -293,7 +314,7 @@ app.use((error, req, res, next) => {
 app.listen(PORT, () => {
     console.log(`Wedding website server running on port ${PORT}`);
     console.log(`Visit: http://localhost:${PORT}`);
-    console.log(`Admin panel: http://localhost:${PORT}/api/admin/rsvps?password=wedding2026admin`);
+    console.log(`Admin panel: http://localhost:${PORT}/api/admin/rsvps?password=061722`);
     
     // Ensure data directory exists on startup
     utils.ensureDataDir().catch(console.error);

@@ -809,10 +809,25 @@ a:hover, a:focus {
 
 .conditional {
   display: none;
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
 }
 
 .conditional.show {
   display: block;
+  opacity: 1;
+  max-height: 500px;
+  margin-top: var(--space-lg);
+}
+
+.conditional .form__group {
+  margin-bottom: var(--space-lg);
+}
+
+.conditional .form__group:last-child {
+  margin-bottom: 0;
 }
 
 .form__submit {

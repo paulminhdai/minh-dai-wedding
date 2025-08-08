@@ -7,7 +7,9 @@
     // Configuration
     const CONFIG = {
         weddingDate: new Date('2026-06-26T00:00:00-07:00'),
-        apiEndpoint: '/.netlify/functions/rsvp',
+        apiEndpoint: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? '/api/rsvp' 
+            : '/.netlify/functions/rsvp',
         debounceDelay: 300,
         lazyLoadOffset: 100
     };
@@ -283,6 +285,14 @@
                 this.attendingFields?.classList.add('show');
             } else {
                 this.attendingFields?.classList.remove('show');
+                // Clear the fields when not attending
+                const guestSelect = this.form.querySelector('#guests');
+                const dietaryField = this.form.querySelector('#dietary');
+                const messageField = this.form.querySelector('#message');
+                
+                if (guestSelect) guestSelect.value = '';
+                if (dietaryField) dietaryField.value = '';
+                if (messageField) messageField.value = '';
             }
         },
 
@@ -395,6 +405,17 @@
                 attending: formData.get('attending'),
                 timestamp: new Date().toISOString()
             };
+
+            // Add additional fields if attending
+            if (data.attending === 'yes') {
+                data.guests = parseInt(formData.get('guests')) || 1;
+                if (formData.get('dietary')) {
+                    data.dietary = Utils.sanitizeInput(formData.get('dietary'));
+                }
+                if (formData.get('message')) {
+                    data.message = Utils.sanitizeInput(formData.get('message'));
+                }
+            }
 
             // Show loading state
             const submitBtn = this.form.querySelector('.form__submit');
