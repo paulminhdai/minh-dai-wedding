@@ -9,6 +9,12 @@
   # Functions directory
   functions = "netlify/functions"
 
+# Redirect admin page to static file
+[[redirects]]
+  from = "/admin"
+  to = "/admin.html"
+  status = 200
+
 # Redirect all API calls to serverless functions
 [[redirects]]
   from = "/api/*"

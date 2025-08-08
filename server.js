@@ -135,6 +135,11 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
 });
 
+// Serve admin page
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(PUBLIC_DIR, 'admin.html'));
+});
+
 // RSVP endpoint
 app.post('/api/rsvp', rsvpLimiter, async (req, res) => {
     try {
@@ -251,7 +256,7 @@ app.post('/api/rsvp', rsvpLimiter, async (req, res) => {
 });
 
 // Admin endpoint to view RSVPs (basic protection)
-app.get('/api/admin/rsvps', async (req, res) => {
+app.get('/api/admin', async (req, res) => {
     try {
         // Simple password protection (in production, use proper authentication)
         const password = req.query.password;
@@ -261,23 +266,69 @@ app.get('/api/admin/rsvps', async (req, res) => {
 
         const rsvps = await utils.loadRSVPs();
         
-        // Remove sensitive information
-        const safeRSVPs = rsvps.map(rsvp => ({
+        // Include all relevant fields for admin view
+        const adminRSVPs = rsvps.map(rsvp => ({
             id: rsvp.id,
             names: rsvp.names,
+            phone: rsvp.phone,
             attending: rsvp.attending,
+            guests: rsvp.guests,
+            dietaryRestrictions: rsvp.dietaryRestrictions,
+            message: rsvp.message,
             timestamp: rsvp.timestamp
         }));
 
         res.json({
-            total: safeRSVPs.length,
-            attending: safeRSVPs.filter(r => r.attending === 'yes').length,
-            notAttending: safeRSVPs.filter(r => r.attending === 'no').length,
-            rsvps: safeRSVPs
+            total: adminRSVPs.length,
+            attending: adminRSVPs.filter(r => r.attending === 'yes').length,
+            notAttending: adminRSVPs.filter(r => r.attending === 'no').length,
+            rsvps: adminRSVPs
         });
 
     } catch (error) {
         console.error('Admin endpoint error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Admin delete RSVP endpoint
+app.delete('/api/admin/rsvp/:id', async (req, res) => {
+    try {
+        // Simple password protection (in production, use proper authentication)
+        const password = req.query.password;
+        if (password !== '061722') {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        const rsvpId = req.params.id;
+        if (!rsvpId) {
+            return res.status(400).json({ error: 'RSVP ID is required' });
+        }
+
+        const rsvps = await utils.loadRSVPs();
+        const rsvpIndex = rsvps.findIndex(rsvp => rsvp.id === rsvpId);
+        
+        if (rsvpIndex === -1) {
+            return res.status(404).json({ error: 'RSVP not found' });
+        }
+
+        // Remove the RSVP
+        const deletedRsvp = rsvps.splice(rsvpIndex, 1)[0];
+        await utils.saveRSVPs(rsvps);
+
+        console.log(`Admin deleted RSVP: ${deletedRsvp.names} (${deletedRsvp.id})`);
+
+        res.json({
+            success: true,
+            message: 'RSVP deleted successfully',
+            deletedRsvp: {
+                id: deletedRsvp.id,
+                names: deletedRsvp.names
+            }
+        });
+
+    } catch (error) {
+        console.error('Admin delete error:', error);
         res.status(500).json({ error: 'Server error' });
     }
 });
@@ -314,7 +365,8 @@ app.use((error, req, res, next) => {
 app.listen(PORT, () => {
     console.log(`Wedding website server running on port ${PORT}`);
     console.log(`Visit: http://localhost:${PORT}`);
-    console.log(`Admin panel: http://localhost:${PORT}/api/admin/rsvps?password=061722`);
+    console.log(`Admin panel: http://localhost:${PORT}/admin`);
+    console.log(`Admin API: http://localhost:${PORT}/api/admin?password=061722`);
     
     // Ensure data directory exists on startup
     utils.ensureDataDir().catch(console.error);

@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Minh & Đại Wedding</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --neptune-navy: #2c3e50;
+            --dusty-blue: #7fb3d3;
+            --dusty-blue-light: #a8c0d4;
+            --sage-green: #9caf88;
+            --brass-gold: #d4af37;
+            --cream: #f8f6f3;
+            --soft-white: #fefefe;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, var(--cream) 0%, var(--soft-white) 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: var(--neptune-navy);
+            color: var(--soft-white);
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(44, 62, 80, 0.2);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--brass-gold);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .login-section {
+            background: var(--soft-white);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-section.hidden {
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--neptune-navy);
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            max-width: 300px;
+            padding: 12px 16px;
+            border: 2px solid var(--dusty-blue-light);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--brass-gold);
+        }
+
+        .btn {
+            background: var(--brass-gold);
+            color: var(--neptune-navy);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #c19b2b;
+            transform: translateY(-2px);
+        }
+
+        .dashboard {
+            display: none;
+        }
+
+        .dashboard.visible {
+            display: block;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--soft-white);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid var(--brass-gold);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--neptune-navy);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: var(--dusty-blue);
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .rsvp-list {
+            background: var(--soft-white);
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .rsvp-header {
+            background: var(--dusty-blue);
+            color: var(--soft-white);
+            padding: 20px;
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .rsvp-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .rsvp-table th,
+        .rsvp-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .rsvp-table th {
+            background: var(--cream);
+            color: var(--neptune-navy);
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        .rsvp-table tr:hover {
+            background: rgba(127, 179, 211, 0.1);
+        }
+
+        .status-attending {
+            color: var(--sage-green);
+            font-weight: bold;
+        }
+
+        .status-not-attending {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .guest-count {
+            background: var(--brass-gold);
+            color: var(--neptune-navy);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--dusty-blue);
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #c33;
+        }
+
+        .refresh-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--sage-green);
+            color: white;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            transform: scale(1.1);
+            background: #8fb070;
+        }
+
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .delete-btn:hover {
+            background: #c0392b;
+            transform: scale(1.05);
+        }
+
+        .delete-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .rsvp-table {
+                font-size: 0.9rem;
+            }
+            
+            .rsvp-table th,
+            .rsvp-table td {
+                padding: 10px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Admin Dashboard</h1>
+            <p>Minh & Đại Wedding RSVP Management</p>
+        </div>
+
+        <div class="login-section" id="loginSection">
+            <h2 style="margin-bottom: 20px; color: var(--neptune-navy);">Admin Access Required</h2>
+            <div class="form-group">
+                <label for="password">Enter Password:</label>
+                <input type="password" id="password" placeholder="Enter admin password">
+            </div>
+            <button class="btn" onclick="login()">Access Dashboard</button>
+            <div id="loginError"></div>
+        </div>
+
+        <div class="dashboard" id="dashboard">
+            <div class="stats" id="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalRsvps">0</div>
+                    <div class="stat-label">Total RSVPs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="attending">0</div>
+                    <div class="stat-label">Attending</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="notAttending">0</div>
+                    <div class="stat-label">Not Attending</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalGuests">0</div>
+                    <div class="stat-label">Total Guests</div>
+                </div>
+            </div>
+
+            <div class="rsvp-list">
+                <div class="rsvp-header">
+                    RSVP Responses
+                </div>
+                <div id="rsvpContent">
+                    <div class="loading">Loading RSVP data...</div>
+                </div>
+            </div>
+        </div>
+
+        <button class="refresh-btn" onclick="loadRsvpData()" title="Refresh Data" style="display: none;" id="refreshBtn">
+            ↻
+        </button>
+    </div>
+
+    <script>
+        const CONFIG = {
+            // Detect environment and set appropriate endpoints
+            adminEndpoint: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                ? '/api/admin'  // Local development
+                : '/.netlify/functions/admin',  // Production (Netlify)
+            deleteEndpoint: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                ? '/api/admin/rsvp'  // Local development
+                : '/.netlify/functions/admin-rsvp'  // Production (Netlify)
+        };
+
+        async function login() {
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('loginError');
+            
+            if (!password) {
+                showError('Please enter a password', errorDiv);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${CONFIG.adminEndpoint}?password=${encodeURIComponent(password)}`);
+                
+                if (response.ok) {
+                    document.getElementById('loginSection').classList.add('hidden');
+                    document.getElementById('dashboard').classList.add('visible');
+                    document.getElementById('refreshBtn').style.display = 'block';
+                    
+                    const data = await response.json();
+                    displayRsvpData(data);
+                } else {
+                    showError('Invalid password. Please try again.', errorDiv);
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showError('Connection error. Please try again.', errorDiv);
+            }
+        }
+
+        async function loadRsvpData() {
+            const password = document.getElementById('password').value;
+            if (!password) return;
+
+            try {
+                const response = await fetch(`${CONFIG.adminEndpoint}?password=${encodeURIComponent(password)}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    displayRsvpData(data);
+                } else {
+                    console.error('Failed to refresh data');
+                }
+            } catch (error) {
+                console.error('Refresh error:', error);
+            }
+        }
+
+        function displayRsvpData(data) {
+            const rsvps = data.rsvps || [];
+            
+            // Update statistics
+            const totalRsvps = rsvps.length;
+            const attending = rsvps.filter(r => r.attending === 'yes').length;
+            const notAttending = rsvps.filter(r => r.attending === 'no').length;
+            const totalGuests = rsvps.filter(r => r.attending === 'yes').reduce((sum, r) => sum + (r.guests || 1), 0);
+
+            document.getElementById('totalRsvps').textContent = totalRsvps;
+            document.getElementById('attending').textContent = attending;
+            document.getElementById('notAttending').textContent = notAttending;
+            document.getElementById('totalGuests').textContent = totalGuests;
+
+            // Display RSVP table
+            const contentDiv = document.getElementById('rsvpContent');
+            
+            if (rsvps.length === 0) {
+                contentDiv.innerHTML = '<div class="loading">No RSVPs received yet.</div>';
+                return;
+            }
+
+            const tableHTML = `
+                <table class="rsvp-table">
+                    <thead>
+                        <tr>
+                            <th>Name(s)</th>
+                            <th>Phone</th>
+                            <th>Status</th>
+                            <th>Guests</th>
+                            <th>Dietary Restrictions</th>
+                            <th>Message</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rsvps.map(rsvp => `
+                            <tr id="rsvp-${rsvp.id}">
+                                <td><strong>${escapeHtml(rsvp.names || '')}</strong></td>
+                                <td>${escapeHtml(rsvp.phone || '')}</td>
+                                <td>
+                                    <span class="${rsvp.attending === 'yes' ? 'status-attending' : 'status-not-attending'}">
+                                        ${rsvp.attending === 'yes' ? '✓ Attending' : '✗ Not Attending'}
+                                    </span>
+                                </td>
+                                <td>
+                                    ${rsvp.attending === 'yes' ? `<span class="guest-count">${rsvp.guests || 1}</span>` : '-'}
+                                </td>
+                                <td>${rsvp.attending === 'yes' ? escapeHtml(rsvp.dietaryRestrictions || 'None') : '-'}</td>
+                                <td>${rsvp.attending === 'yes' ? escapeHtml(rsvp.message || 'No message') : '-'}</td>
+                                <td>${formatDate(rsvp.timestamp)}</td>
+                                <td>
+                                    <button class="delete-btn" onclick="deleteRsvp('${rsvp.id}', '${escapeHtml(rsvp.names || '')}')">
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            contentDiv.innerHTML = tableHTML;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatDate(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function showError(message, container) {
+            container.innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        async function deleteRsvp(rsvpId, guestName) {
+            const password = document.getElementById('password').value;
+            if (!password) {
+                alert('Session expired. Please login again.');
+                return;
+            }
+
+            // Double confirmation
+            if (!confirm(`Are you sure you want to delete the RSVP for "${guestName}"? This action cannot be undone.`)) {
+                return;
+            }
+
+            const deleteBtn = document.querySelector(`#rsvp-${rsvpId} .delete-btn`);
+            if (!deleteBtn) return;
+
+            // Show loading state
+            deleteBtn.disabled = true;
+            deleteBtn.textContent = 'Deleting...';
+
+            try {
+                const response = await fetch(`${CONFIG.deleteEndpoint}/${rsvpId}?password=${encodeURIComponent(password)}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    // Remove the row from the table
+                    const row = document.getElementById(`rsvp-${rsvpId}`);
+                    if (row) {
+                        row.style.transition = 'opacity 0.3s ease';
+                        row.style.opacity = '0';
+                        setTimeout(() => {
+                            row.remove();
+                            // Refresh the data to update statistics
+                            loadRsvpData();
+                        }, 300);
+                    }
+
+                    alert(`RSVP for "${guestName}" has been deleted successfully.`);
+                } else {
+                    const error = await response.json();
+                    alert(`Failed to delete RSVP: ${error.error || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                alert('Connection error. Please try again.');
+            } finally {
+                // Reset button state
+                deleteBtn.disabled = false;
+                deleteBtn.textContent = 'Delete';
+            }
+        }
+
+        // Handle Enter key in password field
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+
+        // Check if already logged in via URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlPassword = urlParams.get('password');
+        if (urlPassword) {
+            document.getElementById('password').value = urlPassword;
+            login();
+        }
+    </script>
+</body>
+</html>
