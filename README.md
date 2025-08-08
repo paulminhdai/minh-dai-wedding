@@ -1,127 +1,314 @@
-# Wedding Website - Emily & James
+# Wedding Website - Minh & Đại
 
-A modern, fast, and fully responsive wedding website built with vanilla JavaScript, CSS, and Node.js/Express.
+A modern, elegant wedding website with vintage blue & gold theme, built for Netlify deployment with serverless functions.
 
-## Features
+## 🎉 Live Website
 
-- ✨ **Modern Design**: Elegant minimal design with navy blue theme, serif headings, and subtle floral accents
-- 📱 **Fully Responsive**: Mobile-first design that works on all devices
-- ⚡ **Fast Performance**: No large frameworks, optimized vanilla JavaScript
-- ♿ **Accessible**: Semantic HTML, proper ARIA labels, focus management, high contrast toggle
-- 🌙 **Dark/Light Theme**: System-aware theme toggle with localStorage persistence
-- 📝 **RSVP System**: Complete form with validation, duplicate prevention, and file persistence
-- 👥 **Guest Management**: Optional guest list verification with fuzzy matching
-- 🗓️ **Live Countdown**: Real-time countdown to wedding date
-- 🚀 **PWA Ready**: Service worker for offline support, manifest for app-like experience
-- 🔒 **Security**: Input sanitization, rate limiting, XSS prevention
-- 📊 **Analytics Ready**: Placeholder for tracking implementation
+**Website**: [https://minh-dai-wedding-2026.netlify.app](https://minh-dai-wedding-2026.netlify.app)  
+**Wedding Date**: June 26, 2026  
+**Venues**: Korean Martys Catholic Center & White Place 2, Orange County, CA
 
-## Structure
+## ✨ Features
+
+- 🎨 **Vintage Blue & Gold Theme**: Elegant color palette with Neptune navy, dusty blue, sage green, and gold accents
+- 📱 **Fully Responsive**: Mobile-first design optimized for all devices
+- ⚡ **Fast Performance**: Vanilla JavaScript, optimized images, lazy loading
+- ♿ **Accessible**: Semantic HTML, ARIA labels, keyboard navigation
+- 🌙 **Light/Dark Mode**: System-aware theme toggle with smooth transitions
+- 📝 **RSVP System**: Serverless form with validation and sanitization
+- 🗓️ **Live Countdown**: Real-time countdown to wedding ceremony
+- � **Photo Gallery**: Lazy-loaded image gallery with lightbox
+- 🗺️ **Interactive Maps**: Embedded Google Maps for ceremony and reception venues
+- 🎵 **Smooth Animations**: CSS transitions and scroll-triggered animations
+- 🚀 **PWA Ready**: Service worker, app manifest, offline support
+- 🔒 **Security**: Input sanitization, CORS protection, rate limiting
+
+## 🏗️ Architecture
+
+### Frontend (Static Assets)
+- **HTML5**: Semantic structure with JSON-LD structured data
+- **CSS3**: Custom properties, Grid/Flexbox, modern features
+- **Vanilla JavaScript**: Modular IIFE patterns, no frameworks
+- **Progressive Web App**: Service worker, manifest, offline-first
+
+### Backend (Serverless Functions)
+- **Netlify Functions**: Node.js serverless RSVP processing
+- **CORS Enabled**: Cross-origin resource sharing configured
+- **Input Validation**: Sanitization and phone number validation
+- **Error Handling**: Comprehensive error responses
+
+## 📁 Project Structure
 
 ```
-wedding/
-├── public/                 # Static assets served by Express
-│   ├── index.html         # Main HTML file
-│   ├── styles.css         # CSS with mobile-first responsive design
-│   ├── main.js           # Vanilla JavaScript (no frameworks)
-│   ├── sw.js             # Service Worker for offline support
-│   └── manifest.json     # PWA manifest
-├── data/                  # Data storage
-│   ├── guests.txt        # Optional guest list for RSVP validation
-│   └── rsvps.json        # RSVP responses (auto-created)
-├── server.js             # Express server with RSVP API
-├── package.json          # Dependencies and scripts
-└── README.md            # This file
+minh-dai-wedding/
+├── public/                    # Static website files (deployed to Netlify)
+│   ├── index.html            # Main website HTML
+│   ├── styles.css            # Complete responsive styling
+│   ├── main.js               # Interactive functionality
+│   ├── manifest.json         # PWA manifest
+│   ├── sw.js                 # Service worker
+│   └── images/               # Wedding photos and assets
+├── netlify/
+│   └── functions/
+│       └── rsvp.js           # Serverless RSVP handler
+├── netlify.toml              # Netlify deployment configuration
+├── package.json              # Dependencies and scripts
+├── server.js                 # Local development server (Node.js)
+├── DEPLOYMENT_GUIDE.md       # Step-by-step deployment instructions
+├── HOSTING_GUIDE.md          # Hosting options comparison
+└── README.md                 # This documentation
 ```
 
-## Quick Start
+## 🚀 Deployment
 
-1. **Install dependencies:**
+### Current Deployment: Netlify
+The website is deployed on Netlify with automatic deployments from GitHub.
+
+**Deployment URL**: `https://minh-dai-wedding-2026.netlify.app`
+
+### Local Development
+
+1. **Clone the repository:**
    ```bash
-   npm install express express-rate-limit
+   git clone https://github.com/paulminhdai/minh-dai-wedding.git
+   cd minh-dai-wedding
    ```
 
-2. **Start the server:**
+2. **Install dependencies:**
    ```bash
+   npm install
+   ```
+
+3. **Start local server:**
+   ```bash
+   npm start
+   # or
    node server.js
    ```
 
-3. **Open your browser:**
+4. **Open in browser:**
    ```
    http://localhost:3000
    ```
 
-## Configuration
+## 🔧 Configuration
 
 ### Wedding Details
-Edit the following in `public/index.html`:
-- Couple names in the hero section
-- Wedding date and time
-- Venue addresses
-- Wedding party members
-- Timeline/schedule
+Update these key details in the code:
 
-### Wedding Date
-Update the countdown timer in `public/main.js`:
-```javascript
-const CONFIG = {
-    weddingDate: new Date('2026-06-26T16:00:00-07:00'), // Update this date
-    // ...
-};
-```
+1. **Wedding Date** (`public/main.js`):
+   ```javascript
+   weddingDate: new Date('2026-06-26T00:00:00-07:00')
+   ```
 
-### Guest List (Optional)
-To restrict RSVPs to invited guests only:
-1. Add names to `data/guests.txt` (one per line)
-2. The system uses fuzzy matching for name verification
-3. If the file doesn't exist, anyone can RSVP
+2. **Venues** (`public/index.html`):
+   - Korean Martys Catholic Center (Ceremony)
+   - White Place 2 (Reception)
 
-### Styling
-Customize colors and fonts in `public/styles.css`:
+3. **Schedule** (`public/index.html`):
+   - 2:30 PM - Tea Ceremony
+   - 2:30 PM - Wedding Mass
+   - 6:00 PM - Cocktail Hour
+   - 7:00 PM - Reception
+
+### Theme Colors
+The vintage blue & gold palette is defined in CSS custom properties:
+
 ```css
 :root {
-  --primary: #1e3a8a;        /* Navy blue */
-  --accent-pink: #fecaca;     /* Blush pink */
-  --accent-green: #86efac;    /* Sage green */
-  /* ... */
-}
-```
+  --primary: #2c3e50;           /* Neptune Navy */
+  --accent-blue: #7fb3d3;       /* Dusty Blue */
+  --accent-blue-light: #a8c0d4; /* Light Dusty Blue */
+  --accent-sage: #9caf88;       /* Sage Green */
+  --accent-gold: #d4af37;       /* Brass/Gold */
+  --neutral: #8e9aaf;           /* Soft Gray */
+## 📝 RSVP System
 
-## API Endpoints
+### Serverless Function (Netlify)
+The RSVP system uses Netlify Functions for serverless processing:
 
-### POST /api/rsvp
-Submit RSVP form data. Rate limited to 5 requests per 15 minutes per IP.
+- **Endpoint**: `/.netlify/functions/rsvp`
+- **Method**: POST
+- **Features**: Input validation, phone number validation, CORS enabled
+- **Security**: Input sanitization, error handling
 
-**Request:**
+### RSVP Data Structure
 ```json
 {
-  "guestCode": "optional",
   "names": "John & Jane Doe",
-  "email": "john@example.com",
+  "phone": "(555) 123-4567",
   "attending": "yes",
-  "mealChoice": "chicken",
+  "guests": 2,
   "dietary": "No nuts",
-  "songRequest": "Dancing Queen"
+  "message": "Looking forward to celebrating!",
+  "timestamp": "2025-08-07T12:00:00.000Z"
 }
 ```
 
-**Response:**
-```json
-{
-  "message": "Thank you for your RSVP!",
-  "id": "unique-id"
+### Current Storage
+RSVPs are currently logged to Netlify Function logs. For production use, consider:
+- **Airtable**: Easy database with forms
+- **Google Sheets**: Direct integration with Google Sheets API
+- **SendGrid**: Email notifications for each RSVP
+- **Supabase**: Real-time database with dashboard
+
+## 🎨 Customization
+
+### Adding Your Photos
+1. Replace images in `public/images/` folder
+2. Update image names in the JavaScript gallery configuration
+3. Optimize images for web (recommended: WebP format, max 1MB each)
+
+### Updating Content
+1. **Your Story**: Edit the story section in `public/index.html`
+2. **Wedding Details**: Update venue information, schedule, and FAQ
+3. **Contact Info**: Modify meta tags and contact details
+
+### Color Scheme
+To change the color palette, update CSS custom properties in `public/styles.css`:
+
+```css
+:root {
+  /* Your custom colors */
+  --primary: #your-color;
+  --accent-blue: #your-color;
+  /* etc... */
 }
 ```
 
-### GET /api/admin/rsvps?password=wedding2026admin
-View all RSVPs (password protected). Change the password in `server.js`.
+## 🔒 Security Features
 
-### GET /api/health
-Health check endpoint.
+- **Input Sanitization**: All form inputs are sanitized to prevent XSS
+- **CORS Protection**: Configured for secure cross-origin requests  
+- **Rate Limiting**: RSVP submissions limited to prevent abuse
+- **HTTPS**: Automatic SSL certificate through Netlify
+- **Content Security**: Security headers configured in netlify.toml
 
-## Security Features
+## 🚀 Performance Optimizations
 
-- Input sanitization to prevent XSS attacks
+- **Lazy Loading**: Images load only when visible
+- **Service Worker**: Offline caching and PWA functionality
+- **Minified Assets**: Optimized CSS and JavaScript
+- **CDN**: Global content delivery through Netlify's CDN
+- **Responsive Images**: Optimized images for different screen sizes
+
+## 📱 Progressive Web App
+
+The website includes PWA features:
+- **App Manifest**: Can be installed on mobile devices
+- **Service Worker**: Works offline with cached content
+- **App Icons**: Custom wedding-themed app icons
+- **Splash Screen**: Beautiful loading experience
+
+## 🔍 SEO & Analytics
+
+- **Structured Data**: JSON-LD schema for rich search results
+- **Meta Tags**: Complete Open Graph and Twitter Card support
+- **Semantic HTML**: Proper heading hierarchy and ARIA labels
+- **Sitemap Ready**: Search engine friendly structure
+
+## 📊 Monitoring & Analytics
+
+### Netlify Analytics
+- View deployment status and build logs
+- Monitor function execution and errors
+- Track site performance metrics
+
+### RSVP Tracking
+Currently RSVPs are logged to Netlify Functions. To implement proper tracking:
+
+1. **Add email notifications**:
+   ```javascript
+   // In netlify/functions/rsvp.js
+   const sgMail = require('@sendgrid/mail');
+   await sgMail.send({
+     to: 'your-email@example.com',
+     subject: 'New RSVP Received',
+     text: `New RSVP from ${sanitizedData.names}`
+   });
+   ```
+
+2. **Google Sheets integration**:
+   ```javascript
+   const { GoogleSpreadsheet } = require('google-spreadsheet');
+   // Add RSVP data to spreadsheet
+   ```
+
+## 🛠️ Development
+
+### Local Development Setup
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Start local server: `npm start` or `node server.js`
+4. Visit `http://localhost:3000`
+
+### Making Changes
+1. Edit files locally
+2. Test changes on localhost:3000
+3. Commit and push to GitHub:
+   ```bash
+   git add .
+   git commit -m "Your changes"
+   git push
+   ```
+4. Netlify automatically deploys changes (1-2 minutes)
+
+### Testing RSVP Form
+1. Fill out the form on your local or live site
+2. Check Netlify Functions logs for RSVP data
+3. Verify form validation and error handling
+
+## 📚 Additional Documentation
+
+- **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)**: Complete deployment instructions
+- **[HOSTING_GUIDE.md](HOSTING_GUIDE.md)**: Comparison of hosting options
+- **[GOOGLE_SHEETS_SETUP.md](GOOGLE_SHEETS_SETUP.md)**: Guest list integration guide
+
+## 🆘 Troubleshooting
+
+### Common Issues
+
+1. **Page not found (404)**:
+   - Check Netlify build settings: publish directory = `public`
+   - Verify all files are pushed to GitHub
+   - Check deploy logs for errors
+
+2. **RSVP form not working**:
+   - Check Netlify Functions logs
+   - Verify CORS settings
+   - Test with browser developer tools
+
+3. **Images not loading**:
+   - Ensure images are in `public/images/` folder
+   - Check file paths in HTML/CSS
+   - Verify images are pushed to GitHub
+
+4. **Styling issues**:
+   - Clear browser cache
+   - Check CSS file path
+   - Verify CSS custom properties support
+
+### Getting Help
+
+- **Netlify Documentation**: [docs.netlify.com](https://docs.netlify.com)
+- **GitHub Issues**: Report bugs in the repository
+- **Netlify Community**: [community.netlify.com](https://community.netlify.com)
+
+## 📄 License
+
+This project is open source and available under the MIT License.
+
+## 🎉 Credits
+
+Built with love for Minh & Đại's special day! 💙💛
+
+**Technologies Used**:
+- Vanilla JavaScript (ES6+)
+- CSS3 with Custom Properties
+- HTML5 with Semantic Markup
+- Netlify Functions (Node.js)
+- Progressive Web App features
+- Google Fonts (Playfair Display & Inter)
 - Rate limiting on RSVP submissions
 - Duplicate prevention by name + email
 - Guest list verification (optional)
