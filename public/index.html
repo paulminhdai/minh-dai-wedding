@@ -57,10 +57,20 @@
                 <li><a href="#rsvp" class="nav__link nav__link--cta">RSVP</a></li>
             </ul>
             <div class="nav__controls">
+                <button class="music-toggle" aria-label="Toggle background music">🎵</button>
                 <button class="theme-toggle" aria-label="Toggle dark mode">🌙</button>
             </div>
         </div>
     </nav>
+
+    <!-- Background Music -->
+    <audio id="backgroundMusic" loop preload="auto">
+        <!-- You can replace these with your own music files -->
+        <source src="assets/wedding-music.mp3" type="audio/mpeg">
+        <source src="assets/wedding-music.ogg" type="audio/ogg">
+        <!-- Fallback for browsers that don't support audio -->
+        Your browser does not support the audio element.
+    </audio>
 
     <!-- Hero Section -->
     <section id="hero" class="hero">

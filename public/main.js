@@ -104,6 +104,97 @@
         }
     };
 
+    // Music Management
+    const MusicManager = {
+        init() {
+            this.musicToggle = document.querySelector('.music-toggle');
+            this.audioElement = document.getElementById('backgroundMusic');
+            this.isPlaying = false;
+            
+            // Set initial volume to be subtle
+            if (this.audioElement) {
+                this.audioElement.volume = 0.3;
+            }
+            
+            // Load saved preference
+            this.loadMusicPreference();
+            
+            // Set up event listeners
+            this.musicToggle?.addEventListener('click', () => this.toggleMusic());
+            
+            // Handle audio events
+            if (this.audioElement) {
+                this.audioElement.addEventListener('ended', () => this.handleMusicEnd());
+                this.audioElement.addEventListener('error', () => this.handleMusicError());
+            }
+        },
+
+        loadMusicPreference() {
+            const savedPreference = localStorage.getItem('backgroundMusic');
+            // Default to off for better UX (autoplay policies)
+            this.isPlaying = savedPreference === 'true';
+            this.updateMusicToggle();
+        },
+
+        toggleMusic() {
+            if (!this.audioElement) return;
+            
+            if (this.isPlaying) {
+                this.pauseMusic();
+            } else {
+                this.playMusic();
+            }
+        },
+
+        async playMusic() {
+            if (!this.audioElement) return;
+            
+            try {
+                await this.audioElement.play();
+                this.isPlaying = true;
+                this.updateMusicToggle();
+                localStorage.setItem('backgroundMusic', 'true');
+            } catch (error) {
+                console.log('Could not play background music:', error);
+                this.handleMusicError();
+            }
+        },
+
+        pauseMusic() {
+            if (!this.audioElement) return;
+            
+            this.audioElement.pause();
+            this.isPlaying = false;
+            this.updateMusicToggle();
+            localStorage.setItem('backgroundMusic', 'false');
+        },
+
+        updateMusicToggle() {
+            if (this.musicToggle) {
+                this.musicToggle.textContent = this.isPlaying ? '🔇' : '🎵';
+                this.musicToggle.setAttribute('aria-label', 
+                    this.isPlaying ? 'Pause background music' : 'Play background music');
+                this.musicToggle.classList.toggle('playing', this.isPlaying);
+            }
+        },
+
+        handleMusicEnd() {
+            // Music naturally ended (though it should loop)
+            this.isPlaying = false;
+            this.updateMusicToggle();
+        },
+
+        handleMusicError() {
+            console.log('Background music not available');
+            this.isPlaying = false;
+            this.updateMusicToggle();
+            // Hide the music toggle if there's a persistent error
+            if (this.musicToggle) {
+                this.musicToggle.style.display = 'none';
+            }
+        }
+    };
+
     // Navigation Management
     const Navigation = {
         init() {
@@ -721,6 +812,7 @@
     // Initialize everything when DOM is loaded
     document.addEventListener('DOMContentLoaded', () => {
         ThemeManager.init();
+        MusicManager.init();
         Navigation.init();
         Countdown.init();
         RSVPForm.init();
@@ -755,6 +847,7 @@
     // Expose some functions globally for testing/debugging
     window.WeddingWebsite = {
         ThemeManager,
+        MusicManager,
         Navigation,
         Countdown,
         RSVPForm,

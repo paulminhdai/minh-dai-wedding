@@ -355,6 +355,7 @@ a:hover, a:focus {
 }
 
 .theme-toggle,
+.music-toggle,
 .contrast-toggle {
   background: none;
   border: 1px solid var(--border);
@@ -366,8 +367,14 @@ a:hover, a:focus {
 }
 
 .theme-toggle:hover,
+.music-toggle:hover,
 .contrast-toggle:hover {
   background-color: var(--bg-secondary);
+}
+
+.music-toggle.playing {
+  background-color: var(--accent-gold);
+  color: var(--text-contrast);
 }
 
 @media (min-width: 768px) {
@@ -1366,5 +1373,21 @@ a:hover, a:focus {
   .section {
     page-break-inside: avoid;
     margin-bottom: 20pt;
+  }
+}
+
+/* Responsive: Reduce hearts and stars on small screens */
+@media (max-width: 600px) {
+  .hero__hearts .heart--4,
+  .hero__hearts .heart--5,
+  .hero__hearts .heart--6,
+  .hero__hearts .heart--7,
+  .hero__hearts .heart--8,
+  .hero__stars .star--4,
+  .hero__stars .star--5,
+  .hero__stars .star--6,
+  .hero__stars .star--7,
+  .hero__stars .star--8 {
+    display: none !important;
   }
 }
