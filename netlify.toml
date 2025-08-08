@@ -5,20 +5,15 @@
   
   # Build command (none needed for this project)
   command = ""
+  
+  # Functions directory
+  functions = "netlify/functions"
 
 # Redirect all API calls to serverless functions
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
-
-# SPA fallback for client-side routing (if needed)
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  conditions = {Role = ["admin"], Country = ["US"]}
-  force = false
 
 # Custom headers for security
 [[headers]]
