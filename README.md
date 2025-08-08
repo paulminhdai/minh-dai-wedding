@@ -106,7 +106,7 @@ Update these key details in the code:
    - White Place 2 (Reception)
 
 3. **Schedule** (`public/index.html`):
-   - 2:30 PM - Tea Ceremony
+   - 9:00 AM - Tea Ceremony
    - 2:30 PM - Wedding Mass
    - 6:00 PM - Cocktail Hour
    - 7:00 PM - Reception
