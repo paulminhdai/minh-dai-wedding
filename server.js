@@ -113,6 +113,18 @@ const utils = {
         }
     },
 
+    // Save guest list to file
+    async saveGuestList(guests) {
+        await this.ensureDataDir();
+        const header = `# Guest List for Wedding Website
+# One name per line - case insensitive fuzzy matching is used
+# If this file doesn't exist, anyone can RSVP
+
+`;
+        const content = header + guests.join('\n');
+        await fs.writeFile(GUESTS_FILE, content, 'utf8');
+    },
+
     // Check if guest name is in the allowed list
     async isGuestAllowed(guestName, guestCode = '') {
         const guestList = await this.loadGuestList();
@@ -329,6 +341,116 @@ app.delete('/api/admin/rsvp/:id', async (req, res) => {
 
     } catch (error) {
         console.error('Admin delete error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Admin get guest list endpoint
+app.get('/api/admin/guests', async (req, res) => {
+    try {
+        // Simple password protection (in production, use proper authentication)
+        const password = req.query.password;
+        if (password !== '061722') {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        const guests = await utils.loadGuestList();
+
+        res.json({
+            success: true,
+            guests: guests,
+            total: guests.length
+        });
+
+    } catch (error) {
+        console.error('Admin guests endpoint error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Admin add guest endpoint
+app.post('/api/admin/guests', async (req, res) => {
+    try {
+        // Simple password protection (in production, use proper authentication)
+        const password = req.query.password;
+        if (password !== '061722') {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        const { name } = req.body;
+        if (!name || !name.trim()) {
+            return res.status(400).json({ error: 'Guest name is required' });
+        }
+
+        const guests = await utils.loadGuestList();
+        const sanitizedName = utils.sanitizeInput(name.trim());
+
+        // Check if guest already exists (case insensitive)
+        const existingGuest = guests.find(guest => 
+            guest.toLowerCase() === sanitizedName.toLowerCase()
+        );
+
+        if (existingGuest) {
+            return res.status(400).json({ error: 'Guest already exists' });
+        }
+
+        // Add the new guest
+        guests.push(sanitizedName);
+        await utils.saveGuestList(guests);
+
+        console.log(`Admin added guest: ${sanitizedName}`);
+
+        res.json({
+            success: true,
+            message: 'Guest added successfully',
+            guest: sanitizedName,
+            total: guests.length
+        });
+
+    } catch (error) {
+        console.error('Admin add guest error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Admin delete guest endpoint
+app.delete('/api/admin/guests/:name', async (req, res) => {
+    try {
+        // Simple password protection (in production, use proper authentication)
+        const password = req.query.password;
+        if (password !== '061722') {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        const guestName = decodeURIComponent(req.params.name);
+        if (!guestName) {
+            return res.status(400).json({ error: 'Guest name is required' });
+        }
+
+        const guests = await utils.loadGuestList();
+        const guestIndex = guests.findIndex(guest => 
+            guest.toLowerCase() === guestName.toLowerCase()
+        );
+        
+        if (guestIndex === -1) {
+            return res.status(404).json({ error: 'Guest not found' });
+        }
+
+        // Remove the guest
+        const deletedGuest = guests.splice(guestIndex, 1)[0];
+        await utils.saveGuestList(guests);
+
+        console.log(`Admin deleted guest: ${deletedGuest}`);
+
+        res.json({
+            success: true,
+            message: 'Guest deleted successfully',
+            deletedGuest: deletedGuest,
+            total: guests.length
+        });
+
+    } catch (error) {
+        console.error('Admin delete guest error:', error);
         res.status(500).json({ error: 'Server error' });
     }
 });

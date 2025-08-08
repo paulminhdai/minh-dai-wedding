@@ -265,6 +265,48 @@
             transform: none;
         }
 
+        .guest-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .guest-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: var(--cream);
+            border-radius: 6px;
+            border-left: 3px solid var(--brass-gold);
+        }
+
+        .guest-name {
+            font-weight: 500;
+            color: var(--neptune-navy);
+        }
+
+        .guest-delete-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .guest-delete-btn:hover {
+            background: #c0392b;
+        }
+
+        .guest-delete-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 2rem;
@@ -324,6 +366,21 @@
 
             <div class="rsvp-list">
                 <div class="rsvp-header">
+                    Guest List Management
+                </div>
+                <div style="padding: 20px;">
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                        <input type="text" id="newGuestName" placeholder="Enter guest name" style="flex: 1; min-width: 200px; padding: 10px; border: 2px solid var(--dusty-blue-light); border-radius: 6px;">
+                        <button class="btn" onclick="addGuest()" id="addGuestBtn">Add Guest</button>
+                    </div>
+                    <div id="guestListContent">
+                        <div class="loading">Loading guest list...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rsvp-list">
+                <div class="rsvp-header">
                     RSVP Responses
                 </div>
                 <div id="rsvpContent">
@@ -345,7 +402,10 @@
                 : '/.netlify/functions/admin',  // Production (Netlify)
             deleteEndpoint: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
                 ? '/api/admin/rsvp'  // Local development
-                : '/.netlify/functions/admin-rsvp'  // Production (Netlify)
+                : '/.netlify/functions/admin-rsvp',  // Production (Netlify)
+            guestsEndpoint: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                ? '/api/admin/guests'  // Local development
+                : '/.netlify/functions/admin-guests'  // Production (Netlify) - to be created
         };
 
         async function login() {
@@ -367,6 +427,7 @@
                     
                     const data = await response.json();
                     displayRsvpData(data);
+                    loadGuestList(); // Load guest list after login
                 } else {
                     showError('Invalid password. Please try again.', errorDiv);
                 }
@@ -538,10 +599,143 @@
             }
         }
 
+        async function loadGuestList() {
+            const password = document.getElementById('password').value;
+            if (!password) return;
+
+            try {
+                const response = await fetch(`${CONFIG.guestsEndpoint}?password=${encodeURIComponent(password)}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    displayGuestList(data.guests);
+                } else {
+                    console.error('Failed to load guest list');
+                    document.getElementById('guestListContent').innerHTML = '<div class="error">Failed to load guest list</div>';
+                }
+            } catch (error) {
+                console.error('Guest list error:', error);
+                document.getElementById('guestListContent').innerHTML = '<div class="error">Connection error</div>';
+            }
+        }
+
+        function displayGuestList(guests) {
+            const contentDiv = document.getElementById('guestListContent');
+            
+            if (guests.length === 0) {
+                contentDiv.innerHTML = '<div class="loading">No guests in the list. Anyone can RSVP.</div>';
+                return;
+            }
+
+            const guestHTML = `
+                <div class="guest-list">
+                    ${guests.map(guest => `
+                        <div class="guest-item">
+                            <span class="guest-name">${escapeHtml(guest)}</span>
+                            <button class="guest-delete-btn" onclick="deleteGuest('${escapeHtml(guest)}')">
+                                Remove
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            contentDiv.innerHTML = guestHTML;
+        }
+
+        async function addGuest() {
+            const password = document.getElementById('password').value;
+            const nameInput = document.getElementById('newGuestName');
+            const addBtn = document.getElementById('addGuestBtn');
+            const guestName = nameInput.value.trim();
+
+            if (!password) {
+                alert('Session expired. Please login again.');
+                return;
+            }
+
+            if (!guestName) {
+                alert('Please enter a guest name.');
+                nameInput.focus();
+                return;
+            }
+
+            // Show loading state
+            addBtn.disabled = true;
+            addBtn.textContent = 'Adding...';
+
+            try {
+                const response = await fetch(`${CONFIG.guestsEndpoint}?password=${encodeURIComponent(password)}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name: guestName })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    nameInput.value = '';
+                    loadGuestList(); // Refresh the list
+                    alert(`Guest "${guestName}" added successfully!`);
+                } else {
+                    alert(`Failed to add guest: ${result.error || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Add guest error:', error);
+                alert('Connection error. Please try again.');
+            } finally {
+                // Reset button state
+                addBtn.disabled = false;
+                addBtn.textContent = 'Add Guest';
+            }
+        }
+
+        async function deleteGuest(guestName) {
+            const password = document.getElementById('password').value;
+            if (!password) {
+                alert('Session expired. Please login again.');
+                return;
+            }
+
+            // Double confirmation
+            if (!confirm(`Are you sure you want to remove "${guestName}" from the guest list? They will no longer be able to RSVP.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${CONFIG.guestsEndpoint}/${encodeURIComponent(guestName)}?password=${encodeURIComponent(password)}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    loadGuestList(); // Refresh the list
+                    alert(`Guest "${guestName}" has been removed from the list.`);
+                } else {
+                    const error = await response.json();
+                    alert(`Failed to remove guest: ${error.error || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Delete guest error:', error);
+                alert('Connection error. Please try again.');
+            }
+        }
+
         // Handle Enter key in password field
         document.getElementById('password').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 login();
+            }
+        });
+
+        // Handle Enter key in guest name input field
+        document.getElementById('newGuestName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addGuest();
             }
         });
 
