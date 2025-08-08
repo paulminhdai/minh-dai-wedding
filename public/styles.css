@@ -166,6 +166,21 @@ a:hover, a:focus {
   box-shadow: 0 8px 25px rgba(44, 62, 80, 0.2);
 }
 
+.btn--primary:disabled {
+  background: var(--text-light);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+.btn--primary:disabled:hover {
+  background: var(--text-light);
+  transform: none;
+  box-shadow: none;
+}
+
 .btn:focus {
   outline: 2px solid var(--border-focus);
   outline-offset: 2px;
