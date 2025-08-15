@@ -3,8 +3,8 @@
   # Directory with the website files
   publish = "public"
   
-  # Build command (none needed for this project)
-  command = ""
+  # Build command - install dependencies for Netlify Functions
+  command = "npm install"
   
   # Functions directory
   functions = "netlify/functions"
