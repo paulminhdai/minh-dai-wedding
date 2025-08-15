@@ -1,20 +1,23 @@
-// Netlify function for admin operations (view/delete RSVPs)
-exports.handler = async (event, context) => {
-    // Enable CORS
-    const headers = {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'GET, DELETE, OPTIONS',
-        'Content-Type': 'application/json'
-    };
+// Admin dashboard Netlify function
+const { createClient } = require('@supabase/supabase-js');
 
+// Initialize Supabase client
+const supabaseAdmin = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
+const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'GET, PUT, DELETE, OPTIONS',
+    'Content-Type': 'application/json'
+};
+
+exports.handler = async (event, context) => {
     // Handle preflight requests
     if (event.httpMethod === 'OPTIONS') {
-        return {
-            statusCode: 200,
-            headers,
-            body: ''
-        };
+        return { statusCode: 200, headers };
     }
 
     try {
@@ -29,7 +32,7 @@ exports.handler = async (event, context) => {
             };
         }
         
-        if (!password || password !== adminPassword) {
+        if (password !== adminPassword) {
             return {
                 statusCode: 401,
                 headers,
@@ -38,43 +41,38 @@ exports.handler = async (event, context) => {
         }
 
         if (event.httpMethod === 'GET') {
-            // Return RSVP data for viewing
-            // Note: In a real production system, you'd want to store RSVPs in:
-            // - Airtable, Google Sheets, Supabase, FaunaDB, etc.
-            // For now, we'll return mock data since Netlify functions are stateless
+            // Get RSVP list
+            const { data: rsvps, error } = await supabaseAdmin
+                .from('rsvps')
+                .select('*')
+                .order('created_at', { ascending: false });
             
-            const mockRSVPs = [
-                {
-                    id: 'netlify-demo-1',
-                    names: 'Demo User (Netlify)',
-                    phone: '(555) 123-4567',
-                    attending: 'yes',
-                    guests: 2,
-                    dietaryRestrictions: 'Vegetarian',
-                    message: 'This is mock data for Netlify deployment',
-                    timestamp: new Date().toISOString()
-                }
-            ];
+            if (error) throw error;
+
+            // Log admin action
+            await supabaseAdmin
+                .from('admin_logs')
+                .insert({
+                    action: 'view_rsvps',
+                    details: 'Admin viewed RSVP list'
+                });
 
             return {
                 statusCode: 200,
                 headers,
-                body: JSON.stringify({
-                    total: mockRSVPs.length,
-                    attending: mockRSVPs.filter(r => r.attending === 'yes').length,
-                    notAttending: mockRSVPs.filter(r => r.attending === 'no').length,
-                    rsvps: mockRSVPs,
-                    note: 'This is mock data. In production, implement proper database storage.'
+                body: JSON.stringify({ 
+                    rsvps: rsvps || [],
+                    count: rsvps?.length || 0
                 })
             };
-
-        } else if (event.httpMethod === 'DELETE') {
-            // Handle RSVP deletion
-            // Extract RSVP ID from path
-            const pathSegments = event.path.split('/');
-            const rsvpId = pathSegments[pathSegments.length - 1];
-
-            if (!rsvpId || rsvpId === 'admin') {
+        } 
+        
+        else if (event.httpMethod === 'PUT') {
+            // Update RSVP (for future use)
+            const pathParts = event.path.split('/');
+            const rsvpId = pathParts[pathParts.length - 1];
+            
+            if (!rsvpId) {
                 return {
                     statusCode: 400,
                     headers,
@@ -82,22 +80,28 @@ exports.handler = async (event, context) => {
                 };
             }
 
-            // In a real system, you'd delete from your database here
-            // For demo purposes, we'll just return success
-            console.log(`Admin requested deletion of RSVP: ${rsvpId}`);
+            const body = JSON.parse(event.body);
+            
+            const { data: updatedRsvp, error } = await supabaseAdmin
+                .from('rsvps')
+                .update(body)
+                .eq('id', rsvpId)
+                .select()
+                .single();
+            
+            if (error) throw error;
 
             return {
                 statusCode: 200,
                 headers,
-                body: JSON.stringify({
+                body: JSON.stringify({ 
                     success: true,
-                    message: 'RSVP deletion requested (mock response)',
-                    deletedId: rsvpId,
-                    note: 'In production, implement actual database deletion'
+                    rsvp: updatedRsvp
                 })
             };
-
-        } else {
+        } 
+        
+        else {
             return {
                 statusCode: 405,
                 headers,
@@ -110,7 +114,10 @@ exports.handler = async (event, context) => {
         return {
             statusCode: 500,
             headers,
-            body: JSON.stringify({ error: 'Internal server error' })
+            body: JSON.stringify({ 
+                error: 'Internal server error',
+                details: error.message 
+            })
         };
     }
 };

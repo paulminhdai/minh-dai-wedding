@@ -1,23 +1,25 @@
-// Netlify function to handle admin RSVP deletion
-exports.handler = async (event, context) => {
-    // Enable CORS
-    const headers = {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'DELETE, OPTIONS',
-        'Content-Type': 'application/json'
-    };
+// Admin RSVP management Netlify function
+const { createClient } = require('@supabase/supabase-js');
 
+// Initialize Supabase client
+const supabaseAdmin = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
+const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'DELETE, OPTIONS',
+    'Content-Type': 'application/json'
+};
+
+exports.handler = async (event, context) => {
     // Handle preflight requests
     if (event.httpMethod === 'OPTIONS') {
-        return {
-            statusCode: 200,
-            headers,
-            body: ''
-        };
+        return { statusCode: 200, headers };
     }
 
-    // Only allow DELETE requests
     if (event.httpMethod !== 'DELETE') {
         return {
             statusCode: 405,
@@ -38,7 +40,7 @@ exports.handler = async (event, context) => {
             };
         }
         
-        if (!password || password !== adminPassword) {
+        if (password !== adminPassword) {
             return {
                 statusCode: 401,
                 headers,
@@ -47,10 +49,10 @@ exports.handler = async (event, context) => {
         }
 
         // Extract RSVP ID from path
-        const pathSegments = event.path.split('/');
-        const rsvpId = pathSegments[pathSegments.length - 1];
-
-        if (!rsvpId || rsvpId === 'admin-rsvp') {
+        const pathParts = event.path.split('/');
+        const rsvpId = pathParts[pathParts.length - 1];
+        
+        if (!rsvpId) {
             return {
                 statusCode: 400,
                 headers,
@@ -58,25 +60,28 @@ exports.handler = async (event, context) => {
             };
         }
 
-        // Log the deletion attempt
-        console.log(`Admin requested deletion of RSVP: ${rsvpId} at ${new Date().toISOString()}`);
+        // Delete RSVP
+        const { error } = await supabaseAdmin
+            .from('rsvps')
+            .delete()
+            .eq('id', rsvpId);
+        
+        if (error) throw error;
 
-        // In a real production system, you would:
-        // 1. Connect to your database (Airtable, Supabase, etc.)
-        // 2. Delete the RSVP record
-        // 3. Return the actual result
-        
-        // For now, we'll simulate a successful deletion
-        // Since Netlify functions are stateless, we can't actually delete from a local file
-        
+        // Log admin action
+        await supabaseAdmin
+            .from('admin_logs')
+            .insert({
+                action: 'delete_rsvp',
+                details: `Deleted RSVP for ${rsvpId}`
+            });
+
         return {
             statusCode: 200,
             headers,
-            body: JSON.stringify({
+            body: JSON.stringify({ 
                 success: true,
-                message: 'RSVP deletion simulated successfully',
-                deletedId: rsvpId,
-                note: 'In production, implement actual database deletion. Check function logs for deletion requests.'
+                message: `RSVP ${rsvpId} deleted successfully`
             })
         };
 
@@ -85,7 +90,10 @@ exports.handler = async (event, context) => {
         return {
             statusCode: 500,
             headers,
-            body: JSON.stringify({ error: 'Internal server error' })
+            body: JSON.stringify({ 
+                error: 'Internal server error',
+                details: error.message 
+            })
         };
     }
 };
