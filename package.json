@@ -1,0 +1,52 @@
+{
+  "name": "wedding-website-enhanced",
+  "version": "2.0.0",
+  "description": "Enhanced wedding website with Supabase database integration",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "build": "echo 'Static site - no build required'",
+    "test": "echo 'No tests specified'",
+    "migrate": "node database/migrate-data.js",
+    "setup-db": "node database/setup-database.js",
+    "deploy": "netlify deploy --prod",
+    "serve": "netlify dev"
+  },
+  "keywords": [
+    "wedding",
+    "rsvp",
+    "netlify",
+    "supabase",
+    "javascript",
+    "serverless"
+  ],
+  "author": "Wedding Website Developer",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.55.0",
+    "dotenv": "^17.2.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.15.0",
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/wedding-website.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/wedding-website/issues"
+  },
+  "homepage": "https://your-wedding-website.netlify.app",
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}

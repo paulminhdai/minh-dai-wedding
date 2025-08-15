@@ -93,7 +93,9 @@ typings/
 
 # Local data files
 data/
-*.json
+# Only ignore specific JSON files, not package.json
+rsvps.json
+guests.json
 
 # Netlify
 .netlify
