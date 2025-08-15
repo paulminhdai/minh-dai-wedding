@@ -4,10 +4,14 @@
   publish = "public"
   
   # Build command - install dependencies for Netlify Functions
-  command = "npm install"
+  # Using npm install instead of ci, and explicitly set NODE_ENV
+  command = "NODE_ENV=development npm install --force"
   
   # Functions directory
   functions = "netlify/functions"
+  
+  # Node.js version
+  environment = { NODE_VERSION = "18.19.0" }
 
 # Redirect admin page to static file
 [[redirects]]
