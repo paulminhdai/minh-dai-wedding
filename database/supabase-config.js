@@ -33,7 +33,7 @@ const DatabaseUtils = {
     // Guest management functions
     async findGuestByName(guestName) {
         try {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseAdmin
                 .from('guests')
                 .select('*')
                 .or(`name.ilike.%${guestName}%,name.ilike.%${guestName.split(' ').join('%')}%`)
@@ -49,14 +49,15 @@ const DatabaseUtils = {
 
     async createGuest(guestData) {
         try {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseAdmin
                 .from('guests')
                 .insert([{
                     name: guestData.name,
                     email: guestData.email,
                     phone: guestData.phone,
                     guest_code: guestData.guestCode,
-                    is_invited: true
+                    is_invited: true,
+                    side: guestData.side || 'mutual'
                 }])
                 .select()
                 .single();
@@ -94,7 +95,7 @@ const DatabaseUtils = {
                 guest = existingGuests[0];
                 // Update guest info if provided
                 if (rsvpData.email || rsvpData.phone) {
-                    const { data: updatedGuest, error: updateError } = await supabase
+                    const { data: updatedGuest, error: updateError } = await supabaseAdmin
                         .from('guests')
                         .update({
                             email: rsvpData.email || guest.email,
@@ -118,7 +119,7 @@ const DatabaseUtils = {
             }
 
             // Check for duplicate RSVP
-            const { data: existingRSVP } = await supabase
+            const { data: existingRSVP } = await supabaseAdmin
                 .from('rsvps')
                 .select('id')
                 .eq('guest_id', guest.id)
@@ -129,13 +130,12 @@ const DatabaseUtils = {
             }
 
             // Create RSVP
-            const { data: rsvp, error: rsvpError } = await supabase
+            const { data: rsvp, error: rsvpError } = await supabaseAdmin
                 .from('rsvps')
                 .insert([{
                     guest_id: guest.id,
                     status: rsvpData.attending === 'yes' ? 'attending' : 'not_attending',
                     party_size: rsvpData.guests || 1,
-                    dietary_restrictions: rsvpData.dietary,
                     special_requests: rsvpData.message,
                     ip_address: rsvpData.ipAddress
                 }])
@@ -198,7 +198,10 @@ const DatabaseUtils = {
     async getRSVPs(adminPassword) {
         try {
             // Verify admin password
-            const expectedPassword = process.env.ADMIN_PASSWORD || '061722';
+            const expectedPassword = process.env.ADMIN_PASSWORD;
+            if (!expectedPassword) {
+                throw new Error('ADMIN_PASSWORD not configured');
+            }
             if (adminPassword !== expectedPassword) {
                 throw new Error('Unauthorized');
             }
@@ -223,7 +226,10 @@ const DatabaseUtils = {
     async deleteRSVP(rsvpId, adminPassword) {
         try {
             // Verify admin password
-            const expectedPassword = process.env.ADMIN_PASSWORD || '061722';
+            const expectedPassword = process.env.ADMIN_PASSWORD;
+            if (!expectedPassword) {
+                throw new Error('ADMIN_PASSWORD not configured');
+            }
             if (adminPassword !== expectedPassword) {
                 throw new Error('Unauthorized');
             }
@@ -299,19 +305,22 @@ const DatabaseUtils = {
     // Guest list management
     async getGuestList(adminPassword) {
         try {
-            const expectedPassword = process.env.ADMIN_PASSWORD || '061722';
+            const expectedPassword = process.env.ADMIN_PASSWORD;
+            if (!expectedPassword) {
+                throw new Error('ADMIN_PASSWORD not configured');
+            }
             if (adminPassword !== expectedPassword) {
                 throw new Error('Unauthorized');
             }
 
-            const { data, error } = await supabase
+            const { data, error } = await supabaseAdmin
                 .from('guests')
                 .select('*')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
 
-            await this.logAdminAction('view_guests', 'Admin viewed guest list');
+            await this.logAdminAction('view_rsvps', 'Admin viewed guest list');
             return data || [];
         } catch (error) {
             console.error('Error getting guest list:', error);
@@ -321,7 +330,10 @@ const DatabaseUtils = {
 
     async addGuest(guestData, adminPassword) {
         try {
-            const expectedPassword = process.env.ADMIN_PASSWORD || '061722';
+            const expectedPassword = process.env.ADMIN_PASSWORD;
+            if (!expectedPassword) {
+                throw new Error('ADMIN_PASSWORD not configured');
+            }
             if (adminPassword !== expectedPassword) {
                 throw new Error('Unauthorized');
             }
@@ -338,13 +350,16 @@ const DatabaseUtils = {
 
     async deleteGuest(guestId, adminPassword) {
         try {
-            const expectedPassword = process.env.ADMIN_PASSWORD || '061722';
+            const expectedPassword = process.env.ADMIN_PASSWORD;
+            if (!expectedPassword) {
+                throw new Error('ADMIN_PASSWORD not configured');
+            }
             if (adminPassword !== expectedPassword) {
                 throw new Error('Unauthorized');
             }
 
             // Get guest details for logging
-            const { data: guestDetails } = await supabase
+            const { data: guestDetails } = await supabaseAdmin
                 .from('guests')
                 .select('name')
                 .eq('id', guestId)
@@ -358,11 +373,33 @@ const DatabaseUtils = {
 
             if (error) throw error;
 
-            await this.logAdminAction('delete_guest', `Deleted guest: ${guestDetails?.name || guestId}`);
-            return { success: true };
+            await this.logAdminAction('delete_rsvp', `Deleted guest: ${guestDetails?.name || guestId}`);
+            return guestDetails;
         } catch (error) {
             console.error('Error deleting guest:', error);
             throw error;
+        }
+    },
+
+    // Admin logging function
+    async logAdminAction(action, details = null) {
+        try {
+            const { error } = await supabaseAdmin
+                .from('admin_logs')
+                .insert([{
+                    action: action,
+                    details: details,
+                    ip_address: null, // Could be passed as parameter in future
+                    user_agent: null  // Could be passed as parameter in future
+                }]);
+
+            if (error) {
+                console.error('Failed to log admin action:', error);
+            } else {
+                console.log(`📝 Admin action logged: ${action} - ${details}`);
+            }
+        } catch (error) {
+            console.error('Error logging admin action:', error);
         }
     },
 

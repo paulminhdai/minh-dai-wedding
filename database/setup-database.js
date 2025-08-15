@@ -1,6 +1,9 @@
 // Database setup script for Supabase
 // Initializes the database schema and configuration
 
+// Load environment variables from .env file
+require('dotenv').config();
+
 const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs').promises;
 const path = require('path');
@@ -284,7 +287,7 @@ SUPABASE_ANON_KEY=your_supabase_anon_key_here
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
 
 # Admin Configuration
-ADMIN_PASSWORD=061722
+ADMIN_PASSWORD=your_secure_password_here
 
 # Optional Settings
 ENABLE_GUEST_VALIDATION=true

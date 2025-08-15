@@ -1,8 +1,18 @@
 -- Wedding Database Schema for Supabase
 -- Enhanced database structure for wedding RSVP system
+-- Version 2.0: Added guest side categorization and removed dietary restrictions from RSVPs
+--
+-- This is a complete database setup script that can be run in Supabase SQL Editor
+-- to create a brand new database with all tables, views, and functions.
+-- 
+-- USAGE: Copy and paste this entire file into Supabase SQL Editor and run it.
 
 -- Enable necessary extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Drop existing views if they exist (for clean reinstall)
+DROP VIEW IF EXISTS rsvp_summary CASCADE;
+DROP VIEW IF EXISTS event_attendance_summary CASCADE;
 
 -- Drop existing tables if they exist (for development)
 DROP TABLE IF EXISTS event_attendance CASCADE;
@@ -12,10 +22,17 @@ DROP TABLE IF EXISTS rsvps CASCADE;
 DROP TABLE IF EXISTS guests CASCADE;
 DROP TABLE IF EXISTS wedding_events CASCADE;
 
+-- Drop existing types if they exist (for clean reinstall)
+DROP TYPE IF EXISTS rsvp_status CASCADE;
+DROP TYPE IF EXISTS age_group CASCADE;
+DROP TYPE IF EXISTS guest_side CASCADE;
+DROP TYPE IF EXISTS admin_action CASCADE;
+
 -- Create enum types
 CREATE TYPE rsvp_status AS ENUM ('attending', 'not_attending', 'maybe');
 CREATE TYPE age_group AS ENUM ('adult', 'child', 'infant');
-CREATE TYPE admin_action AS ENUM ('view_rsvps', 'delete_rsvp', 'add_guest', 'export_data', 'update_guest', 'send_reminder');
+CREATE TYPE guest_side AS ENUM ('groom', 'bride', 'mutual');
+CREATE TYPE admin_action AS ENUM ('view_rsvps', 'delete_rsvp', 'add_guest', 'export_data', 'update_guest', 'send_reminder', 'view_guests', 'delete_guest');
 
 -- Guests table - stores invited guests and their contact info
 CREATE TABLE guests (
@@ -25,6 +42,7 @@ CREATE TABLE guests (
     phone VARCHAR(50),
     is_invited BOOLEAN DEFAULT true,
     guest_code VARCHAR(50) UNIQUE,
+    side guest_side DEFAULT 'mutual',
     notes TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -50,7 +68,6 @@ CREATE TABLE rsvps (
     guest_id UUID REFERENCES guests(id) ON DELETE CASCADE,
     status rsvp_status NOT NULL DEFAULT 'maybe',
     party_size INTEGER DEFAULT 1 CHECK (party_size > 0 AND party_size <= 10),
-    dietary_restrictions TEXT,
     special_requests TEXT,
     message TEXT,
     ip_address INET,
@@ -163,9 +180,9 @@ SELECT
     g.name as guest_name,
     g.email,
     g.phone,
+    g.side as guest_side,
     r.status,
     r.party_size,
-    r.dietary_restrictions,
     r.special_requests,
     r.message,
     r.rsvp_date,
@@ -183,7 +200,7 @@ SELECT
 FROM rsvps r
 JOIN guests g ON r.guest_id = g.id
 LEFT JOIN rsvp_guests rg ON r.id = rg.rsvp_id
-GROUP BY r.id, g.name, g.email, g.phone, r.status, r.party_size, r.dietary_restrictions, r.special_requests, r.message, r.rsvp_date
+GROUP BY r.id, g.name, g.email, g.phone, g.side, r.status, r.party_size, r.special_requests, r.message, r.rsvp_date
 ORDER BY r.rsvp_date DESC;
 
 -- Create view for event attendance summary
@@ -247,6 +264,10 @@ COMMENT ON TABLE admin_logs IS 'Logs all administrative actions for auditing';
 
 COMMENT ON VIEW rsvp_summary IS 'Complete RSVP information with party members';
 COMMENT ON VIEW event_attendance_summary IS 'Event attendance statistics';
+
+-- Comments for new columns
+COMMENT ON COLUMN guests.side IS 'Which side of the wedding party the guest belongs to (groom, bride, or mutual)';
+COMMENT ON TYPE guest_side IS 'Enum for wedding guest affiliation: groom, bride, or mutual';
 
 -- Grant permissions for API access
 -- Note: In production, you'll want more restrictive permissions

@@ -1,7 +1,11 @@
+// Load environment variables
+require('dotenv').config();
+
 const express = require('express');
 const path = require('path');
 const fs = require('fs').promises;
 const rateLimit = require('express-rate-limit');
+const { DatabaseUtils } = require('./database/supabase-config');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -155,6 +159,8 @@ app.get('/admin', (req, res) => {
 // RSVP endpoint
 app.post('/api/rsvp', rsvpLimiter, async (req, res) => {
     try {
+        console.log('📝 RSVP request received:', req.body);
+        
         // Extract and sanitize data
         const {
             guestCode = '',
@@ -208,47 +214,45 @@ app.post('/api/rsvp', rsvpLimiter, async (req, res) => {
             });
         }
 
-        // Check guest list if applicable
-        const isAllowed = await utils.isGuestAllowed(sanitizedData.names, sanitizedData.guestCode);
-        if (!isAllowed) {
-            return res.status(403).json({
-                error: 'We couldn\'t find your name on our guest list. Please check your spelling or contact us directly.'
-            });
+        // Check guest list validation
+        if (process.env.ENABLE_GUEST_VALIDATION === 'true') {
+            console.log('🔍 Checking guest list for:', sanitizedData.names);
+            
+            const isGuestInvited = await DatabaseUtils.checkGuestExists(sanitizedData.names);
+            
+            if (!isGuestInvited) {
+                console.log('❌ Guest not found in guest list:', sanitizedData.names);
+                return res.status(403).json({
+                    error: 'We couldn\'t find your name on our guest list. Please check your spelling or contact us directly.'
+                });
+            }
+            
+            console.log('✅ Guest found in guest list:', sanitizedData.names);
         }
 
-        // Load existing RSVPs
-        const existingRSVPs = await utils.loadRSVPs();
+        // Create RSVP in database (it handles duplicate checking internally)
+        const newRSVP = await DatabaseUtils.createRSVP({
+            names: sanitizedData.names,
+            phone: sanitizedData.phone,
+            attending: sanitizedData.attending,
+            guests: sanitizedData.guests || 1,
+            dietary: sanitizedData.dietary || null,
+            message: sanitizedData.message || null,
+            guestCode: sanitizedData.guestCode || null,
+            ipAddress: sanitizedData.ipAddress
+        });
 
-        // Check for duplicates (same name and phone combination)
-        const isDuplicate = existingRSVPs.some(rsvp => 
-            rsvp.names.toLowerCase() === sanitizedData.names.toLowerCase() &&
-            rsvp.phone === sanitizedData.phone
-        );
-
-        if (isDuplicate) {
-            return res.status(409).json({
-                error: 'An RSVP with this name and phone number already exists. Please contact us if you need to make changes.'
-            });
+        if (!newRSVP) {
+            throw new Error('Failed to create RSVP in database');
         }
-
-        // Add new RSVP
-        const newRSVP = {
-            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-            ...sanitizedData
-        };
-
-        existingRSVPs.push(newRSVP);
-
-        // Save to file
-        await utils.saveRSVPs(existingRSVPs);
 
         // Log the RSVP (in production, use proper logging)
         console.log('New RSVP received:', {
-            id: newRSVP.id,
-            names: newRSVP.names,
-            phone: newRSVP.phone,
-            attending: newRSVP.attending,
-            timestamp: newRSVP.timestamp
+            id: newRSVP.rsvp?.id,
+            guest_name: sanitizedData.names,
+            phone: sanitizedData.phone,
+            attending: sanitizedData.attending,
+            guests: sanitizedData.guests
         });
 
         // Send success response
@@ -256,13 +260,16 @@ app.post('/api/rsvp', rsvpLimiter, async (req, res) => {
             message: sanitizedData.attending === 'yes' 
                 ? 'Thank you for your RSVP! We can\'t wait to celebrate with you!'
                 : 'Thank you for letting us know. We\'ll miss you on our special day!',
-            id: newRSVP.id
+            id: newRSVP.rsvp?.id || 'created'
         });
 
     } catch (error) {
         console.error('RSVP processing error:', error);
+        console.error('Error details:', error.message);
+        console.error('Stack trace:', error.stack);
         res.status(500).json({
-            error: 'Something went wrong processing your RSVP. Please try again later.'
+            error: 'Something went wrong processing your RSVP. Please try again later.',
+            debug: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 });
@@ -272,22 +279,24 @@ app.get('/api/admin', async (req, res) => {
     try {
         // Simple password protection (in production, use proper authentication)
         const password = req.query.password;
-        if (password !== '061722') {
+        const adminPassword = process.env.ADMIN_PASSWORD;
+        if (password !== adminPassword) {
             return res.status(401).json({ error: 'Unauthorized' });
         }
 
-        const rsvps = await utils.loadRSVPs();
+        // Get RSVPs from database
+        const rsvps = await DatabaseUtils.getRSVPs(password);
         
         // Include all relevant fields for admin view
         const adminRSVPs = rsvps.map(rsvp => ({
             id: rsvp.id,
-            names: rsvp.names,
+            names: rsvp.guest_name,
             phone: rsvp.phone,
-            attending: rsvp.attending,
-            guests: rsvp.guests,
-            dietaryRestrictions: rsvp.dietaryRestrictions,
-            message: rsvp.message,
-            timestamp: rsvp.timestamp
+            attending: rsvp.status === 'attending' ? 'yes' : 'no',
+            guests: rsvp.party_size,
+            dietaryRestrictions: rsvp.dietary_restrictions,
+            message: rsvp.special_requests,
+            timestamp: rsvp.created_at
         }));
 
         res.json({
@@ -308,7 +317,8 @@ app.delete('/api/admin/rsvp/:id', async (req, res) => {
     try {
         // Simple password protection (in production, use proper authentication)
         const password = req.query.password;
-        if (password !== '061722') {
+        const adminPassword = process.env.ADMIN_PASSWORD;
+        if (password !== adminPassword) {
             return res.status(401).json({ error: 'Unauthorized' });
         }
 
@@ -317,25 +327,21 @@ app.delete('/api/admin/rsvp/:id', async (req, res) => {
             return res.status(400).json({ error: 'RSVP ID is required' });
         }
 
-        const rsvps = await utils.loadRSVPs();
-        const rsvpIndex = rsvps.findIndex(rsvp => rsvp.id === rsvpId);
+        // Delete RSVP from database
+        const deletedRsvp = await DatabaseUtils.deleteRSVP(rsvpId, password);
         
-        if (rsvpIndex === -1) {
+        if (!deletedRsvp) {
             return res.status(404).json({ error: 'RSVP not found' });
         }
 
-        // Remove the RSVP
-        const deletedRsvp = rsvps.splice(rsvpIndex, 1)[0];
-        await utils.saveRSVPs(rsvps);
-
-        console.log(`Admin deleted RSVP: ${deletedRsvp.names} (${deletedRsvp.id})`);
+        console.log(`Admin deleted RSVP: ${deletedRsvp.guest_name} (${deletedRsvp.id})`);
 
         res.json({
             success: true,
             message: 'RSVP deleted successfully',
             deletedRsvp: {
                 id: deletedRsvp.id,
-                names: deletedRsvp.names
+                names: deletedRsvp.guest_name
             }
         });
 
@@ -350,15 +356,19 @@ app.get('/api/admin/guests', async (req, res) => {
     try {
         // Simple password protection (in production, use proper authentication)
         const password = req.query.password;
-        if (password !== '061722') {
+        const adminPassword = process.env.ADMIN_PASSWORD;
+        if (password !== adminPassword) {
             return res.status(401).json({ error: 'Unauthorized' });
         }
 
-        const guests = await utils.loadGuestList();
+        const guests = await DatabaseUtils.getGuestList(password);
 
         res.json({
             success: true,
-            guests: guests,
+            guests: guests.map(guest => ({
+                name: guest.name,
+                side: guest.side || 'mutual'
+            })),
             total: guests.length
         });
 
@@ -373,38 +383,39 @@ app.post('/api/admin/guests', async (req, res) => {
     try {
         // Simple password protection (in production, use proper authentication)
         const password = req.query.password;
-        if (password !== '061722') {
+        const adminPassword = process.env.ADMIN_PASSWORD;
+        if (password !== adminPassword) {
             return res.status(401).json({ error: 'Unauthorized' });
         }
 
-        const { name } = req.body;
+        const { name, side = 'mutual' } = req.body;
         if (!name || !name.trim()) {
             return res.status(400).json({ error: 'Guest name is required' });
         }
 
-        const guests = await utils.loadGuestList();
         const sanitizedName = utils.sanitizeInput(name.trim());
 
-        // Check if guest already exists (case insensitive)
-        const existingGuest = guests.find(guest => 
-            guest.toLowerCase() === sanitizedName.toLowerCase()
-        );
+        // Add the new guest to database (addGuest handles duplicate checking)
+        const newGuest = await DatabaseUtils.addGuest({
+            name: sanitizedName,
+            side: side,
+            is_invited: true
+        }, password);
 
-        if (existingGuest) {
-            return res.status(400).json({ error: 'Guest already exists' });
+        if (!newGuest) {
+            throw new Error('Failed to create guest in database');
         }
 
-        // Add the new guest
-        guests.push(sanitizedName);
-        await utils.saveGuestList(guests);
-
         console.log(`Admin added guest: ${sanitizedName}`);
+
+        // Get updated total count
+        const allGuests = await DatabaseUtils.getGuestList(password);
 
         res.json({
             success: true,
             message: 'Guest added successfully',
             guest: sanitizedName,
-            total: guests.length
+            total: allGuests.length
         });
 
     } catch (error) {
@@ -418,7 +429,8 @@ app.delete('/api/admin/guests/:name', async (req, res) => {
     try {
         // Simple password protection (in production, use proper authentication)
         const password = req.query.password;
-        if (password !== '061722') {
+        const adminPassword = process.env.ADMIN_PASSWORD;
+        if (password !== adminPassword) {
             return res.status(401).json({ error: 'Unauthorized' });
         }
 
@@ -427,30 +439,69 @@ app.delete('/api/admin/guests/:name', async (req, res) => {
             return res.status(400).json({ error: 'Guest name is required' });
         }
 
-        const guests = await utils.loadGuestList();
-        const guestIndex = guests.findIndex(guest => 
-            guest.toLowerCase() === guestName.toLowerCase()
-        );
+        // Find guest in database
+        const guests = await DatabaseUtils.findGuestByName(guestName);
         
-        if (guestIndex === -1) {
+        if (guests.length === 0) {
             return res.status(404).json({ error: 'Guest not found' });
         }
 
-        // Remove the guest
-        const deletedGuest = guests.splice(guestIndex, 1)[0];
-        await utils.saveGuestList(guests);
+        // Delete the guest from database
+        const deletedGuest = await DatabaseUtils.deleteGuest(guests[0].id, password);
+        
+        if (!deletedGuest) {
+            return res.status(500).json({ error: 'Failed to delete guest' });
+        }
 
-        console.log(`Admin deleted guest: ${deletedGuest}`);
+        console.log(`Admin deleted guest: ${deletedGuest.name}`);
+
+        // Get updated total count
+        const remainingGuests = await DatabaseUtils.getGuestList(password);
 
         res.json({
             success: true,
             message: 'Guest deleted successfully',
-            deletedGuest: deletedGuest,
-            total: guests.length
+            deletedGuest: deletedGuest.name,
+            total: remainingGuests.length
         });
 
     } catch (error) {
         console.error('Admin delete guest error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Admin get logs endpoint
+app.get('/api/admin/logs', async (req, res) => {
+    try {
+        // Simple password protection (in production, use proper authentication)
+        const password = req.query.password;
+        const adminPassword = process.env.ADMIN_PASSWORD;
+        if (password !== adminPassword) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        // Get admin logs from database (last 50 entries)
+        const { supabaseAdmin } = require('./database/supabase-config');
+        const { data: logs, error } = await supabaseAdmin
+            .from('admin_logs')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(50);
+
+        if (error) {
+            console.error('Error fetching admin logs:', error);
+            return res.status(500).json({ error: 'Database error' });
+        }
+
+        res.json({
+            success: true,
+            logs: logs || [],
+            total: logs?.length || 0
+        });
+
+    } catch (error) {
+        console.error('Admin logs endpoint error:', error);
         res.status(500).json({ error: 'Server error' });
     }
 });
@@ -484,13 +535,28 @@ app.use((error, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`Wedding website server running on port ${PORT}`);
     console.log(`Visit: http://localhost:${PORT}`);
     console.log(`Admin panel: http://localhost:${PORT}/admin`);
-    console.log(`Admin API: http://localhost:${PORT}/api/admin?password=061722`);
+    if (process.env.ADMIN_PASSWORD) {
+        console.log(`Admin API: http://localhost:${PORT}/api/admin`);
+        console.log(`Note: Use ADMIN_PASSWORD from your .env file`);
+    } else {
+        console.log(`⚠️  WARNING: ADMIN_PASSWORD not set in .env file!`);
+        console.log(`Admin dashboard will not be accessible.`);
+    }
     
-    // Ensure data directory exists on startup
+    // Initialize database connection
+    console.log('🔗 Initializing database connection...');
+    const dbConnected = await DatabaseUtils.init();
+    if (dbConnected) {
+        console.log('✅ Database connected successfully - RSVPs will be saved to Supabase');
+    } else {
+        console.log('❌ Database connection failed - Check your .env configuration');
+    }
+    
+    // Ensure data directory exists on startup (for legacy support)
     utils.ensureDataDir().catch(console.error);
 });
 

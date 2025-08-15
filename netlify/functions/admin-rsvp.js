@@ -29,7 +29,14 @@ exports.handler = async (event, context) => {
     try {
         // Check for admin password
         const password = event.queryStringParameters?.password;
-        const adminPassword = process.env.ADMIN_PASSWORD || '061722';
+        const adminPassword = process.env.ADMIN_PASSWORD;
+        
+        if (!adminPassword) {
+            return {
+                statusCode: 500,
+                body: JSON.stringify({ error: 'Server configuration error: ADMIN_PASSWORD not set' })
+            };
+        }
         
         if (!password || password !== adminPassword) {
             return {

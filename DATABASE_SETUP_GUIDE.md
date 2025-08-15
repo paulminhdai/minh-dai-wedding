@@ -2,6 +2,13 @@
 
 This guide will walk you through upgrading your wedding website from file-based storage to a powerful Supabase database system.
 
+> **📝 Latest Updates (v2.0)**:
+> - Added guest side categorization (bride/groom/mutual)
+> - Removed dietary restrictions from main RSVP (kept in individual party members)
+> - Enhanced admin dashboard with 3-column guest layout
+> - Added RSVP status emoji indicators
+> - Improved security with environment-based admin password
+
 ## 📋 Table of Contents
 
 - [🌟 What's New](#-whats-new)
@@ -148,6 +155,7 @@ erDiagram
         string phone
         boolean is_invited
         string guest_code
+        string side "groom|bride|mutual"
         timestamp created_at
         timestamp updated_at
     }
@@ -157,7 +165,6 @@ erDiagram
         uuid guest_id FK
         string status "attending|not_attending|maybe"
         integer party_size
-        text dietary_restrictions
         text special_requests
         text message
         string ip_address
@@ -215,8 +222,9 @@ erDiagram
 #### Enhanced RSVP Management
 - **Individual party members**: Track each person in the party
 - **Event-specific attendance**: Guests can attend different events
-- **Dietary restrictions**: Per-person dietary requirements
+- **Guest categorization**: Track which side guests belong to (bride/groom/mutual)
 - **Age groups**: Adult, child, infant categorization
+- **Dietary tracking**: Individual dietary requirements for party members
 
 #### Advanced Guest System
 - **Guest validation**: Optional pre-approved guest list
@@ -305,13 +313,22 @@ The enhanced admin dashboard provides:
 - Total RSVPs received
 - Attending vs. not attending
 - Total guest count
-- Event-specific attendance
+- Guest distribution by side (bride/groom/mutual)
+- RSVP status indicators with emojis
 
 ### 👥 RSVP Management
 - View all RSVPs with detailed information
 - Delete RSVPs with confirmation
 - Real-time updates (auto-refresh every 30 seconds)
 - Mobile-responsive interface
+- No dietary restrictions field (simplified)
+
+### 👨‍👩‍👧‍👦 Guest List Management
+- Add/remove guests with side selection
+- 3-column layout by guest side
+- Visual RSVP status indicators (✅❌❓⏳)
+- Inline notifications for actions
+- Real-time guest count statistics
 
 ### 📅 Event Tracking
 - Per-event attendance numbers
@@ -322,7 +339,8 @@ The enhanced admin dashboard provides:
 - Data export (JSON format)
 - Database connection status
 - Admin action logging
-- Guest list management
+- Activity log viewer
+- Password protection via environment variable
 
 ### 🖥️ Access the Dashboard
 
@@ -346,10 +364,12 @@ npm run migrate
 The script will:
 1. ✅ Create backup of original files
 2. ✅ Load existing RSVPs and guests
-3. ✅ Create guest records in Supabase
-4. ✅ Convert and import RSVP data
+3. ✅ Create guest records in Supabase (defaults to 'mutual' side)
+4. ✅ Convert and import RSVP data (without dietary restrictions)
 5. ✅ Set up event attendance records
 6. ✅ Verify migration success
+
+> **Note**: Existing guests will default to 'mutual' side. You can update them in the admin dashboard.
 
 ### 3. Verify Migration
 
@@ -417,16 +437,17 @@ LEFT JOIN rsvps r ON ea.rsvp_id = r.id
 GROUP BY we.name;
 ```
 
-#### Popular Dietary Restrictions
+#### Guest Distribution by Side
 ```sql
--- Most common dietary restrictions
+-- Breakdown of guests by side
 SELECT 
-  dietary_restrictions,
-  COUNT(*) as frequency
-FROM rsvps 
-WHERE dietary_restrictions IS NOT NULL
-GROUP BY dietary_restrictions
-ORDER BY frequency DESC;
+  g.side,
+  COUNT(DISTINCT g.id) as guest_count,
+  COUNT(DISTINCT r.id) as rsvp_count
+FROM guests g
+LEFT JOIN rsvps r ON g.id = r.guest_id
+GROUP BY g.side
+ORDER BY guest_count DESC;
 ```
 
 ### Data Export Features

@@ -37,6 +37,27 @@ A modern, elegant wedding website with vintage blue & gold theme, built for Netl
 - **Input Validation**: Sanitization and phone number validation
 - **Error Handling**: Comprehensive error responses
 
+## 🔍 Troubleshooting
+
+### Common Issues
+
+1. **"Admin dashboard won't load" or "Unauthorized" error**
+   - **Cause**: `ADMIN_PASSWORD` not set in `.env` file
+   - **Solution**: Set `ADMIN_PASSWORD` in your `.env` file and restart the server
+   - **Note**: There is NO default password for security reasons
+
+2. **"Cannot connect to database" errors**
+   - **Cause**: Supabase credentials not set or incorrect
+   - **Solution**: Verify all Supabase variables in `.env` match your project
+
+3. **Server shows warning on startup**
+   ```
+   ⚠️  WARNING: ADMIN_PASSWORD not set in .env file!
+   Admin dashboard will not be accessible.
+   ```
+   - **This is expected** if you haven't set the password yet
+   - **Solution**: Add `ADMIN_PASSWORD=your_password` to `.env`
+
 ## 📁 Project Structure
 
 ```
@@ -79,19 +100,54 @@ The website is deployed on Netlify with automatic deployments from GitHub.
    npm install
    ```
 
-3. **Start local server:**
+3. **⚠️ IMPORTANT: Configure environment variables:**
+   ```bash
+   # Copy the example file
+   cp env.example .env
+   
+   # Edit .env and set ALL required values:
+   # - SUPABASE_URL
+   # - SUPABASE_ANON_KEY
+   # - SUPABASE_SERVICE_ROLE_KEY
+   # - ADMIN_PASSWORD (REQUIRED - no default!)
+   ```
+   
+   **Note**: The admin dashboard will NOT work without setting `ADMIN_PASSWORD`!
+
+4. **Start local server:**
    ```bash
    npm start
    # or
    node server.js
    ```
 
-4. **Open in browser:**
+5. **Open in browser:**
    ```
    http://localhost:3000
    ```
 
 ## 🔧 Configuration
+
+### Environment Variables
+Create a `.env` file in the root directory with the following variables:
+
+```bash
+# Copy from env.example
+cp env.example .env
+
+# Edit with your values
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+ADMIN_PASSWORD=your_secure_admin_password  # REQUIRED - No default value!
+ENABLE_GUEST_VALIDATION=true
+```
+
+⚠️ **Critical Requirements**:
+- **ALL environment variables are required** for the app to function properly
+- **`ADMIN_PASSWORD` has NO default value** - you MUST set this or admin dashboard won't work
+- **Never commit your `.env` file to version control** (it's in `.gitignore`)
+- **Use strong, unique passwords** for production deployments
 
 ### Wedding Details
 Update these key details in the code:
@@ -199,6 +255,25 @@ The website includes PWA features:
 - **Service Worker**: Works offline with cached content
 - **App Icons**: Custom wedding-themed app icons
 - **Splash Screen**: Beautiful loading experience
+
+## 🔐 Admin Dashboard
+
+Access the admin dashboard at `/admin` to:
+- View and manage RSVPs
+- Manage guest list (add/remove guests)
+- View admin activity logs
+- See RSVP statistics by guest side
+
+**Security**: The admin dashboard is protected by a password configured in your `.env` file:
+```bash
+ADMIN_PASSWORD=your_secure_password
+```
+
+⚠️ **Best Practices**:
+- Use a strong, unique password
+- Change the default password immediately
+- Never share or commit your password
+- Consider implementing additional security measures for production
 
 ## 🔍 SEO & Analytics
 
