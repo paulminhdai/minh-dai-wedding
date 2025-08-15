@@ -1,11 +1,5 @@
 // Admin guests management Netlify function
-const { createClient } = require('@supabase/supabase-js');
-
-// Initialize Supabase client
-const supabaseAdmin = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+const { DatabaseUtils } = require('../../database/supabase-config');
 
 const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -42,22 +36,9 @@ exports.handler = async (event, context) => {
 
         // Handle different HTTP methods
         if (event.httpMethod === 'GET') {
-            // Get guest list
-            const { data: guests, error } = await supabaseAdmin
-                .from('guests')
-                .select('*')
-                .order('created_at', { ascending: false });
+            // Get guest list from database
+            const guests = await DatabaseUtils.getGuestList(password);
             
-            if (error) throw error;
-
-            // Log admin action
-            await supabaseAdmin
-                .from('admin_logs')
-                .insert({
-                    action: 'view_guests',
-                    details: 'Admin viewed guest list'
-                });
-
             return {
                 statusCode: 200,
                 headers,
@@ -81,32 +62,15 @@ exports.handler = async (event, context) => {
                 };
             }
 
-            // Insert guest
-            const { data: newGuest, error } = await supabaseAdmin
-                .from('guests')
-                .insert({
-                    name: name.trim(),
-                    side: side || 'mutual'
-                })
-                .select()
-                .single();
-            
-            if (error) throw error;
-
-            // Log admin action
-            await supabaseAdmin
-                .from('admin_logs')
-                .insert({
-                    action: 'add_guest',
-                    details: `Added guest: ${name}`
-                });
+            // Add guest using database utils
+            await DatabaseUtils.addGuest({ name, side }, password);
 
             return {
                 statusCode: 201,
                 headers,
                 body: JSON.stringify({ 
                     success: true,
-                    guest: newGuest
+                    message: 'Guest added successfully'
                 })
             };
         } 
@@ -124,21 +88,8 @@ exports.handler = async (event, context) => {
                 };
             }
 
-            // Delete guest
-            const { error } = await supabaseAdmin
-                .from('guests')
-                .delete()
-                .eq('name', guestName);
-            
-            if (error) throw error;
-
-            // Log admin action
-            await supabaseAdmin
-                .from('admin_logs')
-                .insert({
-                    action: 'delete_guest',
-                    details: `Deleted guest: ${guestName}`
-                });
+            // Delete guest using database utils
+            await DatabaseUtils.deleteGuest(guestName, password);
 
             return {
                 statusCode: 200,

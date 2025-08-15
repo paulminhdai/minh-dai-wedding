@@ -1,11 +1,5 @@
 // RSVP submission Netlify function
-const { createClient } = require('@supabase/supabase-js');
-
-// Initialize Supabase client
-const supabaseAdmin = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+const { DatabaseUtils } = require('../../database/supabase-config');
 
 const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -14,70 +8,21 @@ const headers = {
     'Content-Type': 'application/json'
 };
 
-// Guest matching functions
-function normalizeGuessVariations(name) {
-    const lowerName = name.toLowerCase().trim();
-    const patterns = [
-        /\s+/g,           // Remove spaces
-        /[''`]/g,         // Remove apostrophes
-        /\-/g,            // Remove hyphens
-        /\./g,            // Remove periods
-        /[àáảãạ]/g,       // Vietnamese 'a' variations
-        /[èéẻẽẹ]/g,       // Vietnamese 'e' variations
-        /[ìíỉĩị]/g,       // Vietnamese 'i' variations
-        /[òóỏõọ]/g,       // Vietnamese 'o' variations
-        /[ùúủũụ]/g,       // Vietnamese 'u' variations
-        /[ỳýỷỹỵ]/g,       // Vietnamese 'y' variations
-        /đ/g,             // Vietnamese 'd'
-    ];
-    
-    let normalized = lowerName;
-    patterns.forEach(pattern => {
-        normalized = normalized.replace(pattern, '');
-    });
-    
-    return normalized;
-}
+// Utility functions
+const utils = {
+    sanitizeInput(input) {
+        if (typeof input !== 'string') return input;
+        return input
+            .replace(/[<>\"']/g, '')
+            .trim()
+            .substring(0, 500);
+    },
 
-function calculateMatchScore(guest, searchName) {
-    const guestLower = guest.toLowerCase();
-    const searchLower = searchName.toLowerCase();
-    
-    // Exact match
-    if (guestLower === searchLower) return 100;
-    
-    // Normalized match
-    const guestNorm = normalizeGuessVariations(guest);
-    const searchNorm = normalizeGuessVariations(searchName);
-    if (guestNorm === searchNorm) return 90;
-    
-    // Contains match
-    if (guestLower.includes(searchLower) || searchLower.includes(guestLower)) return 70;
-    if (guestNorm.includes(searchNorm) || searchNorm.includes(guestNorm)) return 65;
-    
-    // Word-based matching
-    const guestWords = guestLower.split(/\s+/);
-    const searchWords = searchLower.split(/\s+/);
-    
-    let wordMatches = 0;
-    searchWords.forEach(searchWord => {
-        if (guestWords.some(guestWord => guestWord === searchWord)) {
-            wordMatches++;
-        }
-    });
-    
-    if (wordMatches > 0) {
-        return 50 + (wordMatches * 10);
+    isValidPhone(phone) {
+        const digits = phone.replace(/\D/g, '');
+        return digits.length >= 10 && digits.length <= 11;
     }
-    
-    // Fuzzy match using Levenshtein-like scoring
-    const longer = guestNorm.length > searchNorm.length ? guestNorm : searchNorm;
-    const shorter = guestNorm.length > searchNorm.length ? searchNorm : guestNorm;
-    
-    if (longer.includes(shorter)) return 40;
-    
-    return 0;
-}
+};
 
 exports.handler = async (event, context) => {
     // Handle preflight requests
@@ -95,7 +40,7 @@ exports.handler = async (event, context) => {
 
     try {
         const body = JSON.parse(event.body);
-        const { names, phone, attending, guests = 1, message = '' } = body;
+        const { names, phone, attending, guests = 1, message = '', dietary = '' } = body;
 
         // Validate required fields
         if (!names || !phone || !attending) {
@@ -107,7 +52,7 @@ exports.handler = async (event, context) => {
         }
 
         // Validate guest count
-        if (guests < 1 || guests > 8) {
+        if (attending === 'yes' && (!guests || guests < 1 || guests > 8)) {
             return {
                 statusCode: 400,
                 headers,
@@ -115,64 +60,70 @@ exports.handler = async (event, context) => {
             };
         }
 
+        // Sanitize inputs
+        const sanitizedData = {
+            names: utils.sanitizeInput(names),
+            phone: utils.sanitizeInput(phone),
+            attending: attending === 'yes' ? 'yes' : 'no',
+            guests: attending === 'yes' ? parseInt(guests) : 0,
+            dietary: dietary ? utils.sanitizeInput(dietary) : null,
+            message: message ? utils.sanitizeInput(message) : null,
+            timestamp: new Date().toISOString()
+        };
+
+        // Validate phone number
+        if (!utils.isValidPhone(sanitizedData.phone)) {
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ error: 'Please provide a valid phone number.' })
+            };
+        }
+
         // Check if guest validation is enabled
         const enableValidation = process.env.ENABLE_GUEST_VALIDATION === 'true';
         
         if (enableValidation) {
-            // Check guest list
-            const { data: guestList, error: guestError } = await supabaseAdmin
-                .from('guests')
-                .select('name');
-            
-            if (guestError) throw guestError;
-
-            // Fuzzy match logic
-            let bestMatch = null;
-            let bestScore = 0;
-
-            guestList.forEach(guest => {
-                const score = calculateMatchScore(guest.name, names);
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestMatch = guest.name;
-                }
-            });
-
-            // Require at least 40% match
-            if (bestScore < 40) {
+            const isOnGuestList = await DatabaseUtils.checkGuestExists(sanitizedData.names);
+            if (!isOnGuestList) {
                 return {
                     statusCode: 400,
                     headers,
                     body: JSON.stringify({ 
-                        error: 'Sorry, we could not find your name on the guest list. Please check the spelling or contact the couple.',
-                        searchedFor: names
+                        error: 'Sorry, we could not find your name on the guest list. Please check the spelling or contact the couple.' 
                     })
                 };
             }
         }
 
-        // Create RSVP
-        const { data: newRsvp, error: rsvpError } = await supabaseAdmin
-            .from('rsvps')
-            .insert({
-                guest_name: names.trim(),
-                phone: phone.trim(),
-                attending: attending === 'yes' ? 'yes' : 'no',
-                guests: attending === 'yes' ? guests : 0,
-                message: message.trim()
-            })
-            .select()
-            .single();
-        
-        if (rsvpError) throw rsvpError;
+        // Create RSVP in database
+        const newRSVP = await DatabaseUtils.createRSVP({
+            names: sanitizedData.names,
+            phone: sanitizedData.phone,
+            attending: sanitizedData.attending,
+            guests: sanitizedData.guests || 1,
+            dietary: sanitizedData.dietary || null,
+            message: sanitizedData.message || null
+        });
+
+        console.log('New RSVP received:', {
+            id: newRSVP.rsvp?.id,
+            guest_name: sanitizedData.names,
+            phone: sanitizedData.phone,
+            attending: sanitizedData.attending,
+            guests: sanitizedData.guests
+        });
 
         return {
-            statusCode: 200,
+            statusCode: 201,
             headers,
             body: JSON.stringify({
+                message: sanitizedData.attending === 'yes' 
+                    ? 'Thank you for your RSVP! We can\'t wait to celebrate with you!'
+                    : 'Thank you for letting us know. We\'ll miss you on our special day!',
                 success: true,
-                message: 'Thank you for your RSVP!',
-                rsvp: newRsvp
+                attending: sanitizedData.attending,
+                guestCount: sanitizedData.guests
             })
         };
 
@@ -182,7 +133,7 @@ exports.handler = async (event, context) => {
             statusCode: 500,
             headers,
             body: JSON.stringify({ 
-                error: 'Internal server error',
+                error: 'Unable to process RSVP. Please try again later.',
                 details: error.message 
             })
         };

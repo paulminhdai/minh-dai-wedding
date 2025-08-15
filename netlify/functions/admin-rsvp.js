@@ -1,11 +1,5 @@
 // Admin RSVP management Netlify function
-const { createClient } = require('@supabase/supabase-js');
-
-// Initialize Supabase client
-const supabaseAdmin = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+const { DatabaseUtils } = require('../../database/supabase-config');
 
 const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -60,21 +54,8 @@ exports.handler = async (event, context) => {
             };
         }
 
-        // Delete RSVP
-        const { error } = await supabaseAdmin
-            .from('rsvps')
-            .delete()
-            .eq('id', rsvpId);
-        
-        if (error) throw error;
-
-        // Log admin action
-        await supabaseAdmin
-            .from('admin_logs')
-            .insert({
-                action: 'delete_rsvp',
-                details: `Deleted RSVP for ${rsvpId}`
-            });
+        // Delete RSVP using database utils
+        await DatabaseUtils.deleteRSVP(rsvpId, password);
 
         return {
             statusCode: 200,
