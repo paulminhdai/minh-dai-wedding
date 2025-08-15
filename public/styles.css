@@ -1391,6 +1391,280 @@ a:hover, a:focus {
   }
 }
 
+/* Mobile Optimizations */
+
+/* Touch-friendly button sizing */
+@media (max-width: 768px) {
+  .btn {
+    min-height: 48px; /* Minimum touch target size */
+    padding: var(--space-md) var(--space-lg);
+    font-size: 1.1rem;
+  }
+  
+  /* Larger touch targets for navigation */
+  .nav__link {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    padding: var(--space-md) var(--space-lg);
+  }
+  
+  /* Better mobile form inputs */
+  .form__input,
+  .form__select,
+  .form__textarea {
+    min-height: 48px;
+    padding: var(--space-md);
+    font-size: 16px; /* Prevents zoom on iOS */
+    border-radius: 8px;
+  }
+  
+  /* Mobile-optimized radio buttons */
+  .radio__custom {
+    width: 24px;
+    height: 24px;
+    margin-right: var(--space-md);
+  }
+  
+  .radio__label {
+    padding: var(--space-sm);
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Improve mobile spacing */
+  .section {
+    padding: var(--space-2xl) 0;
+  }
+  
+  .container {
+    padding: 0 var(--space-lg);
+  }
+  
+  /* Mobile hero adjustments */
+  .hero__names {
+    font-size: 2.5rem;
+    line-height: 1.1;
+  }
+  
+  .countdown {
+    gap: var(--space-md);
+  }
+  
+  .countdown__item {
+    min-width: 70px;
+  }
+  
+  .countdown__number {
+    font-size: 1.5rem;
+  }
+  
+  /* Mobile timeline improvements */
+  .timeline__item {
+    padding-left: var(--space-xl);
+    margin-bottom: var(--space-lg);
+  }
+  
+  .timeline__time {
+    font-size: 0.9rem;
+    min-width: 70px;
+  }
+  
+  /* Mobile gallery improvements */
+  .story__gallery {
+    height: 250px;
+    margin-top: var(--space-lg);
+  }
+  
+  /* Improved mobile navigation */
+  .nav__container {
+    padding: var(--space-sm) var(--space-md);
+  }
+  
+  .nav__toggle {
+    padding: var(--space-md);
+    min-height: 48px;
+    min-width: 48px;
+  }
+  
+  /* Mobile FAQ improvements */
+  .faq__question {
+    padding: var(--space-lg) var(--space-md);
+    font-size: 1rem;
+  }
+  
+  .faq__answer {
+    padding: var(--space-md);
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+  .hero__names {
+    font-size: 2rem;
+  }
+  
+  .countdown {
+    gap: var(--space-sm);
+    justify-content: space-around;
+  }
+  
+  .countdown__item {
+    min-width: 60px;
+  }
+  
+  .countdown__number {
+    font-size: 1.25rem;
+  }
+  
+  .countdown__label {
+    font-size: 0.75rem;
+  }
+  
+  /* Single column layout for very small screens */
+  .venue__grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+  }
+  
+  .travel__info {
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+  }
+  
+  /* Mobile table improvements */
+  .rsvp-table {
+    font-size: 0.8rem;
+  }
+  
+  .rsvp-table th,
+  .rsvp-table td {
+    padding: var(--space-sm);
+  }
+  
+  /* Hide less important table columns on very small screens */
+  .rsvp-table .hide-mobile {
+    display: none;
+  }
+}
+
+/* Landscape mobile improvements */
+@media (max-width: 896px) and (orientation: landscape) {
+  .hero {
+    min-height: 100vh;
+    padding: var(--space-lg) var(--space-md);
+  }
+  
+  .hero__names {
+    font-size: 2.5rem;
+  }
+  
+  .countdown {
+    margin-bottom: var(--space-lg);
+  }
+  
+  .section {
+    padding: var(--space-xl) 0;
+  }
+}
+
+/* Touch-specific improvements */
+@media (hover: none) and (pointer: coarse) {
+  /* Remove hover effects on touch devices */
+  .gallery__item:hover {
+    transform: none;
+    box-shadow: var(--shadow);
+  }
+  
+  .btn--primary:hover {
+    transform: none;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent-sage) 100%);
+  }
+  
+  /* Add touch feedback instead */
+  .btn--primary:active {
+    transform: scale(0.98);
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--accent-sage) 100%);
+  }
+  
+  .gallery__item:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+  
+  /* Better touch targets for interactive elements */
+  .nav__controls button {
+    min-height: 48px;
+    min-width: 48px;
+    padding: var(--space-md);
+  }
+  
+  .faq__question {
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(127, 179, 211, 0.2);
+  }
+  
+  /* Remove tap highlight color for better UX */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Add custom tap highlight for interactive elements */
+  .btn,
+  .nav__link,
+  .gallery__image,
+  .radio__label {
+    -webkit-tap-highlight-color: rgba(127, 179, 211, 0.3);
+  }
+}
+
+/* Reduce motion for mobile users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .gallery__carousel {
+    animation: none !important;
+  }
+  
+  .hero__hearts,
+  .hero__stars {
+    display: none;
+  }
+  
+  .hero__decoration {
+    animation: none;
+  }
+}
+
+/* High DPI displays (Retina) */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  /* Optimize for high-DPI displays */
+  .hero__decoration {
+    background-image: 
+      radial-gradient(circle, var(--accent-dusty) 0%, transparent 70%);
+  }
+}
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  /* Fix for iOS Safari viewport issues */
+  .hero {
+    min-height: -webkit-fill-available;
+  }
+  
+  /* Fix for iOS Safari form styling */
+  .form__input,
+  .form__select {
+    -webkit-appearance: none;
+    -webkit-border-radius: 8px;
+  }
+  
+  /* Fix for iOS Safari button styling */
+  .btn {
+    -webkit-appearance: none;
+    -webkit-border-radius: 8px;
+  }
+}
+
 /* Responsive: Reduce hearts and stars on small screens */
 @media (max-width: 600px) {
   .hero__hearts .heart--4,
@@ -1405,4 +1679,343 @@ a:hover, a:focus {
   .hero__stars .star--8 {
     display: none !important;
   }
+}
+
+/* Mobile performance optimizations */
+@media (max-width: 768px) {
+  /* Reduce animation complexity on mobile */
+  .heart,
+  .star {
+    animation-duration: 4s; /* Shorter duration */
+  }
+  
+  /* Simplify gradients for better performance */
+  .section:nth-child(even) {
+    background: var(--bg-secondary);
+  }
+  
+  .section:nth-child(even)::before {
+    display: none; /* Remove complex background patterns */
+  }
+}
+
+/* Offline mobile experience */
+.offline .nav::after {
+  content: '📱 Offline Mode';
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #f39c12;
+  color: white;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  z-index: 1001;
+}
+
+/* Mobile loading states */
+.mobile-loading {
+  position: relative;
+}
+
+.mobile-loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--accent-dusty);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes spin {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Mobile-specific animations */
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideOutUp {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+/* Mobile touch feedback */
+.mobile-touch {
+  transform: scale(0.98);
+  opacity: 0.8;
+}
+
+.touch-active {
+  background-color: rgba(127, 179, 211, 0.2) !important;
+  transform: scale(0.98);
+}
+
+.touching {
+  filter: brightness(0.95);
+}
+
+/* Mobile performance optimizations */
+.mobile {
+  /* Optimize repaints on mobile */
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+.mobile .hero__hearts,
+.mobile .hero__stars {
+  will-change: auto; /* Reduce memory usage */
+}
+
+.mobile .gallery__carousel {
+  will-change: transform; /* Optimize gallery scrolling */
+}
+
+/* Low battery mode optimizations */
+.low-battery * {
+  animation-duration: 2s !important;
+  transition-duration: 0.1s !important;
+}
+
+.low-battery .hero__hearts,
+.low-battery .hero__stars,
+.low-battery .hero__decoration {
+  display: none !important;
+}
+
+/* Slow connection optimizations */
+.slow-connection .gallery__carousel {
+  animation: none !important;
+}
+
+.slow-connection .hero__decoration {
+  display: none;
+}
+
+/* Low power mode (iOS) */
+.low-power-mode * {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Mobile keyboard helper */
+.mobile-keyboard-helper {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+/* Mobile loading improvements */
+.mobile .form__submit.mobile-loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.mobile .form__submit.mobile-loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: mobileLoadingShimmer 1.5s infinite;
+}
+
+@keyframes mobileLoadingShimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* Enhanced touch targets for mobile */
+@media (max-width: 768px) {
+  /* Increase spacing between touch elements */
+  .radio__group {
+    gap: var(--space-lg);
+  }
+  
+  /* Better mobile button styles */
+  .btn--primary {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(44, 62, 80, 0.2);
+  }
+  
+  /* Mobile-specific navigation improvements */
+  .nav__menu.active {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border-radius: 0 0 15px 15px;
+  }
+  
+  /* Better mobile FAQ styling */
+  .faq__item {
+    margin-bottom: var(--space-lg);
+    border-radius: 12px;
+  }
+  
+  /* Mobile table responsive improvements */
+  .rsvp-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  }
+  
+  /* Mobile hero improvements */
+  .hero {
+    padding: var(--space-2xl) var(--space-md);
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height */
+  }
+  
+  /* Mobile countdown spacing */
+  .countdown {
+    padding: var(--space-lg);
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+  }
+}
+
+/* Very small mobile devices (iPhone SE, etc.) */
+@media (max-width: 375px) {
+  .container {
+    padding: 0 var(--space-md);
+  }
+  
+  .hero__names {
+    font-size: 1.75rem;
+  }
+  
+  .countdown {
+    gap: var(--space-xs);
+  }
+  
+  .countdown__item {
+    min-width: 50px;
+  }
+  
+  .countdown__number {
+    font-size: 1rem;
+  }
+  
+  .countdown__label {
+    font-size: 0.7rem;
+  }
+  
+  /* Optimize form for small screens */
+  .form__group {
+    margin-bottom: var(--space-md);
+  }
+  
+  .btn {
+    padding: var(--space-md);
+    font-size: 1rem;
+  }
+}
+
+/* Mobile landscape optimizations */
+@media (max-height: 500px) and (orientation: landscape) {
+  .hero {
+    padding: var(--space-lg) var(--space-md);
+  }
+  
+  .hero__names {
+    font-size: 2rem;
+    margin-bottom: var(--space-sm);
+  }
+  
+  .countdown {
+    margin-bottom: var(--space-md);
+  }
+  
+  .countdown__item {
+    min-width: 60px;
+  }
+  
+  .countdown__number {
+    font-size: 1.25rem;
+  }
+  
+  /* Hide less critical elements in landscape */
+  .hero__hearts,
+  .hero__stars {
+    display: none;
+  }
+}
+
+/* Mobile accessibility improvements */
+@media (max-width: 768px) {
+  /* Larger focus indicators for mobile */
+  :focus {
+    outline: 3px solid var(--accent-gold);
+    outline-offset: 2px;
+  }
+  
+  /* Better color contrast for mobile */
+  .btn--primary {
+    background: linear-gradient(135deg, #1a252f 0%, #8fb070 100%);
+  }
+  
+  /* Mobile-optimized text sizing */
+  body {
+    font-size: 1.1rem;
+    line-height: 1.7;
+  }
+  
+  /* Better spacing for readability */
+  p {
+    margin-bottom: var(--space-lg);
+  }
+  
+  /* Mobile-friendly link spacing */
+  .nav__link {
+    padding: var(--space-lg);
+    margin-bottom: 1px;
+  }
+}
+
+/* Mobile tips styling */
+.mobile-tips {
+  background: linear-gradient(135deg, rgba(156, 175, 136, 0.1) 0%, rgba(168, 192, 212, 0.1) 100%);
+  border: 1px solid var(--accent-dusty);
+  border-radius: 12px;
+  padding: var(--space-md);
+  margin-bottom: var(--space-xl);
+  text-align: center;
+}
+
+.mobile-tip {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.mobile-tip strong {
+  color: var(--primary);
 }

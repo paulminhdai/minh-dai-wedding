@@ -336,10 +336,136 @@
             this.attendingFields = document.getElementById('attendingFields');
             this.submitCount = 0;
             this.lastSubmitTime = 0;
+            this.isSubmitting = false;
 
             if (this.form) {
                 this.setupEventListeners();
                 this.setupValidation();
+                this.setupMobileOptimizations();
+            }
+        },
+
+        setupMobileOptimizations() {
+            if (!MobileUtils.isMobile()) return;
+
+            // Add mobile loading class for better visual feedback
+            const submitBtn = this.form.querySelector('.form__submit');
+            if (submitBtn) {
+                submitBtn.addEventListener('touchstart', () => {
+                    submitBtn.classList.add('mobile-touch');
+                }, { passive: true });
+
+                submitBtn.addEventListener('touchend', () => {
+                    setTimeout(() => {
+                        submitBtn.classList.remove('mobile-touch');
+                    }, 150);
+                }, { passive: true });
+            }
+
+            // Improve mobile form validation feedback
+            const inputs = this.form.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                // Add mobile-friendly focus handling
+                input.addEventListener('focus', () => {
+                    // Scroll form into view on mobile when focused
+                    if (MobileUtils.isMobile()) {
+                        setTimeout(() => {
+                            input.scrollIntoView({ 
+                                behavior: 'smooth', 
+                                block: 'center' 
+                            });
+                        }, 300); // Wait for virtual keyboard
+                    }
+                });
+
+                // Better mobile input validation
+                input.addEventListener('blur', () => {
+                    this.validateField(input);
+                    // Hide keyboard helper text on blur
+                    this.hideKeyboardHelper();
+                });
+            });
+
+            // Add keyboard helper for mobile users
+            this.setupKeyboardHelper();
+
+            // Handle orientation changes
+            window.addEventListener('orientationchange', () => {
+                setTimeout(() => {
+                    this.handleOrientationChange();
+                }, 500);
+            });
+        },
+
+        setupKeyboardHelper() {
+            if (!MobileUtils.isMobile()) return;
+
+            // Create helper for mobile keyboard navigation
+            const helper = document.createElement('div');
+            helper.className = 'mobile-keyboard-helper';
+            helper.innerHTML = `
+                <span>💡 Tip: Swipe down to dismiss keyboard</span>
+            `;
+            helper.style.cssText = `
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: var(--accent-sage);
+                color: white;
+                padding: var(--space-sm);
+                text-align: center;
+                font-size: 0.875rem;
+                transform: translateY(100%);
+                transition: transform 0.3s ease;
+                z-index: 1000;
+                display: none;
+            `;
+            document.body.appendChild(helper);
+            this.keyboardHelper = helper;
+
+            // Show helper when keyboard appears
+            const formInputs = this.form.querySelectorAll('input, textarea, select');
+            formInputs.forEach(input => {
+                input.addEventListener('focus', () => {
+                    if (MobileUtils.isMobile()) {
+                        this.showKeyboardHelper();
+                    }
+                });
+            });
+        },
+
+        showKeyboardHelper() {
+            if (this.keyboardHelper) {
+                this.keyboardHelper.style.display = 'block';
+                setTimeout(() => {
+                    this.keyboardHelper.style.transform = 'translateY(0)';
+                }, 100);
+
+                // Auto-hide after 3 seconds
+                setTimeout(() => {
+                    this.hideKeyboardHelper();
+                }, 3000);
+            }
+        },
+
+        hideKeyboardHelper() {
+            if (this.keyboardHelper) {
+                this.keyboardHelper.style.transform = 'translateY(100%)';
+                setTimeout(() => {
+                    this.keyboardHelper.style.display = 'none';
+                }, 300);
+            }
+        },
+
+        handleOrientationChange() {
+            // Re-scroll to active element after orientation change
+            const activeElement = document.activeElement;
+            if (activeElement && this.form.contains(activeElement)) {
+                activeElement.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
             }
         },
 
@@ -611,15 +737,227 @@
         }
     };
 
+    // Mobile Detection Utility
+    const MobileUtils = {
+        isTouchDevice() {
+            return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        },
+        
+        isMobile() {
+            return window.innerWidth <= 768;
+        },
+        
+        isIOS() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent);
+        },
+        
+        isAndroid() {
+            return /Android/.test(navigator.userAgent);
+        },
+        
+        // Debounced resize handler for mobile optimization
+        handleResize: Utils.debounce(() => {
+            // Trigger mobile layout adjustments
+            if (MobileUtils.isMobile()) {
+                document.body.classList.add('mobile');
+            } else {
+                document.body.classList.remove('mobile');
+            }
+        }, 250)
+    };
+
+    // Touch Gesture Handler
+    const TouchGesture = {
+        init() {
+            this.startX = 0;
+            this.startY = 0;
+            this.endX = 0;
+            this.endY = 0;
+            this.minSwipeDistance = 50;
+            this.maxVerticalDistance = 100;
+            this.isScrolling = false;
+        },
+
+        start(e) {
+            this.startX = e.touches[0].clientX;
+            this.startY = e.touches[0].clientY;
+            this.isScrolling = false;
+        },
+
+        move(e) {
+            if (!this.startX || !this.startY) return;
+
+            const currentX = e.touches[0].clientX;
+            const currentY = e.touches[0].clientY;
+            const diffX = Math.abs(currentX - this.startX);
+            const diffY = Math.abs(currentY - this.startY);
+
+            // Determine if user is scrolling vertically
+            if (diffY > diffX) {
+                this.isScrolling = true;
+            }
+        },
+
+        end(e) {
+            if (this.isScrolling) {
+                this.reset();
+                return null;
+            }
+
+            this.endX = e.changedTouches[0].clientX;
+            this.endY = e.changedTouches[0].clientY;
+
+            const deltaX = this.endX - this.startX;
+            const deltaY = Math.abs(this.endY - this.startY);
+
+            // Check if it's a valid horizontal swipe
+            if (Math.abs(deltaX) >= this.minSwipeDistance && deltaY <= this.maxVerticalDistance) {
+                const direction = deltaX > 0 ? 'right' : 'left';
+                this.reset();
+                return direction;
+            }
+
+            this.reset();
+            return null;
+        },
+
+        reset() {
+            this.startX = 0;
+            this.startY = 0;
+            this.endX = 0;
+            this.endY = 0;
+            this.isScrolling = false;
+        }
+    };
+
     // Gallery Management
     const Gallery = {
         init() {
             this.galleryGrid = document.getElementById('galleryGrid');
             this.autoScrollInterval = null;
-            this.scrollSpeed = 2; // pixels per frame - increased for faster movement
+            this.scrollSpeed = MobileUtils.isMobile() ? 1 : 2; // Slower on mobile for battery
             this.isPaused = false;
+            this.currentImageIndex = 0;
+            this.images = [];
+            this.touchGesture = Object.create(TouchGesture);
+            this.touchGesture.init();
+            
             this.loadGalleryImages();
             this.setupAutoScroll();
+            this.setupMobileInteractions();
+        },
+
+        setupMobileInteractions() {
+            if (!this.galleryGrid || !MobileUtils.isTouchDevice()) return;
+
+            // Touch event handlers for mobile swipe navigation
+            this.galleryGrid.addEventListener('touchstart', (e) => {
+                this.touchGesture.start(e);
+                this.isPaused = true; // Pause auto-scroll during touch
+            }, { passive: true });
+
+            this.galleryGrid.addEventListener('touchmove', (e) => {
+                this.touchGesture.move(e);
+                // Prevent default only for horizontal swipes
+                if (!this.touchGesture.isScrolling) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+
+            this.galleryGrid.addEventListener('touchend', (e) => {
+                const swipeDirection = this.touchGesture.end(e);
+                
+                if (swipeDirection) {
+                    this.handleSwipe(swipeDirection);
+                    
+                    // Provide haptic feedback on supported devices
+                    if (window.navigator.vibrate) {
+                        window.navigator.vibrate(50);
+                    }
+                }
+                
+                // Resume auto-scroll after a delay
+                setTimeout(() => {
+                    this.isPaused = false;
+                }, 2000);
+            }, { passive: true });
+
+            // Add visual feedback for touch interactions
+            this.galleryGrid.addEventListener('touchstart', () => {
+                this.galleryGrid.classList.add('touching');
+            }, { passive: true });
+
+            this.galleryGrid.addEventListener('touchend', () => {
+                this.galleryGrid.classList.remove('touching');
+            }, { passive: true });
+        },
+
+        handleSwipe(direction) {
+            // Handle swipe navigation for mobile users
+            if (direction === 'left') {
+                this.scrollToNext();
+            } else if (direction === 'right') {
+                this.scrollToPrevious();
+            }
+        },
+
+        scrollToNext() {
+            const carousel = this.carousel;
+            if (!carousel) return;
+
+            const imageSet = carousel.querySelector('.gallery__image-set');
+            if (imageSet) {
+                const itemWidth = 280 + 16; // Item width + gap
+                const maxScroll = imageSet.offsetWidth;
+                let currentTransform = this.getCurrentTransform();
+                
+                currentTransform += itemWidth;
+                if (currentTransform >= maxScroll) {
+                    currentTransform = 0;
+                }
+                
+                carousel.style.transform = `translateX(-${currentTransform}px)`;
+                carousel.style.transition = 'transform 0.3s ease';
+                
+                // Remove transition after animation
+                setTimeout(() => {
+                    carousel.style.transition = '';
+                }, 300);
+            }
+        },
+
+        scrollToPrevious() {
+            const carousel = this.carousel;
+            if (!carousel) return;
+
+            const imageSet = carousel.querySelector('.gallery__image-set');
+            if (imageSet) {
+                const itemWidth = 280 + 16; // Item width + gap
+                const maxScroll = imageSet.offsetWidth;
+                let currentTransform = this.getCurrentTransform();
+                
+                currentTransform -= itemWidth;
+                if (currentTransform < 0) {
+                    currentTransform = maxScroll - itemWidth;
+                }
+                
+                carousel.style.transform = `translateX(-${currentTransform}px)`;
+                carousel.style.transition = 'transform 0.3s ease';
+                
+                // Remove transition after animation
+                setTimeout(() => {
+                    carousel.style.transition = '';
+                }, 300);
+            }
+        },
+
+        getCurrentTransform() {
+            const carousel = this.carousel;
+            if (!carousel) return 0;
+            
+            const transform = carousel.style.transform;
+            const match = transform.match(/translateX\((-?\d+)px\)/);
+            return match ? Math.abs(parseInt(match[1])) : 0;
         },
 
         loadGalleryImages() {
@@ -809,8 +1147,193 @@
         }
     };
 
+    // Mobile-Enhanced Navigation
+    const MobileNavigation = {
+        init() {
+            this.setupMobileMenuAnimations();
+            this.setupSwipeToClose();
+            this.setupTouchFeedback();
+        },
+
+        setupMobileMenuAnimations() {
+            const navMenu = document.querySelector('.nav__menu');
+            const navToggle = document.querySelector('.nav__toggle');
+
+            if (!navMenu || !navToggle) return;
+
+            // Add mobile-specific menu animations
+            navToggle.addEventListener('click', () => {
+                if (MobileUtils.isMobile()) {
+                    const isOpen = navMenu.classList.contains('active');
+                    
+                    if (isOpen) {
+                        navMenu.style.animation = 'slideOutUp 0.3s ease-out forwards';
+                    } else {
+                        navMenu.style.animation = 'slideInDown 0.3s ease-out forwards';
+                    }
+                }
+            });
+        },
+
+        setupSwipeToClose() {
+            const navMenu = document.querySelector('.nav__menu');
+            if (!navMenu || !MobileUtils.isTouchDevice()) return;
+
+            const touchGesture = Object.create(TouchGesture);
+            touchGesture.init();
+
+            navMenu.addEventListener('touchstart', (e) => {
+                touchGesture.start(e);
+            }, { passive: true });
+
+            navMenu.addEventListener('touchend', (e) => {
+                const swipeDirection = touchGesture.end(e);
+                
+                if (swipeDirection === 'left' && navMenu.classList.contains('active')) {
+                    // Close menu on left swipe
+                    Navigation.closeMenu();
+                    
+                    // Haptic feedback
+                    if (window.navigator.vibrate) {
+                        window.navigator.vibrate(30);
+                    }
+                }
+            }, { passive: true });
+        },
+
+        setupTouchFeedback() {
+            const navLinks = document.querySelectorAll('.nav__link');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('touchstart', () => {
+                    link.classList.add('touch-active');
+                }, { passive: true });
+
+                link.addEventListener('touchend', () => {
+                    setTimeout(() => {
+                        link.classList.remove('touch-active');
+                    }, 150);
+                }, { passive: true });
+            });
+        }
+    };
+
+    // Performance Monitor for Mobile
+    const MobilePerformance = {
+        init() {
+            if (!MobileUtils.isMobile()) return;
+
+            this.monitorBatteryLife();
+            this.monitorNetworkConnection();
+            this.optimizeForLowPower();
+        },
+
+        monitorBatteryLife() {
+            if ('getBattery' in navigator) {
+                navigator.getBattery().then((battery) => {
+                    this.adjustPerformanceBasedOnBattery(battery);
+                    
+                    battery.addEventListener('levelchange', () => {
+                        this.adjustPerformanceBasedOnBattery(battery);
+                    });
+                });
+            }
+        },
+
+        adjustPerformanceBasedOnBattery(battery) {
+            const lowBattery = battery.level < 0.2; // Less than 20%
+            
+            if (lowBattery) {
+                // Reduce animations and auto-scroll speed
+                document.body.classList.add('low-battery');
+                
+                // Slow down gallery auto-scroll
+                if (Gallery.scrollSpeed) {
+                    Gallery.scrollSpeed = 0.5;
+                }
+                
+                // Reduce animation frequency
+                const hearts = document.querySelectorAll('.heart, .star');
+                hearts.forEach(element => {
+                    element.style.animationDuration = '8s';
+                });
+            } else {
+                document.body.classList.remove('low-battery');
+                
+                // Restore normal performance
+                if (Gallery.scrollSpeed) {
+                    Gallery.scrollSpeed = MobileUtils.isMobile() ? 1 : 2;
+                }
+            }
+        },
+
+        monitorNetworkConnection() {
+            if ('connection' in navigator) {
+                const connection = navigator.connection;
+                
+                this.adjustForConnectionSpeed(connection);
+                
+                connection.addEventListener('change', () => {
+                    this.adjustForConnectionSpeed(connection);
+                });
+            }
+        },
+
+        adjustForConnectionSpeed(connection) {
+            const slowConnection = connection.effectiveType === 'slow-2g' || 
+                                 connection.effectiveType === '2g';
+            
+            if (slowConnection) {
+                document.body.classList.add('slow-connection');
+                
+                // Disable auto-loading features
+                if (Gallery.isPaused !== undefined) {
+                    Gallery.isPaused = true;
+                }
+            } else {
+                document.body.classList.remove('slow-connection');
+            }
+        },
+
+        optimizeForLowPower() {
+            // Detect if device is in low power mode (iOS)
+            if (MobileUtils.isIOS()) {
+                const testDiv = document.createElement('div');
+                testDiv.style.animationName = 'test-animation';
+                testDiv.style.animationDuration = '1s';
+                document.body.appendChild(testDiv);
+                
+                setTimeout(() => {
+                    const computedStyle = window.getComputedStyle(testDiv);
+                    const isLowPowerMode = computedStyle.animationPlayState === 'paused';
+                    
+                    if (isLowPowerMode) {
+                        document.body.classList.add('low-power-mode');
+                        
+                        // Disable all animations
+                        const styleSheet = document.createElement('style');
+                        styleSheet.textContent = `
+                            *, *::before, *::after {
+                                animation-duration: 0.01ms !important;
+                                transition-duration: 0.01ms !important;
+                            }
+                        `;
+                        document.head.appendChild(styleSheet);
+                    }
+                    
+                    document.body.removeChild(testDiv);
+                }, 100);
+            }
+        }
+    };
+
     // Initialize everything when DOM is loaded
     document.addEventListener('DOMContentLoaded', () => {
+        // Initialize mobile detection first
+        MobileUtils.handleResize();
+        window.addEventListener('resize', MobileUtils.handleResize);
+
+        // Initialize core components
         ThemeManager.init();
         MusicManager.init();
         Navigation.init();
@@ -821,10 +1344,25 @@
         ServiceWorkerManager.init();
         Analytics.init();
 
-        // Track page load
+        // Initialize mobile-specific components
+        if (MobileUtils.isMobile() || MobileUtils.isTouchDevice()) {
+            MobileNavigation.init();
+            MobilePerformance.init();
+            
+            // Show mobile tips
+            const mobileTips = document.querySelector('.mobile-tips');
+            if (mobileTips) {
+                mobileTips.style.display = 'block';
+            }
+        }
+
+        // Track page load with mobile info
         Analytics.trackEvent('page_view', {
             page_title: document.title,
-            page_location: window.location.href
+            page_location: window.location.href,
+            is_mobile: MobileUtils.isMobile(),
+            is_touch_device: MobileUtils.isTouchDevice(),
+            user_agent: navigator.userAgent
         });
     });
 
