@@ -4,8 +4,7 @@
   publish = "public"
   
   # Build command - install dependencies for Netlify Functions
-  # Using npm install instead of ci, and explicitly set NODE_ENV
-  command = "NODE_ENV=development npm install --force"
+  command = "npm install"
   
   # Functions directory
   functions = "netlify/functions"
