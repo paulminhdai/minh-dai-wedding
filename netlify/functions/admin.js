@@ -47,7 +47,7 @@ exports.handler = async (event, context) => {
                 guests: rsvp.party_size,
                 dietaryRestrictions: rsvp.dietary_restrictions,
                 message: rsvp.message,
-                timestamp: rsvp.created_at
+                timestamp: rsvp.rsvp_date || rsvp.created_at
             }));
 
             return {

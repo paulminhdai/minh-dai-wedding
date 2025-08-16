@@ -296,7 +296,7 @@ app.get('/api/admin', async (req, res) => {
             guests: rsvp.party_size,
             dietaryRestrictions: rsvp.dietary_restrictions,
             message: rsvp.special_requests,
-            timestamp: rsvp.created_at
+            timestamp: rsvp.rsvp_date || rsvp.created_at
         }));
 
         res.json({
