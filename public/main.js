@@ -289,11 +289,9 @@
     // Countdown Timer
     const Countdown = {
         init() {
-            this.daysEl = document.getElementById('days');
-            this.hoursEl = document.getElementById('hours');
-            this.minutesEl = document.getElementById('minutes');
+            this.countdownEl = document.getElementById('countdown-text');
             
-            if (this.daysEl && this.hoursEl && this.minutesEl) {
+            if (this.countdownEl) {
                 this.updateCountdown();
                 this.interval = setInterval(() => this.updateCountdown(), 60000); // Update every minute
             }
@@ -306,17 +304,17 @@
 
             if (difference > 0) {
                 const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-
-                this.daysEl.textContent = Utils.padTime(days);
-                this.hoursEl.textContent = Utils.padTime(hours);
-                this.minutesEl.textContent = Utils.padTime(minutes);
+                
+                if (days === 0) {
+                    this.countdownEl.textContent = "Today is the day! 🎉";
+                } else if (days === 1) {
+                    this.countdownEl.textContent = "1 day to go";
+                } else {
+                    this.countdownEl.textContent = `${days} days to go`;
+                }
             } else {
                 // Wedding day has passed
-                this.daysEl.textContent = '000';
-                this.hoursEl.textContent = '00';
-                this.minutesEl.textContent = '00';
+                this.countdownEl.textContent = "Just married! 💕";
                 clearInterval(this.interval);
             }
         },

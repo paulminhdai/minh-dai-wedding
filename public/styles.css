@@ -452,7 +452,7 @@ a:hover, a:focus {
 }
 
 .hero__names {
-  font-size: 3rem;
+  font-size: 4rem;
   margin-bottom: var(--space-md);
   color: var(--primary);
   position: relative;
@@ -769,7 +769,7 @@ a:hover, a:focus {
 
 @media (min-width: 768px) {
   .hero__names {
-    font-size: 4.5rem;
+    font-size: 5.5rem;
   }
 }
 
@@ -799,6 +799,18 @@ a:hover, a:focus {
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+/* Simple countdown styling */
+.countdown__simple {
+  text-align: center;
+}
+
+.countdown__text {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--primary);
+  font-family: var(--font-serif);
 }
 
 /* Story Section */
@@ -1444,7 +1456,7 @@ a:hover, a:focus {
   
   /* Mobile hero adjustments */
   .hero__names {
-    font-size: 2.5rem;
+    font-size: 3.2rem;
     line-height: 1.1;
   }
   
@@ -1458,6 +1470,10 @@ a:hover, a:focus {
   
   .countdown__number {
     font-size: 1.5rem;
+  }
+  
+  .countdown__text {
+    font-size: 1.3rem;
   }
   
   /* Mobile timeline improvements */
@@ -1502,7 +1518,7 @@ a:hover, a:focus {
 /* Small mobile devices */
 @media (max-width: 480px) {
   .hero__names {
-    font-size: 2rem;
+    font-size: 2.8rem;
   }
   
   .countdown {
@@ -1516,6 +1532,10 @@ a:hover, a:focus {
   
   .countdown__number {
     font-size: 1.25rem;
+  }
+  
+  .countdown__text {
+    font-size: 1.2rem;
   }
   
   .countdown__label {
@@ -1894,10 +1914,10 @@ a:hover, a:focus {
   
   /* Mobile countdown spacing */
   .countdown {
-    padding: var(--space-lg);
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    backdrop-filter: blur(10px);
+    padding: 0;
+    background: none;
+    border-radius: 0;
+    backdrop-filter: none;
   }
 }
 
