@@ -22,8 +22,9 @@
   --border-focus: var(--primary);
   
   /* Typography */
-  --font-serif: 'Playfair Display', 'Didot', 'Bodoni MT', serif;
-  --font-sans: 'Inter', 'Helvetica Neue', Arial, 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+  --font-sans: 'Montserrat', 'Helvetica Neue', Arial, 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-accent: 'Allura', cursive;
   
   /* Spacing */
   --space-xs: 0.25rem;
@@ -94,29 +95,42 @@ html {
 body {
   font-family: var(--font-sans);
   font-size: 1rem;
-  line-height: 1.6;
+  line-height: 1.8;
   color: var(--text-primary);
   background-color: var(--bg-primary);
   transition: var(--transition);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: 0.01em;
 }
 
 /* Typography */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-serif);
-  font-weight: 700;
-  line-height: 1.2;
+  font-weight: 500;
+  line-height: 1.4;
   margin-bottom: var(--space-sm);
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
 }
 
-h1 { font-size: 2.5rem; }
-h2 { font-size: 2rem; }
-h3 { font-size: 1.5rem; }
-h4 { font-size: 1.25rem; }
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.25rem; }
+h4 { font-size: 1.125rem; }
+
+/* Romantic accent elements */
+.accent-text {
+  font-family: var(--font-accent);
+  font-style: normal;
+  letter-spacing: 0.02em;
+}
 
 @media (min-width: 768px) {
-  h1 { font-size: 3.5rem; }
-  h2 { font-size: 2.5rem; }
-  h3 { font-size: 1.75rem; }
+  h1 { font-size: 2.5rem; }
+  h2 { font-size: 1.75rem; }
+  h3 { font-size: 1.5rem; }
 }
 
 p {
@@ -536,22 +550,26 @@ a:hover, a:focus {
 }
 
 .hero__names {
-  font-size: 4rem;
+  font-family: var(--font-accent);
+  font-size: 4.5rem;
   margin-bottom: var(--space-md);
   color: var(--primary);
   position: relative;
   animation: namesReveal 2.5s ease-out 0.5s forwards;
   opacity: 0;
   transform: translateY(20px);
+  font-weight: 400;
+  letter-spacing: 0.05em;
 }
 
 .hero__ampersand {
   color: var(--accent-gold);
-  font-style: italic;
+  font-style: normal;
   position: relative;
   display: inline-block;
-  font-family: var(--font-serif);
+  font-family: var(--font-accent);
   text-shadow: 0 2px 4px rgba(212, 175, 55, 0.3);
+  font-size: 0.9em;
   animation: gentle-pulse 3s ease-in-out infinite;
 }
 
