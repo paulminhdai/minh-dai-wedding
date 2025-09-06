@@ -22,8 +22,8 @@
   --border-focus: var(--primary);
   
   /* Typography */
-  --font-serif: 'Playfair Display', 'Didot', 'Bodoni MT', serif;
-  --font-sans: 'Inter', 'Helvetica Neue', Arial, 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'Cormorant Garamond', 'Didot', 'Bodoni MT', serif;
+  --font-sans: 'Nunito', 'Helvetica Neue', Arial, 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
   
   /* Spacing */
   --space-xs: 0.25rem;
@@ -94,18 +94,22 @@ html {
 body {
   font-family: var(--font-sans);
   font-size: 1rem;
-  line-height: 1.6;
+  line-height: 1.7;
   color: var(--text-primary);
   background-color: var(--bg-primary);
   transition: var(--transition);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Typography */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-serif);
-  font-weight: 700;
-  line-height: 1.2;
+  font-weight: 400;
+  line-height: 1.3;
   margin-bottom: var(--space-sm);
+  letter-spacing: 0.01em;
 }
 
 h1 { font-size: 2.5rem; }
@@ -536,6 +540,7 @@ a:hover, a:focus {
 }
 
 .hero__names {
+  font-family: var(--font-serif);
   font-size: 4rem;
   margin-bottom: var(--space-md);
   color: var(--primary);
@@ -543,6 +548,8 @@ a:hover, a:focus {
   animation: namesReveal 2.5s ease-out 0.5s forwards;
   opacity: 0;
   transform: translateY(20px);
+  font-weight: 300;
+  letter-spacing: 0.02em;
 }
 
 .hero__ampersand {
