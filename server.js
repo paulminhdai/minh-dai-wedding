@@ -18,6 +18,17 @@ const GUESTS_FILE = path.join(DATA_DIR, 'guests.txt');
 
 // Middleware
 app.use(express.json({ limit: '10mb' }));
+
+// Disable caching in development
+if (process.env.NODE_ENV !== 'production') {
+    app.use((req, res, next) => {
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+        res.set('Expires', '-1');
+        res.set('Pragma', 'no-cache');
+        next();
+    });
+}
+
 app.use(express.static(PUBLIC_DIR));
 
 // Rate limiting for RSVP endpoint

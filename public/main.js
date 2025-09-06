@@ -865,168 +865,224 @@
         },
 
         triggerFireworks() {
-            // Create fireworks container with elegant overlay
+            // Add class to body to ensure proper display on mobile
+            document.body.classList.add('animation-active');
+            
+            // Create fireworks canvas container
             const fireworksContainer = document.createElement('div');
-            fireworksContainer.className = 'fireworks-container';
+            fireworksContainer.className = 'fireworks-canvas-container';
+            
+            // Create canvas element
+            const canvas = document.createElement('canvas');
+            canvas.id = 'fireworksCanvas';
+            
+            // Create info text
+            const infoText = document.createElement('div');
+            infoText.className = 'fireworks-info-text';
+            infoText.textContent = 'Celebrating your RSVP!';
+            
+            fireworksContainer.appendChild(canvas);
+            fireworksContainer.appendChild(infoText);
             document.body.appendChild(fireworksContainer);
+            
+            // Initialize fireworks system
+            const ctx = canvas.getContext('2d');
+            let cw = window.innerWidth;
+            let ch = window.innerHeight;
+            canvas.width = cw;
+            canvas.height = ch;
 
-            // Elegant color palettes
-            const goldPalette = ['#FFD700', '#FFA500', '#FFE5B4', '#FFFACD'];
-            const silverPalette = ['#C0C0C0', '#E5E5E5', '#F5F5F5', '#FFFFFF'];
-            const rosePalette = ['#FFB6C1', '#FFC0CB', '#FFDAB9', '#FFF0F5'];
-            const champagnePalette = ['#F7E7CE', '#FFF8DC', '#FAEBD7', '#FFEBCD'];
+            let fireworks = [];
+            let particles = [];
+            let hue = 120;
+            let animationId;
+            let autoLaunchCount = 0;
+            const maxAutoLaunches = 15; // Total number of auto-launched fireworks
             
-            const palettes = [goldPalette, silverPalette, rosePalette, champagnePalette];
-            
-            // Create elegant firework sequences
-            const sequences = [
-                { delay: 0, type: 'chrysanthemum', x: 50, y: 50 },
-                { delay: 800, type: 'willow', x: 30, y: 60 },
-                { delay: 800, type: 'willow', x: 70, y: 60 },
-                { delay: 1600, type: 'peony', x: 50, y: 70 },
-                { delay: 2400, type: 'palm', x: 25, y: 55 },
-                { delay: 2400, type: 'palm', x: 75, y: 55 },
-                { delay: 3200, type: 'chrysanthemum', x: 40, y: 65 },
-                { delay: 3200, type: 'chrysanthemum', x: 60, y: 65 },
-                { delay: 4000, type: 'finale', x: 50, y: 60 }
-            ];
-            
-            sequences.forEach(seq => {
-                setTimeout(() => {
-                    const palette = palettes[Math.floor(Math.random() * palettes.length)];
-                    const firework = document.createElement('div');
-                    firework.className = `firework firework-${seq.type}`;
-                    firework.style.left = seq.x + '%';
-                    firework.style.bottom = seq.y + '%';
-                    
-                    // Create elegant trails for launch
-                    if (seq.type !== 'finale') {
-                        const trail = document.createElement('div');
-                        trail.className = 'firework-launch-trail';
-                        trail.style.background = `linear-gradient(to top, transparent, ${palette[0]}, transparent)`;
-                        firework.appendChild(trail);
-                    }
-                    
-                    // Create sophisticated center bloom
-                    const bloom = document.createElement('div');
-                    bloom.className = 'firework-bloom';
-                    const primaryColor = palette[0];
-                    bloom.style.background = `radial-gradient(circle, ${primaryColor} 0%, transparent 70%)`;
-                    bloom.style.boxShadow = `0 0 40px ${primaryColor}, 0 0 80px ${primaryColor}, 0 0 120px ${primaryColor}`;
-                    firework.appendChild(bloom);
-                    
-                    // Type-specific particle patterns
-                    if (seq.type === 'chrysanthemum') {
-                        // Dense spherical burst
-                        for (let i = 0; i < 48; i++) {
-                            const particle = document.createElement('div');
-                            particle.className = 'firework-particle particle-chrysanthemum';
-                            particle.style.background = palette[i % palette.length];
-                            particle.style.setProperty('--angle', (i * 7.5) + 'deg');
-                            particle.style.setProperty('--delay', (i * 10) + 'ms');
-                            firework.appendChild(particle);
-                        }
-                    } else if (seq.type === 'willow') {
-                        // Drooping trails
-                        for (let i = 0; i < 36; i++) {
-                            const particle = document.createElement('div');
-                            particle.className = 'firework-particle particle-willow';
-                            particle.style.background = `linear-gradient(to bottom, ${palette[0]}, transparent)`;
-                            particle.style.setProperty('--angle', (i * 10) + 'deg');
-                            particle.style.height = '20px';
-                            firework.appendChild(particle);
-                        }
-                    } else if (seq.type === 'peony') {
-                        // Classic round burst with trails
-                        for (let i = 0; i < 32; i++) {
-                            const particle = document.createElement('div');
-                            particle.className = 'firework-particle particle-peony';
-                            particle.style.background = palette[Math.floor(i / 8)];
-                            particle.style.setProperty('--angle', (i * 11.25) + 'deg');
-                            
-                            // Add glowing trail
-                            const trail = document.createElement('div');
-                            trail.className = 'particle-trail';
-                            trail.style.background = `linear-gradient(to right, ${palette[0]}, transparent)`;
-                            particle.appendChild(trail);
-                            
-                            firework.appendChild(particle);
-                        }
-                    } else if (seq.type === 'palm') {
-                        // Rising comet tails
-                        for (let i = 0; i < 24; i++) {
-                            const particle = document.createElement('div');
-                            particle.className = 'firework-particle particle-palm';
-                            const color = palette[i % palette.length];
-                            particle.style.background = color;
-                            particle.style.boxShadow = `0 0 10px ${color}, 0 0 20px ${color}`;
-                            particle.style.setProperty('--angle', (i * 15) + 'deg');
-                            
-                            // Add comet tail
-                            const tail = document.createElement('div');
-                            tail.className = 'palm-tail';
-                            tail.style.background = `linear-gradient(to bottom, ${color}, transparent)`;
-                            particle.appendChild(tail);
-                            
-                            firework.appendChild(particle);
-                        }
-                    } else if (seq.type === 'finale') {
-                        // Grand finale with multiple layers
-                        const layers = [64, 48, 32];
-                        layers.forEach((count, layerIndex) => {
-                            for (let i = 0; i < count; i++) {
-                                const particle = document.createElement('div');
-                                particle.className = 'firework-particle particle-finale';
-                                const color = palette[Math.floor(Math.random() * palette.length)];
-                                particle.style.background = color;
-                                particle.style.boxShadow = `0 0 15px ${color}`;
-                                particle.style.setProperty('--angle', (i * (360 / count)) + 'deg');
-                                particle.style.setProperty('--layer', layerIndex);
-                                particle.style.setProperty('--delay', (layerIndex * 100) + 'ms');
-                                firework.appendChild(particle);
-                            }
-                        });
-                    }
-                    
-                    // Add elegant sparkles
-                    for (let s = 0; s < 16; s++) {
-                        const sparkle = document.createElement('div');
-                        sparkle.className = 'elegant-sparkle';
-                        sparkle.style.setProperty('--sparkle-angle', (s * 22.5) + 'deg');
-                        sparkle.style.setProperty('--sparkle-delay', (Math.random() * 500) + 'ms');
-                        firework.appendChild(sparkle);
-                    }
-                    
-                    fireworksContainer.appendChild(firework);
-                    
-                    // Remove after animation
-                    setTimeout(() => {
-                        if (firework.parentNode) {
-                            firework.parentNode.removeChild(firework);
-                        }
-                    }, 5000);
-                }, seq.delay);
-            });
-            
-            // Add subtle floating stars throughout - all at once
-            setTimeout(() => {
-                for (let i = 0; i < 30; i++) {
-                    const star = document.createElement('div');
-                    star.className = 'floating-star';
-                    star.style.left = (Math.random() * 100) + '%';
-                    star.style.top = (Math.random() * 100) + '%';
-                    star.style.animationDelay = (Math.random() * 0.5) + 's';
-                    star.style.animationDuration = (2 + Math.random() * 1) + 's';
-                    fireworksContainer.appendChild(star);
+            // Audio removed for cleaner experience
+
+            function random(min, max) { return Math.random() * (max - min) + min; }
+            function calculateDistance(p1x, p1y, p2x, p2y) {
+                const xDistance = p1x - p2x;
+                const yDistance = p1y - p2y;
+                return Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2));
+            }
+
+            class Particle {
+                constructor(x, y, hue) {
+                    this.x = x;
+                    this.y = y;
+                    this.coords = [];
+                    this.coordCount = 5;
+                    while (this.coordCount--) { this.coords.push([this.x, this.y]); }
+                    this.angle = random(0, Math.PI * 2);
+                    this.speed = random(1, 10);
+                    this.friction = 0.95;
+                    this.gravity = 1;
+                    this.hue = hue;
+                    this.brightness = random(50, 80);
+                    this.alpha = 1;
+                    this.decay = random(0.015, 0.03);
                 }
-            }, 500); // Small delay to let fireworks start first
 
-            // Remove container after all animations
-            setTimeout(() => {
+                update() {
+                    this.coords.pop();
+                    this.coords.unshift([this.x, this.y]);
+                    this.speed *= this.friction;
+                    this.y += this.gravity;
+                    this.x += Math.cos(this.angle) * this.speed;
+                    this.y += Math.sin(this.angle) * this.speed;
+                    this.alpha -= this.decay;
+                    return !(this.alpha <= this.decay);
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    ctx.moveTo(this.coords[this.coords.length - 1][0], this.coords[this.coords.length - 1][1]);
+                    ctx.lineTo(this.x, this.y);
+                    ctx.strokeStyle = `hsla(${this.hue}, 100%, ${this.brightness}%, ${this.alpha})`;
+                    ctx.stroke();
+                }
+            }
+
+            class Firework {
+                constructor(startX, startY, targetX, targetY) {
+                    this.x = startX;
+                    this.y = startY;
+                    this.startX = startX;
+                    this.startY = startY;
+                    this.targetX = targetX;
+                    this.targetY = targetY;
+                    this.distanceToTarget = calculateDistance(startX, startY, targetX, targetY);
+                    this.distanceTraveled = 0;
+                    this.coords = [];
+                    this.coordCount = 3;
+                    while (this.coordCount--) { this.coords.push([this.x, this.y]); }
+                    this.angle = Math.atan2(targetY - startY, targetX - startX);
+                    this.speed = 2;
+                    this.acceleration = 1.05;
+                    this.brightness = random(50, 70);
+                    this.targetRadius = 1;
+
+                    // Sound removed
+                }
+
+                update() {
+                    this.coords.pop();
+                    this.coords.unshift([this.x, this.y]);
+                    if (this.targetRadius < 8) { this.targetRadius += 0.3; } else { this.targetRadius = 1; }
+                    this.speed *= this.acceleration;
+                    const vx = Math.cos(this.angle) * this.speed;
+                    const vy = Math.sin(this.angle) * this.speed;
+                    this.distanceTraveled = calculateDistance(this.startX, this.startY, this.x + vx, this.y + vy);
+
+                    if (this.distanceTraveled >= this.distanceToTarget) {
+                        createParticles(this.targetX, this.targetY);
+                        return false;
+                    } else {
+                        this.x += vx;
+                        this.y += vy;
+                        return true;
+                    }
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    ctx.moveTo(this.coords[this.coords.length - 1][0], this.coords[this.coords.length - 1][1]);
+                    ctx.lineTo(this.x, this.y);
+                    ctx.strokeStyle = `hsl(${hue}, 100%, ${this.brightness}%)`;
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(this.targetX, this.targetY, this.targetRadius, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
+
+            function createParticles(x, y) {
+                // Sound removed
+                const particleCount = 30;
+                const particleHue = hue + random(-20, 20);
+                for (let i = 0; i < particleCount; i++) {
+                    particles.push(new Particle(x, y, particleHue));
+                }
+            }
+
+            function loop() {
+                animationId = requestAnimationFrame(loop);
+                hue += 0.5;
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                ctx.fillRect(0, 0, cw, ch);
+                ctx.globalCompositeOperation = 'lighter';
+
+                let i = fireworks.length;
+                while (i--) {
+                    if (!fireworks[i].update()) {
+                        fireworks.splice(i, 1);
+                    } else {
+                        fireworks[i].draw();
+                    }
+                }
+
+                let j = particles.length;
+                while (j--) {
+                    if (!particles[j].update()) {
+                        particles.splice(j, 1);
+                    } else {
+                        particles[j].draw();
+                    }
+                }
+            }
+
+            // Auto-launch fireworks for celebration
+            const launchInterval = setInterval(() => {
+                if (autoLaunchCount < maxAutoLaunches) {
+                    fireworks.push(new Firework(
+                        random(cw * 0.2, cw * 0.8), // Random start position
+                        ch, // Start from bottom
+                        random(0, cw), // Random target X
+                        random(0, ch / 2) // Random target Y (upper half)
+                    ));
+                    autoLaunchCount++;
+                } else {
+                    clearInterval(launchInterval);
+                    // Stop animation after last firework and remove container
+                    setTimeout(() => {
+                        if (animationId) {
+                            cancelAnimationFrame(animationId);
+                        }
+                        if (fireworksContainer.parentNode) {
+                            fireworksContainer.parentNode.removeChild(fireworksContainer);
+                        }
+                        document.body.classList.remove('animation-active');
+                    }, 3000);
+                }
+            }, 300); // Launch a new firework every 300ms
+
+            // Handle window resize
+            const handleResize = () => {
+                cw = window.innerWidth;
+                ch = window.innerHeight;
+                canvas.width = cw;
+                canvas.height = ch;
+            };
+            window.addEventListener('resize', handleResize);
+
+            // Start animation loop
+            loop();
+
+            // Cleanup on early removal
+            fireworksContainer.addEventListener('click', () => {
+                clearInterval(launchInterval);
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                }
+                window.removeEventListener('resize', handleResize);
                 if (fireworksContainer.parentNode) {
                     fireworksContainer.parentNode.removeChild(fireworksContainer);
                 }
-            }, 8000);
+                document.body.classList.remove('animation-active');
+            });
 
             // Gentle haptic feedback
             if (MobileUtils.isTouchDevice() && navigator.vibrate) {
@@ -1035,6 +1091,9 @@
         },
 
         triggerSadRain() {
+            // Add class to body to ensure proper display on mobile
+            document.body.classList.add('animation-active');
+            
             // Create rain container
             const rainContainer = document.createElement('div');
             rainContainer.className = 'rain-container';
@@ -1105,6 +1164,7 @@
                 if (rainContainer.parentNode) {
                     rainContainer.parentNode.removeChild(rainContainer);
                 }
+                document.body.classList.remove('animation-active');
             }, 5000);
 
             // Gentle vibration on mobile
