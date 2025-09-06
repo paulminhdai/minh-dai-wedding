@@ -495,18 +495,10 @@
     <script>
         const CONFIG = {
             // Detect environment and set appropriate endpoints
-            adminEndpoint: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-                ? '/api/admin'  // Local development
-                : '/.netlify/functions/admin',  // Production (Netlify)
-            deleteEndpoint: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-                ? '/api/admin/rsvp'  // Local development
-                : '/.netlify/functions/admin-rsvp',  // Production (Netlify)
-            guestsEndpoint: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-                ? '/api/admin/guests'  // Local development
-                : '/.netlify/functions/admin-guests',  // Production (Netlify) - to be created
-            logsEndpoint: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-                ? '/api/admin/logs'  // Local development
-                : '/.netlify/functions/admin-logs'  // Production (Netlify) - to be created
+            adminEndpoint: '/api/admin',  // Express server endpoint
+            deleteEndpoint: '/api/admin/rsvp',  // Express server endpoint
+            guestsEndpoint: '/api/admin/guests',  // Express server endpoint
+            logsEndpoint: '/api/admin/logs'  // Express server endpoint
         };
 
         // Notification functions
@@ -595,6 +587,7 @@
             }
 
             try {
+                console.log('Fetching from:', `${CONFIG.adminEndpoint}?password=${encodeURIComponent(password)}`); // Debug log
                 const response = await fetch(`${CONFIG.adminEndpoint}?password=${encodeURIComponent(password)}`);
                 
                 if (response.ok) {
@@ -603,15 +596,55 @@
                     document.getElementById('refreshBtn').style.display = 'block';
                     
                     const data = await response.json();
+                    console.log('Login successful, data received:', data); // Debug log
                     displayRsvpData(data);
                     loadGuestList(); // Load guest list after login
                     loadAdminLogs(); // Load admin logs after login
                 } else {
+                    console.error('Login failed with status:', response.status); // Debug log
                     showError('Invalid password. Please try again.', errorDiv);
                 }
             } catch (error) {
                 console.error('Login error:', error);
-                showError('Connection error. Please try again.', errorDiv);
+                
+                // If running locally without backend, show sample data
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    console.log('Local development mode - showing sample data');
+                    document.getElementById('loginSection').classList.add('hidden');
+                    document.getElementById('dashboard').classList.add('visible');
+                    document.getElementById('refreshBtn').style.display = 'block';
+                    
+                    // Sample data for local testing
+                    const sampleData = {
+                        total: 2,
+                        attending: 1,
+                        notAttending: 1,
+                        rsvps: [
+                            {
+                                id: '1',
+                                names: 'John & Jane Doe',
+                                phone: '555-0123',
+                                attending: 'yes',
+                                guests: 2,
+                                message: 'Looking forward to celebrating with you!',
+                                timestamp: new Date().toISOString()
+                            },
+                            {
+                                id: '2',
+                                names: 'Bob Smith',
+                                phone: '555-0456',
+                                attending: 'no',
+                                guests: 0,
+                                message: '',
+                                timestamp: new Date().toISOString()
+                            }
+                        ]
+                    };
+                    
+                    displayRsvpData(sampleData);
+                } else {
+                    showError('Connection error. Please try again.', errorDiv);
+                }
             }
         }
 
@@ -634,13 +667,23 @@
         }
 
         function displayRsvpData(data) {
+            console.log('Received data:', data); // Debug log
+            
+            // Check if data exists
+            if (!data) {
+                console.error('No data received');
+                document.getElementById('rsvpContent').innerHTML = '<div class="loading">Error: No data received</div>';
+                return;
+            }
+            
             const rsvps = data.rsvps || [];
+            console.log('RSVPs array:', rsvps); // Debug log
             
             // Update statistics
             const totalRsvps = rsvps.length;
             const attending = rsvps.filter(r => r.attending === 'yes').length;
             const notAttending = rsvps.filter(r => r.attending === 'no').length;
-            const totalGuests = rsvps.filter(r => r.attending === 'yes').reduce((sum, r) => sum + (r.guests || 1), 0);
+            const totalGuests = rsvps.filter(r => r.attending === 'yes').reduce((sum, r) => sum + (parseInt(r.guests) || 1), 0);
 
             document.getElementById('totalRsvps').textContent = totalRsvps;
             document.getElementById('attending').textContent = attending;
@@ -649,6 +692,11 @@
 
             // Display RSVP table
             const contentDiv = document.getElementById('rsvpContent');
+            
+            if (!contentDiv) {
+                console.error('rsvpContent div not found');
+                return;
+            }
             
             if (rsvps.length === 0) {
                 contentDiv.innerHTML = '<div class="loading">No RSVPs received yet.</div>';
@@ -679,7 +727,7 @@
                                     </span>
                                 </td>
                                 <td>
-                                    ${rsvp.attending === 'yes' ? `<span class="guest-count">${rsvp.guests || 1}</span>` : '-'}
+                                    ${rsvp.attending === 'yes' ? `<span class="guest-count">${parseInt(rsvp.guests) || 1}</span>` : '-'}
                                 </td>
                                 <td>${rsvp.attending === 'yes' ? escapeHtml(rsvp.message || 'No message') : '-'}</td>
                                 <td>${formatDate(rsvp.timestamp)}</td>

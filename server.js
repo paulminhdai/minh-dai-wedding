@@ -174,6 +174,11 @@ app.post('/api/rsvp', rsvpLimiter, async (req, res) => {
 
         // Validate required fields
         if (!names || !phone || !attending) {
+            await DatabaseUtils.logAdminAction(
+                'rsvp_rejected',
+                `RSVP rejected - Missing required fields: ${!names ? 'name' : ''} ${!phone ? 'phone' : ''} ${!attending ? 'attending' : ''}`,
+                req.ip || req.connection.remoteAddress || 'unknown'
+            );
             return res.status(400).json({
                 error: 'Names, phone number, and attendance status are required.'
             });
@@ -181,6 +186,11 @@ app.post('/api/rsvp', rsvpLimiter, async (req, res) => {
 
         // Validate guest count if attending
         if (attending === 'yes' && (!guests || guests < 1 || guests > 8)) {
+            await DatabaseUtils.logAdminAction(
+                'rsvp_rejected',
+                `RSVP rejected - Invalid guest count: ${guests} (Name: ${names})`,
+                req.ip || req.connection.remoteAddress || 'unknown'
+            );
             return res.status(400).json({
                 error: 'Please specify the number of guests (1-8 people).'
             });
@@ -209,6 +219,11 @@ app.post('/api/rsvp', rsvpLimiter, async (req, res) => {
 
         // Validate phone number format (basic validation)
         if (!utils.isValidPhone(sanitizedData.phone)) {
+            await DatabaseUtils.logAdminAction(
+                'rsvp_rejected',
+                `RSVP rejected - Invalid phone number: ${sanitizedData.phone} (Name: ${sanitizedData.names})`,
+                sanitizedData.ipAddress
+            );
             return res.status(400).json({
                 error: 'Please provide a valid phone number.'
             });
@@ -218,12 +233,31 @@ app.post('/api/rsvp', rsvpLimiter, async (req, res) => {
         if (process.env.ENABLE_GUEST_VALIDATION === 'true') {
             console.log('🔍 Checking guest list for:', sanitizedData.names);
             
+            // For single short names, require more specific input
+            const nameWords = sanitizedData.names.trim().split(/\s+/);
+            if (nameWords.length === 1 && nameWords[0].length < 6) {
+                console.log('⚠️ Single short name provided:', sanitizedData.names);
+                await DatabaseUtils.logAdminAction(
+                    'rsvp_rejected',
+                    `RSVP rejected - Single short name: ${sanitizedData.names}`,
+                    sanitizedData.ipAddress
+                );
+                return res.status(400).json({
+                    error: 'Please enter your full name as it appears on the invitation. Single first names may match multiple guests.'
+                });
+            }
+            
             const isGuestInvited = await DatabaseUtils.checkGuestExists(sanitizedData.names);
             
             if (!isGuestInvited) {
                 console.log('❌ Guest not found in guest list:', sanitizedData.names);
+                await DatabaseUtils.logAdminAction(
+                    'rsvp_rejected',
+                    `RSVP rejected - Guest not found in list: ${sanitizedData.names}`,
+                    sanitizedData.ipAddress
+                );
                 return res.status(403).json({
-                    error: 'We couldn\'t find your name on our guest list. Please check your spelling or contact us directly.'
+                    error: 'We couldn\'t find your name on our guest list. Please enter your full name as shown on your invitation, or contact us directly.'
                 });
             }
             
@@ -267,10 +301,42 @@ app.post('/api/rsvp', rsvpLimiter, async (req, res) => {
         console.error('RSVP processing error:', error);
         console.error('Error details:', error.message);
         console.error('Stack trace:', error.stack);
-        res.status(500).json({
-            error: 'Something went wrong processing your RSVP. Please try again later.',
-            debug: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
+        
+        // Log the error
+        const errorMessage = error.message || 'Unknown error';
+        const guestName = req.body?.names || 'Unknown';
+        const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
+        
+        // Check for specific error types
+        if (errorMessage.includes('already exists')) {
+            await DatabaseUtils.logAdminAction(
+                'rsvp_rejected',
+                `RSVP rejected - Duplicate RSVP: ${guestName}`,
+                ipAddress
+            );
+            res.status(409).json({
+                error: 'An RSVP already exists for this guest. Please contact us if you need to update your response.'
+            });
+        } else if (errorMessage.includes('Multiple guests found')) {
+            await DatabaseUtils.logAdminAction(
+                'rsvp_rejected',
+                `RSVP rejected - Multiple guests matched: ${guestName}`,
+                ipAddress
+            );
+            res.status(400).json({
+                error: errorMessage
+            });
+        } else {
+            await DatabaseUtils.logAdminAction(
+                'rsvp_error',
+                `RSVP error - ${errorMessage} (Guest: ${guestName})`,
+                ipAddress
+            );
+            res.status(500).json({
+                error: 'Something went wrong processing your RSVP. Please try again later.',
+                debug: process.env.NODE_ENV === 'development' ? error.message : undefined
+            });
+        }
     }
 });
 
@@ -503,6 +569,37 @@ app.get('/api/admin/logs', async (req, res) => {
     } catch (error) {
         console.error('Admin logs endpoint error:', error);
         res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Guest search endpoint - returns possible matches for autocomplete
+app.get('/api/guests/search', async (req, res) => {
+    try {
+        const searchTerm = req.query.q;
+        
+        if (!searchTerm || searchTerm.trim().length < 2) {
+            return res.json({ suggestions: [] });
+        }
+        
+        const sanitizedSearch = utils.sanitizeInput(searchTerm);
+        
+        // Search for matching guests
+        const matches = await DatabaseUtils.searchGuests(sanitizedSearch);
+        
+        // Return only guest names (no personal info)
+        const suggestions = matches.map(guest => ({
+            name: guest.name,
+            side: guest.side || 'mutual'
+        }));
+        
+        res.json({ 
+            suggestions,
+            searchTerm: sanitizedSearch
+        });
+        
+    } catch (error) {
+        console.error('Guest search error:', error);
+        res.status(500).json({ error: 'Search failed', suggestions: [] });
     }
 });
 

@@ -10,16 +10,16 @@
     "test": "echo 'No tests specified'",
     "migrate": "node database/migrate-data.js",
     "setup-db": "node database/setup-database.js",
-    "deploy": "netlify deploy --prod",
-    "serve": "netlify dev"
+    "deploy": "pm2 restart wedding-site",
+    "serve:pi": "pm2 start server.js --name wedding-site"
   },
   "keywords": [
     "wedding",
     "rsvp",
-    "netlify",
+    "express",
     "supabase",
     "javascript",
-    "serverless"
+    "raspberry-pi"
   ],
   "author": "Wedding Website Developer",
   "license": "MIT",
@@ -30,7 +30,6 @@
     "express-rate-limit": "^7.1.5"
   },
   "devDependencies": {
-    "netlify-cli": "^17.15.0",
     "nodemon": "^3.0.2"
   },
   "engines": {
@@ -43,7 +42,7 @@
   "bugs": {
     "url": "https://github.com/your-username/wedding-website/issues"
   },
-  "homepage": "https://your-wedding-website.netlify.app",
+  "homepage": "https://your-wedding-website.com",
   "browserslist": [
     "> 1%",
     "last 2 versions",

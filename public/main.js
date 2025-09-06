@@ -7,9 +7,7 @@
     // Configuration
     const CONFIG = {
         weddingDate: new Date('2026-06-26T00:00:00-07:00'),
-        apiEndpoint: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-            ? '/api/rsvp' 
-            : '/.netlify/functions/rsvp',
+        apiEndpoint: '/api/rsvp', // Always use the Express server endpoint
         debounceDelay: 300,
         lazyLoadOffset: 100
     };
@@ -483,6 +481,12 @@
                 input.addEventListener('blur', () => this.validateField(input));
                 input.addEventListener('input', Utils.debounce(() => this.validateField(input), CONFIG.debounceDelay));
             });
+
+            // Setup name autocomplete
+            const nameInput = this.form.querySelector('#names');
+            if (nameInput) {
+                this.setupNameAutocomplete(nameInput);
+            }
         },
 
         setupValidation() {
@@ -509,6 +513,171 @@
                 if (dietaryField) dietaryField.value = '';
                 if (messageField) messageField.value = '';
             }
+        },
+
+        setupNameAutocomplete(input) {
+            // Create autocomplete dropdown
+            const dropdown = document.createElement('div');
+            dropdown.className = 'autocomplete-dropdown';
+            dropdown.style.display = 'none';
+            
+            // Position the dropdown relative to the input
+            input.parentElement.style.position = 'relative';
+            input.parentElement.appendChild(dropdown);
+            
+            let currentFocus = -1;
+            let debounceTimer;
+            
+            // Handle input events
+            input.addEventListener('input', (e) => {
+                clearTimeout(debounceTimer);
+                const value = e.target.value.trim();
+                
+                if (value.length < 2) {
+                    this.hideDropdown(dropdown);
+                    return;
+                }
+                
+                // Debounce the search
+                debounceTimer = setTimeout(() => {
+                    this.searchGuests(value, dropdown, input);
+                }, 300);
+            });
+            
+            // Handle keyboard navigation
+            input.addEventListener('keydown', (e) => {
+                const items = dropdown.querySelectorAll('.autocomplete-item');
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    currentFocus++;
+                    this.addActive(items, currentFocus);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    currentFocus--;
+                    this.addActive(items, currentFocus);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (currentFocus > -1 && items[currentFocus]) {
+                        items[currentFocus].click();
+                    }
+                } else if (e.key === 'Escape') {
+                    this.hideDropdown(dropdown);
+                    currentFocus = -1;
+                }
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!input.parentElement.contains(e.target)) {
+                    this.hideDropdown(dropdown);
+                    currentFocus = -1;
+                }
+            });
+            
+            // Store references for later use
+            this.autocompleteDropdown = dropdown;
+            this.autocompleteFocus = currentFocus;
+        },
+
+        hideDropdown(dropdown) {
+            if (dropdown.style.display === 'block') {
+                dropdown.style.opacity = '0';
+                dropdown.style.transform = 'translateY(-10px)';
+                setTimeout(() => {
+                    dropdown.style.display = 'none';
+                }, 200);
+            }
+        },
+
+        showDropdown(dropdown) {
+            dropdown.style.display = 'block';
+            // Force reflow for animation
+            dropdown.offsetHeight;
+            dropdown.style.opacity = '1';
+            dropdown.style.transform = 'translateY(0)';
+        },
+
+        async searchGuests(searchTerm, dropdown, input) {
+            try {
+                const response = await fetch(`/api/guests/search?q=${encodeURIComponent(searchTerm)}`);
+                const data = await response.json();
+                
+                dropdown.innerHTML = '';
+                this.autocompleteFocus = -1;
+                
+                if (data.suggestions && data.suggestions.length > 0) {
+                    data.suggestions.forEach((guest, index) => {
+                        const item = document.createElement('div');
+                        item.className = 'autocomplete-item';
+                        // Styles are now in CSS
+                        
+                        // Highlight matching part - escape special regex characters
+                        const escapedSearchTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                        const regex = new RegExp(`(${escapedSearchTerm})`, 'gi');
+                        const highlightedName = guest.name.replace(regex, '<strong>$1</strong>');
+                        
+                        item.innerHTML = `
+                            <div class="guest-name">${highlightedName}</div>
+                            <div class="guest-info">
+                                <span>${guest.side === 'bride' ? '👰 Bride\'s side' : 
+                                       guest.side === 'groom' ? '🤵 Groom\'s side' : 
+                                       '🤝 Mutual friend'}</span>
+                            </div>
+                        `;
+                        
+                        // Hover effects are now handled by CSS
+                        
+                        // Handle click
+                        item.addEventListener('click', () => {
+                            input.value = guest.name;
+                            this.hideDropdown(dropdown);
+                            this.validateField(input);
+                            
+                            // Trigger input event to update validation
+                            input.dispatchEvent(new Event('input', { bubbles: true }));
+                        });
+                        
+                        dropdown.appendChild(item);
+                    });
+                    
+                    this.showDropdown(dropdown);
+                } else if (searchTerm.length >= 2) {
+                    // Show no results message only if search term is long enough
+                    const noResults = document.createElement('div');
+                    noResults.className = 'autocomplete-no-results';
+                    noResults.innerHTML = `
+                        <div class="main-message">No matching guests found.</div>
+                        <div class="help-message">Please enter your full name as it appears on the invitation.</div>
+                    `;
+                    dropdown.appendChild(noResults);
+                    this.showDropdown(dropdown);
+                }
+            } catch (error) {
+                console.error('Error searching guests:', error);
+                this.hideDropdown(dropdown);
+            }
+        },
+
+        addActive(items, currentFocus) {
+            if (!items || items.length === 0) return false;
+            
+            // Remove active class from all items
+            items.forEach(item => {
+                item.classList.remove('autocomplete-active');
+            });
+            
+            // Wrap around
+            if (currentFocus >= items.length) currentFocus = 0;
+            if (currentFocus < 0) currentFocus = items.length - 1;
+            
+            // Add active class to current item
+            if (items[currentFocus]) {
+                items[currentFocus].classList.add('autocomplete-active');
+                items[currentFocus].scrollIntoView({ block: 'nearest' });
+            }
+            
+            // Update stored focus
+            this.autocompleteFocus = currentFocus;
         },
 
         validateField(field) {
@@ -651,7 +820,7 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    this.showFeedback(result.message || 'Thank you for your RSVP!', 'success');
+                    this.showFeedback(result.message || 'Thank you for your RSVP!', 'success', data.attending);
                     this.form.reset();
                     this.attendingFields?.classList.remove('show');
                 } else {
@@ -672,19 +841,275 @@
             }
         },
 
-        showFeedback(message, type) {
+        showFeedback(message, type, attending) {
             if (this.feedback) {
                 this.feedback.textContent = message;
                 this.feedback.className = `form__feedback ${type}`;
                 this.feedback.setAttribute('aria-live', 'polite');
                 
-                // Auto-hide success messages
+                // Trigger animations for success
                 if (type === 'success') {
+                    if (attending === 'yes') {
+                        this.triggerFireworks();
+                    } else if (attending === 'no') {
+                        this.triggerSadRain();
+                    }
+                    
+                    // Auto-hide success messages
                     setTimeout(() => {
                         this.feedback.textContent = '';
                         this.feedback.className = 'form__feedback';
                     }, 5000);
                 }
+            }
+        },
+
+        triggerFireworks() {
+            // Create fireworks container with elegant overlay
+            const fireworksContainer = document.createElement('div');
+            fireworksContainer.className = 'fireworks-container';
+            document.body.appendChild(fireworksContainer);
+
+            // Elegant color palettes
+            const goldPalette = ['#FFD700', '#FFA500', '#FFE5B4', '#FFFACD'];
+            const silverPalette = ['#C0C0C0', '#E5E5E5', '#F5F5F5', '#FFFFFF'];
+            const rosePalette = ['#FFB6C1', '#FFC0CB', '#FFDAB9', '#FFF0F5'];
+            const champagnePalette = ['#F7E7CE', '#FFF8DC', '#FAEBD7', '#FFEBCD'];
+            
+            const palettes = [goldPalette, silverPalette, rosePalette, champagnePalette];
+            
+            // Create elegant firework sequences
+            const sequences = [
+                { delay: 0, type: 'chrysanthemum', x: 50, y: 50 },
+                { delay: 800, type: 'willow', x: 30, y: 60 },
+                { delay: 800, type: 'willow', x: 70, y: 60 },
+                { delay: 1600, type: 'peony', x: 50, y: 70 },
+                { delay: 2400, type: 'palm', x: 25, y: 55 },
+                { delay: 2400, type: 'palm', x: 75, y: 55 },
+                { delay: 3200, type: 'chrysanthemum', x: 40, y: 65 },
+                { delay: 3200, type: 'chrysanthemum', x: 60, y: 65 },
+                { delay: 4000, type: 'finale', x: 50, y: 60 }
+            ];
+            
+            sequences.forEach(seq => {
+                setTimeout(() => {
+                    const palette = palettes[Math.floor(Math.random() * palettes.length)];
+                    const firework = document.createElement('div');
+                    firework.className = `firework firework-${seq.type}`;
+                    firework.style.left = seq.x + '%';
+                    firework.style.bottom = seq.y + '%';
+                    
+                    // Create elegant trails for launch
+                    if (seq.type !== 'finale') {
+                        const trail = document.createElement('div');
+                        trail.className = 'firework-launch-trail';
+                        trail.style.background = `linear-gradient(to top, transparent, ${palette[0]}, transparent)`;
+                        firework.appendChild(trail);
+                    }
+                    
+                    // Create sophisticated center bloom
+                    const bloom = document.createElement('div');
+                    bloom.className = 'firework-bloom';
+                    const primaryColor = palette[0];
+                    bloom.style.background = `radial-gradient(circle, ${primaryColor} 0%, transparent 70%)`;
+                    bloom.style.boxShadow = `0 0 40px ${primaryColor}, 0 0 80px ${primaryColor}, 0 0 120px ${primaryColor}`;
+                    firework.appendChild(bloom);
+                    
+                    // Type-specific particle patterns
+                    if (seq.type === 'chrysanthemum') {
+                        // Dense spherical burst
+                        for (let i = 0; i < 48; i++) {
+                            const particle = document.createElement('div');
+                            particle.className = 'firework-particle particle-chrysanthemum';
+                            particle.style.background = palette[i % palette.length];
+                            particle.style.setProperty('--angle', (i * 7.5) + 'deg');
+                            particle.style.setProperty('--delay', (i * 10) + 'ms');
+                            firework.appendChild(particle);
+                        }
+                    } else if (seq.type === 'willow') {
+                        // Drooping trails
+                        for (let i = 0; i < 36; i++) {
+                            const particle = document.createElement('div');
+                            particle.className = 'firework-particle particle-willow';
+                            particle.style.background = `linear-gradient(to bottom, ${palette[0]}, transparent)`;
+                            particle.style.setProperty('--angle', (i * 10) + 'deg');
+                            particle.style.height = '20px';
+                            firework.appendChild(particle);
+                        }
+                    } else if (seq.type === 'peony') {
+                        // Classic round burst with trails
+                        for (let i = 0; i < 32; i++) {
+                            const particle = document.createElement('div');
+                            particle.className = 'firework-particle particle-peony';
+                            particle.style.background = palette[Math.floor(i / 8)];
+                            particle.style.setProperty('--angle', (i * 11.25) + 'deg');
+                            
+                            // Add glowing trail
+                            const trail = document.createElement('div');
+                            trail.className = 'particle-trail';
+                            trail.style.background = `linear-gradient(to right, ${palette[0]}, transparent)`;
+                            particle.appendChild(trail);
+                            
+                            firework.appendChild(particle);
+                        }
+                    } else if (seq.type === 'palm') {
+                        // Rising comet tails
+                        for (let i = 0; i < 24; i++) {
+                            const particle = document.createElement('div');
+                            particle.className = 'firework-particle particle-palm';
+                            const color = palette[i % palette.length];
+                            particle.style.background = color;
+                            particle.style.boxShadow = `0 0 10px ${color}, 0 0 20px ${color}`;
+                            particle.style.setProperty('--angle', (i * 15) + 'deg');
+                            
+                            // Add comet tail
+                            const tail = document.createElement('div');
+                            tail.className = 'palm-tail';
+                            tail.style.background = `linear-gradient(to bottom, ${color}, transparent)`;
+                            particle.appendChild(tail);
+                            
+                            firework.appendChild(particle);
+                        }
+                    } else if (seq.type === 'finale') {
+                        // Grand finale with multiple layers
+                        const layers = [64, 48, 32];
+                        layers.forEach((count, layerIndex) => {
+                            for (let i = 0; i < count; i++) {
+                                const particle = document.createElement('div');
+                                particle.className = 'firework-particle particle-finale';
+                                const color = palette[Math.floor(Math.random() * palette.length)];
+                                particle.style.background = color;
+                                particle.style.boxShadow = `0 0 15px ${color}`;
+                                particle.style.setProperty('--angle', (i * (360 / count)) + 'deg');
+                                particle.style.setProperty('--layer', layerIndex);
+                                particle.style.setProperty('--delay', (layerIndex * 100) + 'ms');
+                                firework.appendChild(particle);
+                            }
+                        });
+                    }
+                    
+                    // Add elegant sparkles
+                    for (let s = 0; s < 16; s++) {
+                        const sparkle = document.createElement('div');
+                        sparkle.className = 'elegant-sparkle';
+                        sparkle.style.setProperty('--sparkle-angle', (s * 22.5) + 'deg');
+                        sparkle.style.setProperty('--sparkle-delay', (Math.random() * 500) + 'ms');
+                        firework.appendChild(sparkle);
+                    }
+                    
+                    fireworksContainer.appendChild(firework);
+                    
+                    // Remove after animation
+                    setTimeout(() => {
+                        if (firework.parentNode) {
+                            firework.parentNode.removeChild(firework);
+                        }
+                    }, 5000);
+                }, seq.delay);
+            });
+            
+            // Add subtle floating stars throughout - all at once
+            setTimeout(() => {
+                for (let i = 0; i < 30; i++) {
+                    const star = document.createElement('div');
+                    star.className = 'floating-star';
+                    star.style.left = (Math.random() * 100) + '%';
+                    star.style.top = (Math.random() * 100) + '%';
+                    star.style.animationDelay = (Math.random() * 0.5) + 's';
+                    star.style.animationDuration = (2 + Math.random() * 1) + 's';
+                    fireworksContainer.appendChild(star);
+                }
+            }, 500); // Small delay to let fireworks start first
+
+            // Remove container after all animations
+            setTimeout(() => {
+                if (fireworksContainer.parentNode) {
+                    fireworksContainer.parentNode.removeChild(fireworksContainer);
+                }
+            }, 8000);
+
+            // Gentle haptic feedback
+            if (MobileUtils.isTouchDevice() && navigator.vibrate) {
+                navigator.vibrate([50, 100, 50, 100, 100]);
+            }
+        },
+
+        triggerSadRain() {
+            // Create rain container
+            const rainContainer = document.createElement('div');
+            rainContainer.className = 'rain-container';
+            document.body.appendChild(rainContainer);
+
+            // Generate gentle rain drops and clouds
+            const elements = ['☁️', '🌧️', '💧', '🌦️'];
+            
+            // Add floating clouds at the top
+            for (let i = 0; i < 5; i++) {
+                const cloud = document.createElement('div');
+                cloud.className = 'floating-cloud';
+                cloud.textContent = '☁️';
+                cloud.style.left = (i * 20 + Math.random() * 10) + '%';
+                cloud.style.animationDelay = (Math.random() * 2) + 's';
+                rainContainer.appendChild(cloud);
+            }
+            
+            // Generate rain drops
+            for (let i = 0; i < 40; i++) {
+                setTimeout(() => {
+                    const drop = document.createElement('div');
+                    drop.className = 'rain-drop';
+                    
+                    // Use water drops for most, occasional rain cloud
+                    if (i % 8 === 0) {
+                        drop.textContent = '🌧️';
+                        drop.className += ' rain-cloud';
+                    } else {
+                        drop.textContent = '💧';
+                    }
+                    
+                    // Random horizontal position
+                    drop.style.left = Math.random() * 100 + '%';
+                    
+                    // Random animation duration and delay
+                    drop.style.animationDuration = (1.5 + Math.random() * 1.5) + 's';
+                    drop.style.animationDelay = Math.random() * 0.5 + 's';
+                    drop.style.fontSize = (Math.random() * 10 + 15) + 'px';
+                    
+                    rainContainer.appendChild(drop);
+                    
+                    // Remove after animation
+                    setTimeout(() => {
+                        if (drop.parentNode) {
+                            drop.parentNode.removeChild(drop);
+                        }
+                    }, 3500);
+                }, i * 80);
+            }
+            
+            // Add a gentle message
+            setTimeout(() => {
+                const message = document.createElement('div');
+                message.className = 'rain-message';
+                message.textContent = 'We\'ll miss you!';
+                rainContainer.appendChild(message);
+                
+                setTimeout(() => {
+                    if (message.parentNode) {
+                        message.parentNode.removeChild(message);
+                    }
+                }, 3000);
+            }, 1000);
+
+            // Remove container after all animations
+            setTimeout(() => {
+                if (rainContainer.parentNode) {
+                    rainContainer.parentNode.removeChild(rainContainer);
+                }
+            }, 5000);
+
+            // Gentle vibration on mobile
+            if (MobileUtils.isTouchDevice() && navigator.vibrate) {
+                navigator.vibrate([30, 30, 30]);
             }
         }
     };
@@ -832,6 +1257,12 @@
     const Gallery = {
         init() {
             this.galleryGrid = document.getElementById('galleryGrid');
+            this.storyGalleryGrid = document.getElementById('storyGalleryGrid');
+            
+            // Debug: Check which galleries are found
+            if (!this.galleryGrid) console.log('Main gallery not found - skipping main gallery init');
+            if (!this.storyGalleryGrid) console.log('Story gallery not found - skipping story gallery init');
+            
             this.autoScrollInterval = null;
             this.scrollSpeed = MobileUtils.isMobile() ? 1 : 2; // Slower on mobile for battery
             this.isPaused = false;
@@ -840,21 +1271,45 @@
             this.touchGesture = Object.create(TouchGesture);
             this.touchGesture.init();
             
-            this.loadGalleryImages();
-            this.setupAutoScroll();
+            // Only initialize galleries that exist
+            if (this.galleryGrid) {
+                this.loadGalleryImages();
+                this.setupAutoScroll();
+            }
+            
+            if (this.storyGalleryGrid) {
+                this.loadStoryGalleryImages();
+            }
+            
             this.setupMobileInteractions();
         },
 
         setupMobileInteractions() {
-            if (!this.galleryGrid || !MobileUtils.isTouchDevice()) return;
+            if (!MobileUtils.isTouchDevice()) return;
+            
+            // Setup for main gallery (if it exists)
+            if (this.galleryGrid) {
+                this.setupTouchEventsForGallery(this.galleryGrid, 'main');
+            }
 
+            // Setup for story gallery (if it exists)
+            if (this.storyGalleryGrid) {
+                this.setupTouchEventsForGallery(this.storyGalleryGrid, 'story');
+            }
+        },
+
+        setupTouchEventsForGallery(galleryElement, type) {
             // Touch event handlers for mobile swipe navigation
-            this.galleryGrid.addEventListener('touchstart', (e) => {
+            galleryElement.addEventListener('touchstart', (e) => {
                 this.touchGesture.start(e);
-                this.isPaused = true; // Pause auto-scroll during touch
+                if (type === 'main') {
+                    this.isPaused = true; // Pause auto-scroll during touch
+                } else {
+                    this.isStoryPaused = true;
+                }
             }, { passive: true });
 
-            this.galleryGrid.addEventListener('touchmove', (e) => {
+            galleryElement.addEventListener('touchmove', (e) => {
                 this.touchGesture.move(e);
                 // Prevent default only for horizontal swipes
                 if (!this.touchGesture.isScrolling) {
@@ -862,11 +1317,11 @@
                 }
             }, { passive: false });
 
-            this.galleryGrid.addEventListener('touchend', (e) => {
+            galleryElement.addEventListener('touchend', (e) => {
                 const swipeDirection = this.touchGesture.end(e);
                 
                 if (swipeDirection) {
-                    this.handleSwipe(swipeDirection);
+                    this.handleSwipe(swipeDirection, type);
                     
                     // Provide haptic feedback on supported devices
                     if (window.navigator.vibrate) {
@@ -876,38 +1331,42 @@
                 
                 // Resume auto-scroll after a delay
                 setTimeout(() => {
-                    this.isPaused = false;
+                    if (type === 'main') {
+                        this.isPaused = false;
+                    } else {
+                        this.isStoryPaused = false;
+                    }
                 }, 2000);
             }, { passive: true });
 
             // Add visual feedback for touch interactions
-            this.galleryGrid.addEventListener('touchstart', () => {
-                this.galleryGrid.classList.add('touching');
+            galleryElement.addEventListener('touchstart', () => {
+                galleryElement.classList.add('touching');
             }, { passive: true });
 
-            this.galleryGrid.addEventListener('touchend', () => {
-                this.galleryGrid.classList.remove('touching');
+            galleryElement.addEventListener('touchend', () => {
+                galleryElement.classList.remove('touching');
             }, { passive: true });
         },
 
-        handleSwipe(direction) {
+        handleSwipe(direction, type = 'main') {
             // Handle swipe navigation for mobile users
             if (direction === 'left') {
-                this.scrollToNext();
+                this.scrollToNext(type);
             } else if (direction === 'right') {
-                this.scrollToPrevious();
+                this.scrollToPrevious(type);
             }
         },
 
-        scrollToNext() {
-            const carousel = this.carousel;
+        scrollToNext(type = 'main') {
+            const carousel = type === 'main' ? this.carousel : this.storyCarousel;
             if (!carousel) return;
 
             const imageSet = carousel.querySelector('.gallery__image-set');
             if (imageSet) {
                 const itemWidth = 280 + 16; // Item width + gap
                 const maxScroll = imageSet.offsetWidth;
-                let currentTransform = this.getCurrentTransform();
+                let currentTransform = this.getCurrentTransform(type);
                 
                 currentTransform += itemWidth;
                 if (currentTransform >= maxScroll) {
@@ -924,15 +1383,15 @@
             }
         },
 
-        scrollToPrevious() {
-            const carousel = this.carousel;
+        scrollToPrevious(type = 'main') {
+            const carousel = type === 'main' ? this.carousel : this.storyCarousel;
             if (!carousel) return;
 
             const imageSet = carousel.querySelector('.gallery__image-set');
             if (imageSet) {
                 const itemWidth = 280 + 16; // Item width + gap
                 const maxScroll = imageSet.offsetWidth;
-                let currentTransform = this.getCurrentTransform();
+                let currentTransform = this.getCurrentTransform(type);
                 
                 currentTransform -= itemWidth;
                 if (currentTransform < 0) {
@@ -949,8 +1408,8 @@
             }
         },
 
-        getCurrentTransform() {
-            const carousel = this.carousel;
+        getCurrentTransform(type = 'main') {
+            const carousel = type === 'main' ? this.carousel : this.storyCarousel;
             if (!carousel) return 0;
             
             const transform = carousel.style.transform;
@@ -1021,6 +1480,134 @@
             this.carousel = carousel;
         },
 
+        loadStoryGalleryImages() {
+            // Double check for the element
+            this.storyGalleryGrid = document.getElementById('storyGalleryGrid');
+            
+            if (!this.storyGalleryGrid) {
+                console.log('Story gallery grid not found');
+                return;
+            }
+
+            // Same image list for story gallery
+            const galleryImages = [
+                'images/photo1.jpg',
+                'images/photo2.jpg', 
+                'images/photo3.jpg',
+                'images/photo4.jpg',
+                'images/photo5.jpg',
+                'images/photo6.jpg',
+                'images/photo7.jpg'
+            ];
+
+            // Remove placeholder text
+            const placeholder = this.storyGalleryGrid.querySelector('.gallery__placeholder');
+            if (placeholder) {
+                placeholder.remove();
+            }
+
+            // Create carousel container with auto-scroll
+            const carousel = document.createElement('div');
+            carousel.className = 'gallery__carousel';
+            
+            // Create two identical sets of images for seamless loop (like main gallery)
+            const createImageSet = () => {
+                const imageSet = document.createElement('div');
+                imageSet.className = 'gallery__image-set';
+                
+                galleryImages.forEach((src, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'gallery__item';
+                    
+                    const img = document.createElement('img');
+                    img.className = 'gallery__image';
+                    img.src = src;
+                    img.alt = `Wedding photo ${index + 1}`;
+                    img.loading = 'lazy';
+                    
+                    // Add click handler for lightbox effect
+                    img.addEventListener('click', () => {
+                        this.openLightbox(src, img.alt);
+                    });
+                    
+                    // Handle image load errors gracefully
+                    img.addEventListener('error', () => {
+                        item.style.display = 'none';
+                    });
+                    
+                    item.appendChild(img);
+                    imageSet.appendChild(item);
+                });
+                
+                return imageSet;
+            };
+
+            // Add two identical sets for seamless scrolling
+            carousel.appendChild(createImageSet());
+            carousel.appendChild(createImageSet());
+            
+            this.storyGalleryGrid.appendChild(carousel);
+            this.storyCarousel = carousel;
+            
+            // Setup auto-scroll for story gallery
+            this.setupStoryAutoScroll();
+        },
+
+        setupStoryAutoScroll() {
+            if (!this.storyCarousel) return;
+
+            // Pause on hover for story gallery
+            this.storyCarousel.addEventListener('mouseenter', () => {
+                this.isStoryPaused = true;
+            });
+
+            this.storyCarousel.addEventListener('mouseleave', () => {
+                this.isStoryPaused = false;
+            });
+
+            // Pause on focus (accessibility)
+            this.storyCarousel.addEventListener('focusin', () => {
+                this.isStoryPaused = true;
+            });
+
+            this.storyCarousel.addEventListener('focusout', () => {
+                this.isStoryPaused = false;
+            });
+
+            // Start auto-scroll animation for story
+            this.startStoryAutoScroll();
+        },
+
+        startStoryAutoScroll() {
+            let scrollPosition = 0;
+            this.isStoryPaused = false;
+            
+            const scroll = () => {
+                if (!this.isStoryPaused && this.storyCarousel) {
+                    scrollPosition += this.scrollSpeed;
+                    
+                    // Get the width of one image set
+                    const imageSet = this.storyCarousel.querySelector('.gallery__image-set');
+                    if (imageSet) {
+                        const setWidth = imageSet.offsetWidth;
+                        
+                        // Reset position when we've scrolled one full set
+                        if (scrollPosition >= setWidth) {
+                            scrollPosition = 0;
+                        }
+                        
+                        // Apply transform
+                        this.storyCarousel.style.transform = `translateX(-${scrollPosition}px)`;
+                    }
+                }
+                
+                requestAnimationFrame(scroll);
+            };
+            
+            // Start the animation
+            requestAnimationFrame(scroll);
+        },
+
         setupAutoScroll() {
             if (!this.carousel) return;
 
@@ -1078,6 +1665,7 @@
         openLightbox(src, alt) {
             // Pause auto-scroll when lightbox opens
             this.isPaused = true;
+            this.isStoryPaused = true;
             
             // Create lightbox overlay
             const lightbox = document.createElement('div');
@@ -1093,6 +1681,7 @@
             const closeLightbox = () => {
                 lightbox.remove();
                 this.isPaused = false; // Resume auto-scroll
+                this.isStoryPaused = false;
             };
             
             lightbox.addEventListener('click', (e) => {
@@ -1128,6 +1717,70 @@
                         });
                 });
             }
+        }
+    };
+
+    // Scroll Animation Manager
+    const ScrollAnimations = {
+        init() {
+            this.observeElements();
+            this.setupInitialStates();
+        },
+
+        setupInitialStates() {
+            // Add animation classes to sections (they start visible by default now)
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                if (!section.closest('#hero')) {
+                    section.classList.add('will-animate');
+                }
+            });
+        },
+
+        observeElements() {
+            if (!window.IntersectionObserver) return;
+
+            const options = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            this.observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('fade-in');
+                        
+                        // Add staggered animation to child elements
+                        this.animateChildElements(entry.target);
+                        
+                        // Unobserve once animated to improve performance
+                        this.observer.unobserve(entry.target);
+                    }
+                });
+            }, options);
+
+            // Observe all sections
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                this.observer.observe(section);
+            });
+
+            // Also observe other important elements
+            const timelineItems = document.querySelectorAll('.timeline__item');
+            timelineItems.forEach((item, index) => {
+                item.style.transitionDelay = `${index * 0.2}s`;
+                this.observer.observe(item);
+            });
+        },
+
+        animateChildElements(section) {
+            const children = section.querySelectorAll('.timeline__item, .venue__location, .faq__item, .story__text, .story__gallery');
+            
+            children.forEach((child, index) => {
+                setTimeout(() => {
+                    child.classList.add('fade-in');
+                }, index * 150);
+            });
         }
     };
 
@@ -1288,6 +1941,9 @@
                 if (Gallery.isPaused !== undefined) {
                     Gallery.isPaused = true;
                 }
+                if (Gallery.isStoryPaused !== undefined) {
+                    Gallery.isStoryPaused = true;
+                }
             } else {
                 document.body.classList.remove('slow-connection');
             }
@@ -1339,8 +1995,35 @@
         RSVPForm.init();
         LazyLoader.init();
         Gallery.init();
+        ScrollAnimations.init();
         ServiceWorkerManager.init();
         Analytics.init();
+        
+        // Initialize FAQ flip cards
+        const faqItems = document.querySelectorAll('.faq__item');
+        faqItems.forEach(item => {
+            const card = item.querySelector('.faq__card');
+            
+            if (card) {
+                card.addEventListener('click', () => {
+                    item.classList.toggle('flipped');
+                });
+                
+                // Add keyboard support
+                card.setAttribute('tabindex', '0');
+                card.setAttribute('role', 'button');
+                card.setAttribute('aria-pressed', 'false');
+                
+                card.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        item.classList.toggle('flipped');
+                        card.setAttribute('aria-pressed', 
+                            item.classList.contains('flipped') ? 'true' : 'false');
+                    }
+                });
+            }
+        });
 
         // Initialize mobile-specific components
         if (MobileUtils.isMobile() || MobileUtils.isTouchDevice()) {

@@ -92,7 +92,11 @@
                     </div>
                 </div>
             </div>
-            <a href="#rsvp" class="btn btn--primary">RSVP Now</a>
+            <a href="#rsvp" class="btn btn--primary hero__cta">RSVP Now</a>
+        </div>
+        <div class="hero__scroll-prompt" onclick="document.getElementById('story').scrollIntoView({behavior: 'smooth'})">
+            <span>Scroll to explore</span>
+            <div class="hero__scroll-arrow">↓</div>
         </div>
         <div class="hero__decoration" aria-hidden="true"></div>
         <div class="hero__hearts" aria-hidden="true">
@@ -123,18 +127,31 @@
             <h2 class="section__title">Our Story</h2>
             <div class="story__content">
                 <div class="story__text-container">
-                    <p class="story__text">
-                        <!-- TODO: Replace with actual story -->
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                    </p>
-                    <p class="story__text">
-                        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                    </p>
+                    <div class="story__timeline">
+                        <div class="story__timeline-item" data-year="2022">
+                            <div class="story__timeline-content">
+                                <h3 data-year="202">First Date</h3>
+                                <p>At Cerritos Heritage Park, surrounded by nature's beauty, we knew this was something special.</p>
+                            </div>
+                        </div>
+                        <div class="story__timeline-item" data-year="2022">
+                            <div class="story__timeline-content">
+                                <h3 data-year="2022">The Proposal</h3>
+                                <p>At Wayfarers Chapel, surrounded by glass walls and ocean views, Đại asked the most important question of our lives.</p>
+                            </div>
+                        </div>
+                        <div class="story__timeline-item" data-year="2026">
+                            <div class="story__timeline-content">
+                                <h3 data-year="2026">Our Wedding Day</h3>
+                                <p>And now, we can't wait to celebrate with all of you - our family and friends who have been part of our journey.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="story__gallery">
-                    <div class="gallery__grid" id="galleryGrid">
+                    <div class="gallery__grid" id="storyGalleryGrid">
                         <!-- Photos will be loaded lazily via JavaScript -->
-                        <div class="gallery__placeholder">Photos coming soon...</div>
+                        <div class="gallery__placeholder">Our beautiful memories...</div>
                     </div>
                 </div>
             </div>
@@ -185,8 +202,8 @@
             <div class="venue__grid">
                 <div class="venue__location">
                     <h3>Ceremony</h3>
-                    <p><strong>Korean Martys Catholic Center</strong><br>
-                    7655 Trask Ave<br>
+                    <h4>Korean Martys Catholic Center</h4>
+                    <p>7655 Trask Ave<br>
                     Westminster, CA 92683</p>
                     <iframe 
                         src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3316.4736474!2d-117.99345908!3d33.7517897!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80dd2c2c7b0a7a7b%3A0x1234567890abcdef!2s7655%20Trask%20Ave%2C%20Westminster%2C%20CA%2092683!5e0!3m2!1sen!2sus!4v1691234567890"
@@ -197,8 +214,8 @@
                 </div>
                 <div class="venue__location">
                     <h3>Reception</h3>
-                    <p><strong>White Place 2</strong><br>
-                    5015 W Edinger Ave Suite V<br>
+                    <h4>White Place 2</h4>
+                    <p>5015 W Edinger Ave Suite V<br>
                     Santa Ana, CA 92704</p>
                     <iframe 
                         src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3317.2145!2d-117.92345908!3d33.7398765!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80dd29c2c7b0a8b8%3A0x9876543210fedcba!2s5015%20W%20Edinger%20Ave%20Suite%20V%2C%20Santa%20Ana%2C%20CA%2092704!5e0!3m2!1sen!2sus!4v1691234567891"
@@ -240,11 +257,6 @@
         <div class="container">
             <h2 class="section__title">RSVP</h2>
             <p class="rsvp__subtitle">Please respond by May 26, 2026</p>
-            <div class="mobile-tips" style="display: none;">
-                <p class="mobile-tip">
-                    📱 <strong>Mobile tip:</strong> Swipe left/right on the photo gallery to browse images. Tap any photo to view full size.
-                </p>
-            </div>
             
             <form class="rsvp__form" id="rsvpForm" novalidate>
                 <div class="form__group">
@@ -299,25 +311,49 @@
         <div class="container">
             <h2 class="section__title">FAQ</h2>
             <div class="faq__list">
-                <details class="faq__item">
-                    <summary class="faq__question">Are children welcome?</summary>
-                    <p class="faq__answer">We love your little ones, but have planned an adults-only celebration. We hope this gives you a chance to enjoy a night out!</p>
-                </details>
+                <div class="faq__item">
+                    <div class="faq__card">
+                        <div class="faq__card-front">
+                            <h3 class="faq__question">Are children welcome?</h3>
+                        </div>
+                        <div class="faq__card-back">
+                            <p class="faq__answer">We love your little ones, but have planned an adults-only celebration. We hope this gives you a chance to enjoy a night out!</p>
+                        </div>
+                    </div>
+                </div>
                 
-                <details class="faq__item">
-                    <summary class="faq__question">What should I wear?</summary>
-                    <p class="faq__answer">Cocktail attire is requested. Think dressy but comfortable - you'll want to dance! Our wedding colors are navy blue, dusty blue, sage green, and gold.</p>
-                </details>
+                <div class="faq__item">
+                    <div class="faq__card">
+                        <div class="faq__card-front">
+                            <h3 class="faq__question">What should I wear?</h3>
+                        </div>
+                        <div class="faq__card-back">
+                            <p class="faq__answer">Cocktail attire is requested. Think dressy but comfortable - you'll want to dance! Our wedding colors are navy blue, dusty blue, sage green, and gold.</p>
+                        </div>
+                    </div>
+                </div>
                 
-                <details class="faq__item">
-                    <summary class="faq__question">What's the weather like in June?</summary>
-                    <p class="faq__answer">June in Southern California is typically warm and sunny with temperatures in the 70s-80s°F. The ceremony is indoors, and the reception venue is climate-controlled.</p>
-                </details>
+                <div class="faq__item">
+                    <div class="faq__card">
+                        <div class="faq__card-front">
+                            <h3 class="faq__question">What's the weather like in June?</h3>
+                        </div>
+                        <div class="faq__card-back">
+                            <p class="faq__answer">June in Southern California is typically warm and sunny with temperatures in the 70s-80s°F. The ceremony is indoors, and the reception venue is climate-controlled.</p>
+                        </div>
+                    </div>
+                </div>
                 
-                <details class="faq__item">
-                    <summary class="faq__question">How can we help fund your wedding?</summary>
-                    <p class="faq__answer">Your presence is the greatest gift! If you'd like to contribute, we have a wedding fund set up to help us celebrate this special day. Any contribution would be deeply appreciated.</p>
-                </details>
+                <div class="faq__item">
+                    <div class="faq__card">
+                        <div class="faq__card-front">
+                            <h3 class="faq__question">How can we help fund your wedding?</h3>
+                        </div>
+                        <div class="faq__card-back">
+                            <p class="faq__answer">Your presence is the greatest gift! If you'd like to contribute, we have a wedding fund set up to help us celebrate this special day. Any contribution would be deeply appreciated.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>

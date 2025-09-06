@@ -97,8 +97,9 @@ data/
 rsvps.json
 guests.json
 
-# Netlify
-.netlify
+# PM2
+.pm2
+pm2.json
 
 # VS Code
 .vscode/

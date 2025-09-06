@@ -33,6 +33,27 @@ const DatabaseUtils = {
     // Guest management functions
     async findGuestByName(guestName) {
         try {
+            // First try exact match (case insensitive)
+            const { data: exactMatch, error: exactError } = await supabaseAdmin
+                .from('guests')
+                .select('*')
+                .ilike('name', guestName);
+            
+            if (exactError) throw exactError;
+            if (exactMatch && exactMatch.length === 1) {
+                return exactMatch;
+            }
+            
+            // If no exact match, try partial match but require at least 2 words for short names
+            const nameWords = guestName.trim().split(/\s+/);
+            const isShortName = nameWords.length === 1 && nameWords[0].length < 6;
+            
+            if (isShortName) {
+                // For short single names, require exact match or return empty
+                return exactMatch || [];
+            }
+            
+            // For longer names or multiple words, allow partial matching
             const { data, error } = await supabaseAdmin
                 .from('guests')
                 .select('*')
@@ -83,6 +104,28 @@ const DatabaseUtils = {
         }
     },
 
+    // Search guests for autocomplete suggestions
+    async searchGuests(searchTerm) {
+        try {
+            // Use parameterized query for safety
+            const { data, error } = await supabaseAdmin
+                .from('guests')
+                .select('name, side')
+                .or(`name.ilike.%${searchTerm}%,name.ilike.${searchTerm}%`)
+                .order('name')
+                .limit(10);
+            
+            if (error) throw error;
+            
+            // Return empty array if no matches (let the UI handle the message)
+            
+            return data || [];
+        } catch (error) {
+            console.error('Error searching guests:', error);
+            return [];
+        }
+    },
+
     // RSVP management functions
     async createRSVP(rsvpData) {
         try {
@@ -91,6 +134,13 @@ const DatabaseUtils = {
             
             // Find or create guest
             const existingGuests = await this.findGuestByName(rsvpData.names);
+            
+            // If multiple guests found with similar names, require more specific input
+            if (existingGuests.length > 1) {
+                const guestNames = existingGuests.map(g => g.name).join(', ');
+                throw new Error(`Multiple guests found matching "${rsvpData.names}": ${guestNames}. Please enter your full name as it appears on the invitation.`);
+            }
+            
             if (existingGuests.length > 0) {
                 guest = existingGuests[0];
                 // Update guest info if provided
@@ -183,6 +233,13 @@ const DatabaseUtils = {
                 }
             }
 
+            // Log RSVP submission
+            await this.logAdminAction(
+                'rsvp_submitted', 
+                `RSVP submitted: ${guest.name} - ${rsvpData.attending === 'yes' ? 'Attending' : 'Not attending'} (${rsvpData.guests || 1} guests)`,
+                rsvpData.ipAddress
+            );
+
             return {
                 rsvp,
                 guest,
@@ -206,10 +263,9 @@ const DatabaseUtils = {
                 throw new Error('Unauthorized');
             }
 
-            // Log admin access
-            await this.logAdminAction('view_rsvps', 'Admin viewed RSVP list');
+            // No longer logging view actions
 
-            const { data, error } = await supabase
+            const { data, error } = await supabaseAdmin
                 .from('rsvp_summary')
                 .select('*')
                 .order('rsvp_date', { ascending: false });
@@ -320,7 +376,7 @@ const DatabaseUtils = {
 
             if (error) throw error;
 
-            await this.logAdminAction('view_rsvps', 'Admin viewed guest list');
+            // No longer logging view actions
             return data || [];
         } catch (error) {
             console.error('Error getting guest list:', error);
