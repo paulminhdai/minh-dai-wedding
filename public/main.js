@@ -202,7 +202,10 @@
             this.navLinks = document.querySelectorAll('.nav__link');
 
             // Set up event listeners
-            this.navToggle?.addEventListener('click', () => this.toggleMenu());
+            this.navToggle?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleMenu();
+            });
             this.navLinks.forEach(link => {
                 link.addEventListener('click', (e) => this.handleLinkClick(e));
             });
@@ -214,10 +217,15 @@
                 }
             });
 
-            // Close menu on outside click
+            // Close menu on outside click - with a small delay to prevent conflicts
             document.addEventListener('click', (e) => {
                 if (!this.nav?.contains(e.target) && this.navMenu?.classList.contains('active')) {
-                    this.closeMenu();
+                    // Use setTimeout to ensure this doesn't conflict with the toggle click
+                    setTimeout(() => {
+                        if (this.navMenu?.classList.contains('active')) {
+                            this.closeMenu();
+                        }
+                    }, 10);
                 }
             });
         },
@@ -1868,22 +1876,29 @@
 
         setupMobileMenuAnimations() {
             const navMenu = document.querySelector('.nav__menu');
-            const navToggle = document.querySelector('.nav__toggle');
 
-            if (!navMenu || !navToggle) return;
+            if (!navMenu) return;
 
-            // Add mobile-specific menu animations
-            navToggle.addEventListener('click', () => {
-                if (MobileUtils.isMobile()) {
-                    const isOpen = navMenu.classList.contains('active');
-                    
-                    if (isOpen) {
-                        navMenu.style.animation = 'slideOutUp 0.3s ease-out forwards';
-                    } else {
-                        navMenu.style.animation = 'slideInDown 0.3s ease-out forwards';
+            // Add animation classes instead of inline styles to avoid conflicts
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.attributeName === 'class') {
+                        if (MobileUtils.isMobile()) {
+                            const isActive = navMenu.classList.contains('active');
+                            
+                            if (isActive && !navMenu.classList.contains('menu-opening')) {
+                                navMenu.classList.add('menu-opening');
+                                navMenu.classList.remove('menu-closing');
+                            } else if (!isActive && navMenu.classList.contains('menu-opening')) {
+                                navMenu.classList.remove('menu-opening');
+                                navMenu.classList.add('menu-closing');
+                            }
+                        }
                     }
-                }
+                });
             });
+
+            observer.observe(navMenu, { attributes: true, attributeFilter: ['class'] });
         },
 
         setupSwipeToClose() {

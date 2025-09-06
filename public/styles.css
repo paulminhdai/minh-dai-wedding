@@ -540,16 +540,17 @@ a:hover, a:focus {
 }
 
 .hero__names {
-  font-family: var(--font-serif);
-  font-size: 4rem;
+  font-family: 'Alex Brush', cursive;
+  font-size: 5rem;
   margin-bottom: var(--space-md);
   color: var(--primary);
   position: relative;
   animation: namesReveal 2.5s ease-out 0.5s forwards;
   opacity: 0;
   transform: translateY(20px);
-  font-weight: 300;
-  letter-spacing: 0.02em;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
 }
 
 .hero__ampersand {
@@ -661,6 +662,8 @@ a:hover, a:focus {
   letter-spacing: 1px;
   position: relative;
   overflow: hidden;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent-sage) 100%);
+  color: white;
 }
 
 .hero__cta::before {
@@ -985,7 +988,7 @@ a:hover, a:focus {
 
 @media (min-width: 768px) {
   .hero__names {
-    font-size: 5.5rem;
+    font-size: 6.5rem;
   }
 }
 
@@ -2466,7 +2469,7 @@ a:hover, a:focus {
   
   .btn--primary:hover {
     transform: none;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--accent-sage) 100%);
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--accent-sage) 100%);
   }
   
   /* Add touch feedback instead */
@@ -2762,6 +2765,37 @@ a:hover, a:focus {
     border-radius: 0 0 15px 15px;
   }
   
+  /* Mobile menu animation classes */
+  .nav__menu.menu-opening {
+    animation: menuSlideIn 0.3s ease-out forwards;
+  }
+  
+  .nav__menu.menu-closing {
+    animation: menuSlideOut 0.3s ease-out forwards;
+  }
+  
+  @keyframes menuSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes menuSlideOut {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+  }
+  
   /* Better mobile FAQ styling */
   .faq__item {
     margin-bottom: var(--space-sm);
@@ -2880,9 +2914,9 @@ a:hover, a:focus {
     outline-offset: 2px;
   }
   
-  /* Better color contrast for mobile */
+  /* Use same button colors as desktop */
   .btn--primary {
-    background: linear-gradient(135deg, #1a252f 0%, #8fb070 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent-sage) 100%);
   }
   
   /* Mobile-optimized text sizing */
