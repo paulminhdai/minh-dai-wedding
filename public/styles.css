@@ -22,8 +22,8 @@
   --border-focus: var(--primary);
   
   /* Typography */
-  --font-serif: 'Playfair Display', serif;
-  --font-sans: 'Inter', sans-serif;
+  --font-serif: 'Playfair Display', 'Didot', 'Bodoni MT', serif;
+  --font-sans: 'Inter', 'Helvetica Neue', Arial, 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
   
   /* Spacing */
   --space-xs: 0.25rem;
@@ -550,7 +550,7 @@ a:hover, a:focus {
   font-style: italic;
   position: relative;
   display: inline-block;
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-serif);
   text-shadow: 0 2px 4px rgba(212, 175, 55, 0.3);
   animation: gentle-pulse 3s ease-in-out infinite;
 }
@@ -1580,7 +1580,7 @@ a:hover, a:focus {
   color: rgba(255, 255, 255, 0.7);
   font-size: 1rem;
   pointer-events: none;
-  font-family: var(--font-body);
+  font-family: var(--font-sans);
   text-align: center;
   animation: fadeInOut 3s ease-in-out;
 }
@@ -1965,7 +1965,7 @@ a:hover, a:focus {
   height: 100%;
   backface-visibility: hidden;
   border-radius: var(--radius);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1973,17 +1973,17 @@ a:hover, a:focus {
   padding: var(--space-md) var(--space-lg);
   text-align: center;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-md);
 }
 
 .faq__card-front {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--card-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
 
 .faq__card-back {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-secondary);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   transform: rotateX(180deg);
@@ -1998,7 +1998,7 @@ a:hover, a:focus {
 .faq__question {
   font-size: 1.05rem;
   font-weight: 600;
-  color: white;
+  color: var(--primary); /* Use theme-aware color */
   margin: 0;
 }
 
