@@ -1048,7 +1048,7 @@ a:hover, a:focus {
   .story__content {
     grid-template-columns: 1fr 1fr;
     gap: var(--space-xl);
-    align-items: stretch;
+    align-items: center;
   }
   
   .story__text-container {
@@ -1057,8 +1057,8 @@ a:hover, a:focus {
   }
   
   .story__gallery {
-    height: auto;
-    min-height: 400px;
+    height: 500px;
+    align-self: center;
   }
 }
 
@@ -1179,12 +1179,13 @@ a:hover, a:focus {
 
 .story__gallery {
   position: relative;
-  height: 400px;
+  height: 500px;
   overflow: hidden;
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 @media (max-width: 767px) {
@@ -1230,7 +1231,7 @@ a:hover, a:focus {
   }
   
   .story__gallery {
-    height: 300px;
+    height: 400px;
   }
 }
 
@@ -2120,8 +2121,8 @@ fieldset:focus-within {
 }
 
 .gallery__item {
-  width: 280px;
-  height: 400px;
+  width: 380px;
+  height: 500px;
   flex-shrink: 0;
   overflow: hidden;
   border-radius: var(--radius);
@@ -2132,8 +2133,8 @@ fieldset:focus-within {
 
 @media (max-width: 767px) {
   .gallery__item {
-    width: 220px;
-    height: 300px;
+    width: 300px;
+    height: 400px;
   }
 }
 
@@ -2164,8 +2165,8 @@ fieldset:focus-within {
 
 @media (max-width: 480px) {
   .gallery__item {
-    width: 180px;
-    height: 250px;
+    width: 240px;
+    height: 340px;
   }
 }
 

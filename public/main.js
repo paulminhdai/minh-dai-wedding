@@ -1432,7 +1432,7 @@
 
             const imageSet = carousel.querySelector('.gallery__image-set');
             if (imageSet) {
-                const itemWidth = 280 + 16; // Item width + gap
+                const itemWidth = (type === 'main' ? 380 : 380) + 16; // Updated item width + gap
                 const maxScroll = imageSet.offsetWidth;
                 let currentTransform = this.getCurrentTransform(type);
                 
@@ -1457,7 +1457,7 @@
 
             const imageSet = carousel.querySelector('.gallery__image-set');
             if (imageSet) {
-                const itemWidth = 280 + 16; // Item width + gap
+                const itemWidth = (type === 'main' ? 380 : 380) + 16; // Updated item width + gap
                 const maxScroll = imageSet.offsetWidth;
                 let currentTransform = this.getCurrentTransform(type);
                 
