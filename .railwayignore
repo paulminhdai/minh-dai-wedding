@@ -1,0 +1,54 @@
+# Railway Ignore File
+# Files and directories to exclude from Railway deployment
+
+# Environment files (use Railway dashboard for env vars)
+.env
+.env.*
+
+# Development dependencies
+node_modules/
+
+# Local data files (using Supabase instead)
+data/
+*.json
+!package.json
+!package-lock.json
+!manifest.json
+
+# Git files
+.git/
+.gitignore
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+server.log
+
+# Test files
+test/
+tests/
+*.test.js
+*.spec.js
+
+# Documentation (optional - include if you want)
+# *.md
+
+# PM2 files
+.pm2/
+pm2.json
+
+# Scripts (optional - include if needed)
+# scripts/
+

@@ -82,8 +82,27 @@ minh-dai-wedding/
 
 ## 🚀 Deployment
 
-### Current Deployment: Netlify
-The website is deployed on Netlify with automatic deployments from GitHub.
+### Recommended: Railway (5 minutes)
+**The easiest way to deploy your complete wedding website!**
+
+✅ **Already configured** with:
+- `railway.toml` - Railway configuration
+- `Procfile` - Process commands
+- `.railwayignore` - Optimized deployment
+- Node.js 18+ engine specification
+- Health check endpoint
+
+**Quick Deploy:**
+1. Sign up at [railway.app](https://railway.app)
+2. Deploy from GitHub
+3. Add environment variables
+4. Done! 🎉
+
+📖 **See [RAILWAY_QUICKSTART.md](RAILWAY_QUICKSTART.md)** for 5-minute setup guide  
+📖 **See [RAILWAY_DEPLOYMENT.md](RAILWAY_DEPLOYMENT.md)** for complete documentation
+
+### Alternative: Netlify
+The website is also deployed on Netlify with automatic deployments from GitHub.
 
 **Deployment URL**: `https://minh-dai-wedding-2026.netlify.app`
 
@@ -335,9 +354,10 @@ Currently RSVPs are logged to Netlify Functions. To implement proper tracking:
 
 ## 📚 Additional Documentation
 
-- **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)**: Complete deployment instructions
+- **[RAILWAY_QUICKSTART.md](RAILWAY_QUICKSTART.md)**: 5-minute Railway deployment
+- **[RAILWAY_DEPLOYMENT.md](RAILWAY_DEPLOYMENT.md)**: Complete Railway deployment guide
 - **[HOSTING_GUIDE.md](HOSTING_GUIDE.md)**: Comparison of hosting options
-- **[GOOGLE_SHEETS_SETUP.md](GOOGLE_SHEETS_SETUP.md)**: Guest list integration guide
+- **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)**: General deployment instructions
 
 ## 🆘 Troubleshooting
 

@@ -1,0 +1,23 @@
+# Railway.app Configuration
+# https://docs.railway.app/deploy/config-as-code
+
+[build]
+builder = "NIXPACKS"
+buildCommand = "npm install"
+
+[deploy]
+startCommand = "npm start"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+healthcheckPath = "/api/health"
+healthcheckTimeout = 100
+
+# Environment variables are set in Railway dashboard
+# Required variables:
+# - SUPABASE_URL
+# - SUPABASE_ANON_KEY
+# - SUPABASE_SERVICE_ROLE_KEY
+# - ADMIN_PASSWORD
+# - ENABLE_GUEST_VALIDATION
+# - NODE_ENV=production
+
