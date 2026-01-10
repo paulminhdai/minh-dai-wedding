@@ -1,0 +1,269 @@
+{
+  "en": {
+    "nav": {
+      "ourStory": "Our Story",
+      "schedule": "Schedule",
+      "venue": "Venue & Travel",
+      "rsvp": "RSVP"
+    },
+    "hero": {
+      "date": "June 26, 2026",
+      "location": "Orange County, California",
+      "countdown": {
+        "daysToGo": "days to go",
+        "dayToGo": "day to go",
+        "today": "Today is the day! 🎉",
+        "justMarried": "Just married! 💕"
+      },
+      "rsvpNow": "RSVP Now",
+      "scrollToExplore": "Scroll to explore"
+    },
+    "story": {
+      "title": "Our Story",
+      "firstDate": {
+        "title": "First Date",
+        "text": "On a sunny day, not by the sea.<br>In an ordinary place, you found me.<br>We talked, we laughed, beneath one tree,<br>Time stood still—just you and me.<br><br>I leaned back, safe in your embrace,<br>Then you asked love to take its place.<br>I said yes, unsure where we'd go,<br>Now forever's all we know."
+      },
+      "proposal": {
+        "title": "The Proposal",
+        "text": "On a sunny day, beneath a quiet sky,<br>At a chapel where the cliffs meet the light,<br>What felt like just a photo, a moment passing by,<br>Turned into a question that changed my life.<br><br>No grand surprise, just a heart so true,<br>He asked me simply, sure and clear.<br>I asked twice—are you really sure?—<br>He smiled, and forever was suddenly here."
+      },
+      "wedding": {
+        "title": "Our Wedding Day",
+        "text": "Every love story has a turning page.<br>Ours waits for the day we say I do.<br>Join us at our reception,<br>where the rest of our story will finally be told."
+      }
+    },
+    "schedule": {
+      "title": "Schedule",
+      "teaCeremony": {
+        "title": "Tea Ceremony",
+        "location": "Private residence in Anaheim"
+      },
+      "weddingMass": {
+        "title": "Wedding Mass",
+        "location": "Korean Martys Catholic Center, Westminster"
+      },
+      "cocktailHour": {
+        "title": "Cocktail Hour",
+        "location": "White Place 2, Santa Ana"
+      },
+      "reception": {
+        "title": "Reception",
+        "location": "White Place 2, Santa Ana"
+      }
+    },
+    "venue": {
+      "title": "Venue & Travel",
+      "ceremony": "Ceremony",
+      "reception": "Reception",
+      "parking": {
+        "title": "Parking",
+        "text": "Free parking available at both venues."
+      },
+      "airport": {
+        "title": "Airport",
+        "text": "John Wayne (SNA) - 20 minutes<br>Long Beach (LGB) - 20 minutes<br>Los Angeles (LAX) - 45 minutes"
+      },
+      "accommodations": {
+        "title": "Accommodations",
+        "text": "We have room blocks at nearby hotels. Contact us for special rates and booking details."
+      },
+      "dressCode": {
+        "title": "Dress Code",
+        "text": "Cocktail attire requested. Navy blue, dusty blue, sage green, and gold are our wedding colors."
+      }
+    },
+    "rsvp": {
+      "title": "RSVP",
+      "subtitle": "Please respond by May 26, 2026",
+      "form": {
+        "names": "Name(s)",
+        "namesPlaceholder": "Enter your name",
+        "phone": "Phone Number",
+        "phonePlaceholder": "(555) 123-4567",
+        "attending": "Will you be attending?",
+        "attendingYes": "Yes, I'll be there!",
+        "attendingNo": "Sorry, can't make it",
+        "guests": "Number of Guests",
+        "guestsPlaceholder": "Select number of guests",
+        "guestsOptions": {
+          "1": "1 person",
+          "2": "2 people",
+          "3": "3 people",
+          "4": "4 people",
+          "5": "5 people"
+        },
+        "submit": "Submit RSVP",
+        "submitting": "Submitting...",
+        "required": "*"
+      },
+      "validation": {
+        "names": "Please enter your name(s)",
+        "phone": "Please enter a valid phone number",
+        "attending": "Please let us know if you'll be attending",
+        "correctErrors": "Please correct the errors above."
+      },
+      "feedback": {
+        "success": "Thank you for your RSVP!",
+        "error": "Something went wrong. Please try again.",
+        "networkError": "Network error. Please check your connection and try again.",
+        "celebrating": "Celebrating your RSVP!",
+        "missYou": "We'll miss you!"
+      }
+    },
+    "faq": {
+      "title": "FAQ",
+      "questions": {
+        "whatToWear": {
+          "question": "What should I wear?",
+          "answer": "Cocktail attire is requested. Think dressy but comfortable - you'll want to dance! Our wedding colors are navy blue, dusty blue, sage green, and gold."
+        },
+        "weather": {
+          "question": "What's the weather like in June?",
+          "answer": "June in Southern California is typically warm and sunny with temperatures in the 70s-80s°F. The ceremony is indoors, and the reception venue is climate-controlled."
+        },
+        "contact": {
+          "question": "How do I contact the bride and groom?",
+          "answer": "Give me a call or send me a message to (714) 603 - 9152 or (657) 246 - 5497."
+        }
+      }
+    },
+    "footer": {
+      "copyright": "© 2026 Đại & Minh. Made with ❤️"
+    }
+  },
+  "vi": {
+    "nav": {
+      "ourStory": "Câu Chuyện",
+      "schedule": "Chương Trình",
+      "venue": "Địa Điểm",
+      "rsvp": "Phúc Đáp"
+    },
+    "hero": {
+      "date": "26 Tháng 6, 2026",
+      "location": "Orange County, California",
+      "countdown": {
+        "daysToGo": "ngày nữa",
+        "dayToGo": "ngày nữa",
+        "today": "Hôm nay là ngày vui! 🎉",
+        "justMarried": "Tụi mình đã là vợ chồng rồi! 💕"
+      },
+      "rsvpNow": "Phúc Đáp Ngay",
+      "scrollToExplore": "Vuốt xuống"
+    },
+    "story": {
+      "title": "Câu Chuyện Của Tụi Mình",
+      "firstDate": {
+        "title": "Buổi Hẹn Đầu Tiên",
+        "text": "Trong một ngày nắng đẹp, không phải bên bờ biển.<br>Ở một nơi bình thường, anh tìm thấy em.<br>Chúng ta nói chuyện, cười đùa, dưới một gốc cây,<br>Thời gian như dừng lại—chỉ có anh và em.<br><br>Em tựa lưng, an toàn trong vòng tay anh,<br>Rồi anh hỏi tình yêu có thể thay thế không.<br>Em nói có, không biết chúng ta sẽ đi đâu,<br>Bây giờ mãi mãi là tất cả những gì chúng ta biết."
+      },
+      "proposal": {
+        "title": "Lời Cầu Hôn",
+        "text": "Trong một ngày nắng đẹp, dưới bầu trời yên tĩnh,<br>Tại một nhà nguyện nơi vách đá gặp ánh sáng,<br>Điều cảm thấy như chỉ là một bức ảnh, một khoảnh khắc trôi qua,<br>Biến thành một câu hỏi đã thay đổi cuộc đời em.<br><br>Không có bất ngờ lớn lao, chỉ một trái tim chân thành,<br>Anh hỏi em một cách giản dị, chắc chắn và rõ ràng.<br>Em hỏi hai lần—anh thực sự chắc chắn chứ?—<br>Anh mỉm cười, và mãi mãi đột nhiên ở đây."
+      },
+      "wedding": {
+        "title": "Ngày Cưới Của Chúng Tôi",
+        "text": "Mỗi câu chuyện tình yêu đều có một trang mới.<br>Câu chuyện của chúng tôi chờ đợi ngày chúng tôi nói lời 'Tôi đồng ý'.<br>Hãy tham gia cùng chúng tôi tại tiệc chiêu đãi,<br>nơi phần còn lại của câu chuyện chúng tôi cuối cùng sẽ được kể."
+      }
+    },
+    "schedule": {
+      "title": "Chương Trình",
+      "teaCeremony": {
+        "title": "Lễ Gia Tiên",
+        "location": "Tư gia tại Anaheim"
+      },
+      "weddingMass": {
+        "title": "Lễ Cưới tại Nhà Thờ",
+        "location": "Trung Tâm Công Giáo Korean Martys, Westminster"
+      },
+      "cocktailHour": {
+        "title": "Đón Khách",
+        "location": "Nhà hàng White Place 2, Santa Ana"
+      },
+      "reception": {
+        "title": "Tiệc Mừng",
+        "location": "Nhà hàng White Place 2, Santa Ana"
+      }
+    },
+    "venue": {
+      "title": "Địa Điểm",
+      "ceremony": "Lễ Cưới",
+      "reception": "Tiệc Mừng",
+      "parking": {
+        "title": "Bãi Đậu Xe",
+        "text": "Bãi đỗ xe miễn phí tại cả hai địa điểm."
+      },
+      "airport": {
+        "title": "Phi Trường",
+        "text": "John Wayne (SNA) - 20 phút<br>Long Beach (LGB) - 20 phút<br>Los Angeles (LAX) - 45 phút"
+      },
+      "accommodations": {
+        "title": "Chỗ Ở",
+        "text": "Chúng mình có phòng đặt trước tại các khách sạn gần đó. Liên hệ với chúng tôi để biết giá đặc biệt và chi tiết đặt phòng."
+      },
+      "dressCode": {
+        "title": "Quy Định Trang Phục",
+        "text": "Trang phục màu xanh navy, xanh dusty, xanh sage và vàng là màu đám cưới của chúng mình."
+      }
+    },
+    "rsvp": {
+      "title": "Phúc Đáp",
+      "subtitle": "Vui lòng phúc đáp trước ngày 26 tháng 5, 2026",
+      "form": {
+        "names": "Tên",
+        "namesPlaceholder": "Nhập tên của bạn",
+        "phone": "Số Điện Thoại",
+        "phonePlaceholder": "(555) 123-4567",
+        "attending": "Bạn có tham dự không?",
+        "attendingYes": "Có, tôi sẽ đến!",
+        "attendingNo": "Xin lỗi, không thể tham dự",
+        "guests": "Số Lượng Khách",
+        "guestsPlaceholder": "Chọn số lượng khách",
+        "guestsOptions": {
+          "1": "1 người",
+          "2": "2 người",
+          "3": "3 người",
+          "4": "4 người",
+          "5": "5 người"
+        },
+        "submit": "Gửi Xác Nhận",
+        "submitting": "Đang gửi...",
+        "required": "*"
+      },
+      "validation": {
+        "names": "Vui lòng nhập tên của bạn",
+        "phone": "Vui lòng nhập số điện thoại hợp lệ",
+        "attending": "Vui lòng cho chúng tôi biết bạn có tham dự không",
+        "correctErrors": "Vui lòng sửa các lỗi ở trên."
+      },
+      "feedback": {
+        "success": "Cảm ơn bạn đã xác nhận!",
+        "error": "Đã xảy ra lỗi. Vui lòng thử lại.",
+        "networkError": "Lỗi kết nối. Vui lòng kiểm tra kết nối của bạn và thử lại.",
+        "celebrating": "Chúc mừng xác nhận của bạn!",
+        "missYou": "Chúng tôi sẽ nhớ bạn!"
+      }
+    },
+    "faq": {
+      "title": "Câu Hỏi Thường Gặp",
+      "questions": {
+        "whatToWear": {
+          "question": "Tôi nên mặc gì?",
+          "answer": "Trang phục tiệc cưới lịch sự - bạn sẽ muốn nhảy múa! Màu đám cưới của chúng tôi là xanh navy, xanh dusty, xanh sage và vàng."
+        },
+        "weather": {
+          "question": "Thời tiết vào tháng 6 như thế nào?",
+          "answer": "Tháng 6 ở Nam California thường ấm áp và nắng với nhiệt độ khoảng 70-80 độ F. Lễ cưới được tổ chức trong nhà và địa điểm tiệc chiêu đãi có điều hòa không khí."
+        },
+        "contact": {
+          "question": "Làm thế nào để liên hệ với cô dâu và chú rể?",
+          "answer": "Hãy gọi hoặc nhắn tin cho chúng mình theo số (714) 603 - 9152 hoặc (657) 246 - 5497."
+        }
+      }
+    },
+    "footer": {
+      "copyright": "© 2026 Đại & Minh. Được tạo bởi ❤️"
+    }
+  }
+}
+

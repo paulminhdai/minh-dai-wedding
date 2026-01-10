@@ -458,6 +458,7 @@ a:hover, a:focus {
 
 .theme-toggle,
 .music-toggle,
+.language-toggle,
 .contrast-toggle {
   background: none;
   border: 1px solid var(--border);
@@ -470,6 +471,7 @@ a:hover, a:focus {
 
 .theme-toggle:hover,
 .music-toggle:hover,
+.language-toggle:hover,
 .contrast-toggle:hover {
   background-color: var(--bg-secondary);
 }
@@ -477,6 +479,43 @@ a:hover, a:focus {
 .music-toggle.playing {
   background-color: var(--accent-gold);
   color: var(--text-contrast);
+}
+
+/* Language Toggle Styles */
+.language-toggle {
+  position: relative;
+  min-width: 50px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  overflow: hidden;
+}
+
+.language-toggle span {
+  display: inline-block;
+  transition: var(--transition);
+}
+
+.language-toggle .lang-vi {
+  opacity: 0.4;
+  margin-left: 2px;
+}
+
+.language-toggle .lang-en {
+  opacity: 1;
+}
+
+[lang="vi"] .language-toggle .lang-vi {
+  opacity: 1;
+}
+
+[lang="vi"] .language-toggle .lang-en {
+  opacity: 0.4;
+}
+
+.language-toggle:hover {
+  background-color: var(--accent-sage);
+  color: var(--bg-primary);
+  border-color: var(--accent-sage);
 }
 
 @media (min-width: 768px) {

@@ -12,6 +12,147 @@
         lazyLoadOffset: 100
     };
 
+    // i18n (Internationalization) Manager
+    const i18n = {
+        currentLang: 'en',
+        translations: {},
+        
+        async init() {
+            // Load translations from JSON file
+            try {
+                console.log('Loading translations...');
+                const response = await fetch('/translations.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                this.translations = await response.json();
+                console.log('Translations loaded successfully:', this.translations);
+                
+                // Load saved language preference
+                const savedLang = localStorage.getItem('preferredLanguage') || 'en';
+                console.log('Setting language to:', savedLang);
+                
+                // Set language without trying to update components yet
+                this.currentLang = savedLang;
+                document.documentElement.setAttribute('lang', savedLang);
+                
+                // Setup language toggle button (will be called after DOM is ready)
+                // Use setTimeout to ensure other components are initialized
+                setTimeout(() => {
+                    this.setupLanguageToggle();
+                    // Now translate the page with all components ready
+                    if (savedLang !== 'en') {
+                        this.translatePage();
+                    }
+                }, 100);
+            } catch (error) {
+                console.error('Failed to load translations:', error);
+                this.translations = { en: {}, vi: {} }; // Fallback empty translations
+            }
+        },
+        
+        setupLanguageToggle() {
+            const langToggle = document.querySelector('.language-toggle');
+            console.log('Language toggle button:', langToggle);
+            if (langToggle) {
+                langToggle.addEventListener('click', () => {
+                    const newLang = this.currentLang === 'en' ? 'vi' : 'en';
+                    console.log('Switching language from', this.currentLang, 'to', newLang);
+                    this.setLanguage(newLang);
+                });
+            } else {
+                console.error('Language toggle button not found!');
+            }
+        },
+        
+        setLanguage(lang) {
+            console.log('setLanguage called with:', lang);
+            this.currentLang = lang;
+            document.documentElement.setAttribute('lang', lang);
+            localStorage.setItem('preferredLanguage', lang);
+            console.log('Translating page to:', lang);
+            this.translatePage();
+        },
+        
+        translatePage() {
+            console.log('translatePage called, current language:', this.currentLang);
+            let elementsTranslated = 0;
+            
+            // Translate all elements with data-i18n attribute
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                const translation = this.getTranslation(key);
+                if (translation) {
+                    element.textContent = translation;
+                    elementsTranslated++;
+                }
+            });
+            
+            // Translate all elements with data-i18n-html attribute (for HTML content)
+            document.querySelectorAll('[data-i18n-html]').forEach(element => {
+                const key = element.getAttribute('data-i18n-html');
+                const translation = this.getTranslation(key);
+                if (translation) {
+                    element.innerHTML = translation;
+                    elementsTranslated++;
+                }
+            });
+            
+            // Translate placeholders
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+                const key = element.getAttribute('data-i18n-placeholder');
+                const translation = this.getTranslation(key);
+                if (translation) {
+                    element.placeholder = translation;
+                    elementsTranslated++;
+                }
+            });
+            
+            console.log('Translated', elementsTranslated, 'elements');
+            
+            // Update countdown text with proper translation
+            this.updateCountdownTranslation();
+            
+            // Update validation messages
+            this.updateValidationMessages();
+        },
+        
+        getTranslation(key) {
+            const keys = key.split('.');
+            let value = this.translations[this.currentLang];
+            
+            for (const k of keys) {
+                if (value && value[k] !== undefined) {
+                    value = value[k];
+                } else {
+                    return null;
+                }
+            }
+            
+            return value;
+        },
+        
+        updateCountdownTranslation() {
+            // This will be called by the Countdown manager
+            // Only update if Countdown is initialized and has the element
+            if (Countdown && Countdown.countdownEl && Countdown.updateCountdown) {
+                Countdown.updateCountdown();
+            }
+        },
+        
+        updateValidationMessages() {
+            // Update validation messages in RSVP form
+            // Only update if RSVPForm is initialized
+            if (RSVPForm && RSVPForm.form && RSVPForm.validationMessages) {
+                RSVPForm.validationMessages = {
+                    names: this.getTranslation('rsvp.validation.names'),
+                    phone: this.getTranslation('rsvp.validation.phone'),
+                    attending: this.getTranslation('rsvp.validation.attending')
+                };
+            }
+        }
+    };
+
     // Utility functions
     const Utils = {
         // Debounce function for performance
@@ -312,15 +453,17 @@
                 const days = Math.floor(difference / (1000 * 60 * 60 * 24));
                 
                 if (days === 0) {
-                    this.countdownEl.textContent = "Today is the day! 🎉";
+                    this.countdownEl.textContent = i18n.getTranslation('hero.countdown.today') || "Today is the day! 🎉";
                 } else if (days === 1) {
-                    this.countdownEl.textContent = "1 day to go";
+                    const daysText = i18n.getTranslation('hero.countdown.dayToGo') || "day to go";
+                    this.countdownEl.textContent = `1 ${daysText}`;
                 } else {
-                    this.countdownEl.textContent = `${days} days to go`;
+                    const daysText = i18n.getTranslation('hero.countdown.daysToGo') || "days to go";
+                    this.countdownEl.textContent = `${days} ${daysText}`;
                 }
             } else {
                 // Wedding day has passed
-                this.countdownEl.textContent = "Just married! 💕";
+                this.countdownEl.textContent = i18n.getTranslation('hero.countdown.justMarried') || "Just married! 💕";
                 clearInterval(this.interval);
             }
         },
@@ -498,11 +641,11 @@
         },
 
         setupValidation() {
-            // Custom validation messages
+            // Custom validation messages - will be updated by i18n
             this.validationMessages = {
-                names: 'Please enter your name(s)',
-                phone: 'Please enter a valid phone number',
-                attending: 'Please let us know if you\'ll be attending'
+                names: i18n.getTranslation('rsvp.validation.names') || 'Please enter your name(s)',
+                phone: i18n.getTranslation('rsvp.validation.phone') || 'Please enter a valid phone number',
+                attending: i18n.getTranslation('rsvp.validation.attending') || 'Please let us know if you\'ll be attending'
             };
         },
 
@@ -785,7 +928,7 @@
             }
 
             if (!isFormValid) {
-                this.showFeedback('Please correct the errors above.', 'error');
+                this.showFeedback(i18n.getTranslation('rsvp.validation.correctErrors') || 'Please correct the errors above.', 'error');
                 return;
             }
 
@@ -812,7 +955,7 @@
             // Show loading state
             const submitBtn = this.form.querySelector('.form__submit');
             const originalText = submitBtn.textContent;
-            submitBtn.textContent = 'Submitting...';
+            submitBtn.textContent = i18n.getTranslation('rsvp.form.submitting') || 'Submitting...';
             submitBtn.disabled = true;
             this.form.classList.add('loading');
 
@@ -828,15 +971,17 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    this.showFeedback(result.message || 'Thank you for your RSVP!', 'success', data.attending);
+                    const successMsg = result.message || i18n.getTranslation('rsvp.feedback.success') || 'Thank you for your RSVP!';
+                    this.showFeedback(successMsg, 'success', data.attending);
                     this.form.reset();
                     this.attendingFields?.classList.remove('show');
                 } else {
-                    this.showFeedback(result.error || 'Something went wrong. Please try again.', 'error');
+                    const errorMsg = result.error || i18n.getTranslation('rsvp.feedback.error') || 'Something went wrong. Please try again.';
+                    this.showFeedback(errorMsg, 'error');
                 }
             } catch (error) {
                 console.error('RSVP submission error:', error);
-                this.showFeedback('Network error. Please check your connection and try again.', 'error');
+                this.showFeedback(i18n.getTranslation('rsvp.feedback.networkError') || 'Network error. Please check your connection and try again.', 'error');
             } finally {
                 // Reset button state
                 submitBtn.textContent = originalText;
@@ -887,7 +1032,7 @@
             // Create info text
             const infoText = document.createElement('div');
             infoText.className = 'fireworks-info-text';
-            infoText.textContent = 'Celebrating your RSVP!';
+            infoText.textContent = i18n.getTranslation('rsvp.feedback.celebrating') || 'Celebrating your RSVP!';
             
             fireworksContainer.appendChild(canvas);
             fireworksContainer.appendChild(infoText);
@@ -1157,7 +1302,7 @@
             setTimeout(() => {
                 const message = document.createElement('div');
                 message.className = 'rain-message';
-                message.textContent = 'We\'ll miss you!';
+                message.textContent = i18n.getTranslation('rsvp.feedback.missYou') || 'We\'ll miss you!';
                 rainContainer.appendChild(message);
                 
                 setTimeout(() => {
@@ -2057,11 +2202,14 @@
     };
 
     // Initialize everything when DOM is loaded
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
         // Initialize mobile detection first
         MobileUtils.handleResize();
         window.addEventListener('resize', MobileUtils.handleResize);
 
+        // Initialize i18n first (load translations)
+        await i18n.init();
+        
         // Initialize core components
         ThemeManager.init();
         MusicManager.init();
@@ -2145,7 +2293,8 @@
         Navigation,
         Countdown,
         RSVPForm,
-        Analytics
+        Analytics,
+        i18n
     };
 
 })();

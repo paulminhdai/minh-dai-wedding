@@ -58,12 +58,16 @@
                 <span class="nav__hamburger"></span>
             </button>
             <ul class="nav__menu">
-                <li><a href="#story" class="nav__link">Our Story</a></li>
-                <li><a href="#schedule" class="nav__link">Schedule</a></li>
-                <li><a href="#venue" class="nav__link">Venue & Travel</a></li>
-                <li><a href="#rsvp" class="nav__link nav__link--cta">RSVP</a></li>
+                <li><a href="#story" class="nav__link" data-i18n="nav.ourStory">Our Story</a></li>
+                <li><a href="#schedule" class="nav__link" data-i18n="nav.schedule">Schedule</a></li>
+                <li><a href="#venue" class="nav__link" data-i18n="nav.venue">Venue & Travel</a></li>
+                <li><a href="#rsvp" class="nav__link nav__link--cta" data-i18n="nav.rsvp">RSVP</a></li>
             </ul>
             <div class="nav__controls">
+                <button class="language-toggle" aria-label="Switch language" title="Switch to Vietnamese / Chuyển sang tiếng Việt">
+                    <span class="lang-en">EN</span>
+                    <span class="lang-vi">VI</span>
+                </button>
                 <button class="music-toggle" aria-label="Toggle background music">🎵</button>
                 <button class="theme-toggle" aria-label="Toggle dark mode">🌙</button>
             </div>
@@ -83,8 +87,8 @@
     <section id="hero" class="hero">
         <div class="hero__container">
             <h1 class="hero__names">Đại <span class="hero__ampersand">&</span> Minh</h1>
-            <p class="hero__date">June 26, 2026</p>
-            <p class="hero__location">Orange County, California</p>
+            <p class="hero__date" data-i18n="hero.date">June 26, 2026</p>
+            <p class="hero__location" data-i18n="hero.location">Orange County, California</p>
             <div class="hero__countdown" aria-live="polite">
                 <div class="countdown">
                     <div class="countdown__simple">
@@ -92,10 +96,10 @@
                     </div>
                 </div>
             </div>
-            <a href="#rsvp" class="btn btn--primary hero__cta">RSVP Now</a>
+            <a href="#rsvp" class="btn btn--primary hero__cta" data-i18n="hero.rsvpNow">RSVP Now</a>
         </div>
         <div class="hero__scroll-prompt" onclick="document.getElementById('story').scrollIntoView({behavior: 'smooth'})">
-            <span>Scroll to explore</span>
+            <span data-i18n="hero.scrollToExplore">Scroll to explore</span>
             <div class="hero__scroll-arrow">↓</div>
         </div>
         <div class="hero__decoration" aria-hidden="true"></div>
@@ -124,14 +128,14 @@
     <!-- Our Story -->
     <section id="story" class="story section">
         <div class="container">
-            <h2 class="section__title">Our Story</h2>
+            <h2 class="section__title" data-i18n="story.title">Our Story</h2>
             <div class="story__content">
                 <div class="story__text-container">
                     <div class="story__timeline">
                         <div class="story__timeline-item" data-year="06/2022">
                             <div class="story__timeline-content">
-                                <h3>First Date</h3>
-                                <p>On a sunny day, not by the sea.<br>
+                                <h3 data-i18n="story.firstDate.title">First Date</h3>
+                                <p data-i18n-html="story.firstDate.text">On a sunny day, not by the sea.<br>
                                     In an ordinary place, you found me.<br>
                                     We talked, we laughed, beneath one tree,<br>
                                     Time stood still—just you and me.<br>
@@ -144,8 +148,8 @@
                         </div>
                         <div class="story__timeline-item" data-year="12/2022">
                             <div class="story__timeline-content">
-                                <h3>The Proposal</h3>
-                                <p>On a sunny day, beneath a quiet sky,<br>
+                                <h3 data-i18n="story.proposal.title">The Proposal</h3>
+                                <p data-i18n-html="story.proposal.text">On a sunny day, beneath a quiet sky,<br>
                                     At a chapel where the cliffs meet the light,<br>
                                     What felt like just a photo, a moment passing by,<br>
                                     Turned into a question that changed my life.<br>
@@ -158,8 +162,8 @@
                         </div>
                         <div class="story__timeline-item" data-year="06/2026">
                             <div class="story__timeline-content">
-                                <h3>Our Wedding Day</h3>
-                                <p>Every love story has a turning page.<br>
+                                <h3 data-i18n="story.wedding.title">Our Wedding Day</h3>
+                                <p data-i18n-html="story.wedding.text">Every love story has a turning page.<br>
                                     Ours waits for the day we say I do.<br>
                                     Join us at our reception,<br>
                                     where the rest of our story will finally be told.</p>
@@ -180,34 +184,34 @@
     <!-- Schedule -->
     <section id="schedule" class="schedule section">
         <div class="container">
-            <h2 class="section__title">Schedule</h2>
+            <h2 class="section__title" data-i18n="schedule.title">Schedule</h2>
             <div class="schedule__timeline">
                 <div class="timeline__item">
                     <div class="timeline__time">1:00 PM</div>
                     <div class="timeline__content">
-                        <h3>Tea Ceremony</h3>
-                        <p>Private residence in Anaheim</p>
+                        <h3 data-i18n="schedule.teaCeremony.title">Tea Ceremony</h3>
+                        <p data-i18n="schedule.teaCeremony.location">Private residence in Anaheim</p>
                     </div>
                 </div>
                 <div class="timeline__item">
                     <div class="timeline__time">3:00 PM</div>
                     <div class="timeline__content">
-                        <h3>Wedding Mass</h3>
-                        <p>Korean Martys Catholic Center, Westminster</p>
+                        <h3 data-i18n="schedule.weddingMass.title">Wedding Mass</h3>
+                        <p data-i18n="schedule.weddingMass.location">Korean Martys Catholic Center, Westminster</p>
                     </div>
                 </div>
                 <div class="timeline__item">
                     <div class="timeline__time">6:00 PM</div>
                     <div class="timeline__content">
-                        <h3>Cocktail Hour</h3>
-                        <p>White Place 2, Santa Ana</p>
+                        <h3 data-i18n="schedule.cocktailHour.title">Cocktail Hour</h3>
+                        <p data-i18n="schedule.cocktailHour.location">White Place 2, Santa Ana</p>
                     </div>
                 </div>
                 <div class="timeline__item">
                     <div class="timeline__time">7:00 PM</div>
                     <div class="timeline__content">
-                        <h3>Reception</h3>
-                        <p>White Place 2, Santa Ana</p>
+                        <h3 data-i18n="schedule.reception.title">Reception</h3>
+                        <p data-i18n="schedule.reception.location">White Place 2, Santa Ana</p>
                     </div>
                 </div>
             </div>
@@ -217,10 +221,10 @@
     <!-- Venue & Travel -->
     <section id="venue" class="venue section">
         <div class="container">
-            <h2 class="section__title">Venue & Travel</h2>
+            <h2 class="section__title" data-i18n="venue.title">Venue & Travel</h2>
             <div class="venue__grid">
                 <div class="venue__location">
-                    <h3>Ceremony</h3>
+                    <h3 data-i18n="venue.ceremony">Ceremony</h3>
                     <h4>Korean Martys Catholic Center</h4>
                     <p>7655 Trask Ave<br>
                     Westminster, CA 92683</p>
@@ -232,7 +236,7 @@
                     </iframe>
                 </div>
                 <div class="venue__location">
-                    <h3>Reception</h3>
+                    <h3 data-i18n="venue.reception">Reception</h3>
                     <h4>White Place 2</h4>
                     <p>5015 W Edinger Ave Suite V<br>
                     Santa Ana, CA 92704</p>
@@ -247,25 +251,25 @@
             
             <div class="travel__info">
                 <div class="travel__section">
-                    <h3>Parking</h3>
-                    <p>Free parking available at both venues.</p>
+                    <h3 data-i18n="venue.parking.title">Parking</h3>
+                    <p data-i18n="venue.parking.text">Free parking available at both venues.</p>
                 </div>
                 
                 <div class="travel__section">
-                    <h3>Airport</h3>
-                    <p>John Wayne (SNA) - 20 minutes<br>
+                    <h3 data-i18n="venue.airport.title">Airport</h3>
+                    <p data-i18n-html="venue.airport.text">John Wayne (SNA) - 20 minutes<br>
                     Long Beach (LGB) - 20 minutes<br>
                     Los Angeles (LAX) - 45 minutes</p>
                 </div>
                 
                 <div class="travel__section">
-                    <h3>Accommodations</h3>
-                    <p>We have room blocks at nearby hotels. Contact us for special rates and booking details.</p>
+                    <h3 data-i18n="venue.accommodations.title">Accommodations</h3>
+                    <p data-i18n="venue.accommodations.text">We have room blocks at nearby hotels. Contact us for special rates and booking details.</p>
                 </div>
                 
                 <div class="travel__section">
-                    <h3>Dress Code</h3>
-                    <p>Cocktail attire requested. Navy blue, dusty blue, sage green, and gold are our wedding colors.</p>
+                    <h3 data-i18n="venue.dressCode.title">Dress Code</h3>
+                    <p data-i18n="venue.dressCode.text">Cocktail attire requested. Navy blue, dusty blue, sage green, and gold are our wedding colors.</p>
                 </div>
             </div>
         </div>
@@ -274,52 +278,52 @@
     <!-- RSVP -->
     <section id="rsvp" class="rsvp section">
         <div class="container">
-            <h2 class="section__title">RSVP</h2>
-            <p class="rsvp__subtitle">Please respond by May 26, 2026</p>
+            <h2 class="section__title" data-i18n="rsvp.title">RSVP</h2>
+            <p class="rsvp__subtitle" data-i18n="rsvp.subtitle">Please respond by May 26, 2026</p>
             
             <form class="rsvp__form" id="rsvpForm" novalidate>
                 <div class="form__group">
-                    <label for="names" class="form__label">Name(s) *</label>
-                    <input type="text" id="names" name="names" class="form__input" required placeholder="Enter your name">
+                    <label for="names" class="form__label"><span data-i18n="rsvp.form.names">Name(s)</span> <span data-i18n="rsvp.form.required">*</span></label>
+                    <input type="text" id="names" name="names" class="form__input" required data-i18n-placeholder="rsvp.form.namesPlaceholder">
                 </div>
                 
                 <div class="form__group">
-                    <label for="phone" class="form__label">Phone Number *</label>
-                    <input type="tel" id="phone" name="phone" class="form__input" required placeholder="(555) 123-4567">
+                    <label for="phone" class="form__label"><span data-i18n="rsvp.form.phone">Phone Number</span> <span data-i18n="rsvp.form.required">*</span></label>
+                    <input type="tel" id="phone" name="phone" class="form__input" required data-i18n-placeholder="rsvp.form.phonePlaceholder">
                 </div>
                 
                 <fieldset class="form__group">
-                    <legend class="form__label">Will you be attending? *</legend>
+                    <legend class="form__label"><span data-i18n="rsvp.form.attending">Will you be attending?</span> <span data-i18n="rsvp.form.required">*</span></legend>
                     <div class="radio__group">
                         <label class="radio__label">
                             <input type="radio" name="attending" value="yes" required>
                             <span class="radio__custom"></span>
-                            Yes, I'll be there!
+                            <span data-i18n="rsvp.form.attendingYes">Yes, I'll be there!</span>
                         </label>
                         <label class="radio__label">
                             <input type="radio" name="attending" value="no" required>
                             <span class="radio__custom"></span>
-                            Sorry, can't make it
+                            <span data-i18n="rsvp.form.attendingNo">Sorry, can't make it</span>
                         </label>
                     </div>
                 </fieldset>
                 
                 <div class="form__group conditional" id="attendingFields">
                     <div class="form__group">
-                        <label for="guests" class="form__label">Number of Guests *</label>
+                        <label for="guests" class="form__label"><span data-i18n="rsvp.form.guests">Number of Guests</span> <span data-i18n="rsvp.form.required">*</span></label>
                         <select id="guests" name="guests" class="form__select" required>
-                            <option value="">Select number of guests</option>
-                            <option value="1">1 person</option>
-                            <option value="2">2 people</option>
-                            <option value="3">3 people</option>
-                            <option value="4">4 people</option>
-                            <option value="5">5 people</option>
+                            <option value="" data-i18n="rsvp.form.guestsPlaceholder">Select number of guests</option>
+                            <option value="1" data-i18n="rsvp.form.guestsOptions.1">1 person</option>
+                            <option value="2" data-i18n="rsvp.form.guestsOptions.2">2 people</option>
+                            <option value="3" data-i18n="rsvp.form.guestsOptions.3">3 people</option>
+                            <option value="4" data-i18n="rsvp.form.guestsOptions.4">4 people</option>
+                            <option value="5" data-i18n="rsvp.form.guestsOptions.5">5 people</option>
                         </select>
                     </div>
                 </div>
                 
                 <!-- <button type="submit" class="btn btn--primary form__submit" disabled>Coming soon...</button> -->
-                <button type="submit" class="btn btn--primary form__submit">Submit RSVP</button>
+                <button type="submit" class="btn btn--primary form__submit" data-i18n="rsvp.form.submit">Submit RSVP</button>
                 <div class="form__feedback" aria-live="polite"></div>
             </form>
         </div>
@@ -328,15 +332,15 @@
     <!-- FAQ -->
     <section id="faq" class="faq section">
         <div class="container">
-            <h2 class="section__title">FAQ</h2>
+            <h2 class="section__title" data-i18n="faq.title">FAQ</h2>
             <div class="faq__list">
                 <div class="faq__item">
                     <div class="faq__card">
                         <div class="faq__card-front">
-                            <h3 class="faq__question">What should I wear?</h3>
+                            <h3 class="faq__question" data-i18n="faq.questions.whatToWear.question">What should I wear?</h3>
                         </div>
                         <div class="faq__card-back">
-                            <p class="faq__answer">Cocktail attire is requested. Think dressy but comfortable - you'll want to dance! Our wedding colors are navy blue, dusty blue, sage green, and gold.</p>
+                            <p class="faq__answer" data-i18n="faq.questions.whatToWear.answer">Cocktail attire is requested. Think dressy but comfortable - you'll want to dance! Our wedding colors are navy blue, dusty blue, sage green, and gold.</p>
                         </div>
                     </div>
                 </div>
@@ -344,10 +348,10 @@
                 <div class="faq__item">
                     <div class="faq__card">
                         <div class="faq__card-front">
-                            <h3 class="faq__question">What's the weather like in June?</h3>
+                            <h3 class="faq__question" data-i18n="faq.questions.weather.question">What's the weather like in June?</h3>
                         </div>
                         <div class="faq__card-back">
-                            <p class="faq__answer">June in Southern California is typically warm and sunny with temperatures in the 70s-80s°F. The ceremony is indoors, and the reception venue is climate-controlled.</p>
+                            <p class="faq__answer" data-i18n="faq.questions.weather.answer">June in Southern California is typically warm and sunny with temperatures in the 70s-80s°F. The ceremony is indoors, and the reception venue is climate-controlled.</p>
                         </div>
                     </div>
                 </div>
@@ -355,10 +359,10 @@
                 <div class="faq__item">
                     <div class="faq__card">
                         <div class="faq__card-front">
-                            <h3 class="faq__question">How do I contact the bride and groom?</h3>
+                            <h3 class="faq__question" data-i18n="faq.questions.contact.question">How do I contact the bride and groom?</h3>
                         </div>
                         <div class="faq__card-back">
-                            <p class="faq__answer">Give me a call or send me a message to (714) 603 - 9152 or (657) 246 - 5497.</p>
+                            <p class="faq__answer" data-i18n="faq.questions.contact.answer">Give me a call or send me a message to (714) 603 - 9152 or (657) 246 - 5497.</p>
                         </div>
                     </div>
                 </div>
@@ -369,7 +373,7 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2026 Đại & Minh. Made with ❤️</p>
+            <p data-i18n-html="footer.copyright">&copy; 2026 Đại & Minh. Made with ❤️</p>
         </div>
     </footer>
 
