@@ -8,9 +8,19 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+// Validate configuration
+if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
+    console.error('⚠️  WARNING: Supabase configuration incomplete!');
+    console.error('Missing:', {
+        SUPABASE_URL: !supabaseUrl,
+        SUPABASE_ANON_KEY: !supabaseAnonKey,
+        SUPABASE_SERVICE_ROLE_KEY: !supabaseServiceKey
+    });
+}
+
 // Create Supabase clients
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+const supabase = createClient(supabaseUrl || 'https://placeholder.supabase.co', supabaseAnonKey || 'placeholder');
+const supabaseAdmin = createClient(supabaseUrl || 'https://placeholder.supabase.co', supabaseServiceKey || 'placeholder');
 
 // Database utility functions
 const DatabaseUtils = {
@@ -107,17 +117,22 @@ const DatabaseUtils = {
     // Search guests for autocomplete suggestions
     async searchGuests(searchTerm) {
         try {
-            // Use parameterized query for safety
+            console.log('🔍 Searching for:', searchTerm);
+            
+            // Use ilike for case-insensitive search
             const { data, error } = await supabaseAdmin
                 .from('guests')
                 .select('name, side')
-                .or(`name.ilike.%${searchTerm}%,name.ilike.${searchTerm}%`)
+                .ilike('name', `%${searchTerm}%`)
                 .order('name')
                 .limit(10);
             
-            if (error) throw error;
+            if (error) {
+                console.error('❌ Search error:', error);
+                throw error;
+            }
             
-            // Return empty array if no matches (let the UI handle the message)
+            console.log('✅ Search results:', data?.length || 0, 'guests found');
             
             return data || [];
         } catch (error) {
