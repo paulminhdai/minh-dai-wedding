@@ -1,0 +1,17 @@
+
+> wedding-website-enhanced@2.0.0 start
+> node server.js
+
+[dotenv@17.2.1] injecting env (6) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+⚠️  Node.js 18 and below are deprecated and will no longer be supported in future versions of @supabase/supabase-js. Please upgrade to Node.js 20 or later. For more information, visit: https://github.com/orgs/supabase/discussions/37217
+Wedding website server running on port 3000
+Visit: http://localhost:3000
+Network access: http://192.168.1.189:3000
+Admin panel: http://localhost:3000/admin
+Admin panel (network): http://192.168.1.189:3000/admin
+Admin API: http://localhost:3000/api/admin
+Note: Use ADMIN_PASSWORD from your .env file
+🔗 Initializing database connection...
+✅ Supabase connection established
+✅ Database connected successfully - RSVPs will be saved to Supabase
+Received SIGTERM, shutting down gracefully

@@ -643,10 +643,12 @@ app.use((error, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, async () => {
+app.listen(PORT, '0.0.0.0', async () => {
     console.log(`Wedding website server running on port ${PORT}`);
     console.log(`Visit: http://localhost:${PORT}`);
+    console.log(`Network access: http://192.168.1.189:${PORT}`);
     console.log(`Admin panel: http://localhost:${PORT}/admin`);
+    console.log(`Admin panel (network): http://192.168.1.189:${PORT}/admin`);
     if (process.env.ADMIN_PASSWORD) {
         console.log(`Admin API: http://localhost:${PORT}/api/admin`);
         console.log(`Note: Use ADMIN_PASSWORD from your .env file`);
