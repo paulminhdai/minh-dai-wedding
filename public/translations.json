@@ -21,7 +21,7 @@
     "story": {
       "title": "Our Story",
       "firstDate": {
-        "title": "First Date",
+        "title": "The First Date",
         "text": "On a sunny day, not by the sea.<br>In an ordinary place, you found me.<br>We talked, we laughed, beneath one tree,<br>Time stood still—just you and me.<br><br>I leaned back, safe in your embrace,<br>Then you asked love to take its place.<br>I said yes, unsure where we'd go,<br>Now forever's all we know."
       },
       "proposal": {
@@ -58,7 +58,7 @@
       "reception": "Reception",
       "parking": {
         "title": "Parking",
-        "text": "Free parking available at both venues."
+        "text": "Free parking available at both venues. The restaurant has additional parking at the back."
       },
       "airport": {
         "title": "Airport",
@@ -66,7 +66,7 @@
       },
       "accommodations": {
         "title": "Accommodations",
-        "text": "We have room blocks at nearby hotels. Contact us for special rates and booking details."
+        "text": "Contact us for special rates and booking details of the hotels."
       },
       "dressCode": {
         "title": "Dress Code",
@@ -154,7 +154,7 @@
     "story": {
       "title": "Câu Chuyện Của Tụi Mình",
       "firstDate": {
-        "title": "Buổi Hẹn Đầu Tiên",
+        "title": "Lời Tỏ Tình",
         "text": "Trong một ngày nắng đẹp, không phải bên bờ biển.<br>Ở một nơi bình thường, anh tìm thấy em.<br>Chúng ta nói chuyện, cười đùa, dưới một gốc cây,<br>Thời gian như dừng lại—chỉ có anh và em.<br><br>Em tựa lưng, an toàn trong vòng tay anh,<br>Rồi anh hỏi tình yêu có thể thay thế không.<br>Em nói có, không biết chúng ta sẽ đi đâu,<br>Bây giờ mãi mãi là tất cả những gì chúng ta biết."
       },
       "proposal": {
@@ -163,7 +163,7 @@
       },
       "wedding": {
         "title": "Ngày Cưới Của Chúng Tôi",
-        "text": "Mỗi câu chuyện tình yêu đều có một trang mới.<br>Câu chuyện của chúng tôi chờ đợi ngày chúng tôi nói lời 'Tôi đồng ý'.<br>Hãy tham gia cùng chúng tôi tại tiệc chiêu đãi,<br>nơi phần còn lại của câu chuyện chúng tôi cuối cùng sẽ được kể."
+        "text": "Mỗi câu chuyện tình yêu đều có một trang mới.<br>Câu chuyện của chúng tôi chờ đợi ngày chúng tôi nói lời 'Anh/em nhận em/anh làm vợ/chồng'.<br>Hãy tham gia cùng chúng tôi tại tiệc chiêu đãi,<br>nơi phần còn lại của câu chuyện chúng tôi cuối cùng sẽ được kể."
       }
     },
     "schedule": {
@@ -173,7 +173,7 @@
         "location": "Tư gia tại Anaheim"
       },
       "weddingMass": {
-        "title": "Lễ Cưới tại Nhà Thờ",
+        "title": "Thánh Lễ Hôn Phối",
         "location": "Trung Tâm Công Giáo Korean Martys, Westminster"
       },
       "cocktailHour": {
@@ -191,7 +191,7 @@
       "reception": "Tiệc Mừng",
       "parking": {
         "title": "Bãi Đậu Xe",
-        "text": "Bãi đỗ xe miễn phí tại cả hai địa điểm."
+        "text": "Bãi đậu xe rộng rãi tại cả hai địa điểm. Nhà hàng có thêm bãi đậu xe phía sau."
       },
       "airport": {
         "title": "Phi Trường",
@@ -199,10 +199,10 @@
       },
       "accommodations": {
         "title": "Chỗ Ở",
-        "text": "Chúng mình có phòng đặt trước tại các khách sạn gần đó. Liên hệ với chúng tôi để biết giá đặc biệt và chi tiết đặt phòng."
+        "text": "Liên lạc với chúng mình để biết giá đặc biệt đặt phòng khách sạn gần nhất."
       },
       "dressCode": {
-        "title": "Quy Định Trang Phục",
+        "title": "Trang Phục",
         "text": "Trang phục màu xanh navy, xanh dusty, xanh sage và vàng là màu đám cưới của chúng mình."
       }
     },
@@ -240,7 +240,7 @@
         "success": "Cảm ơn bạn đã xác nhận!",
         "error": "Đã xảy ra lỗi. Vui lòng thử lại.",
         "networkError": "Lỗi kết nối. Vui lòng kiểm tra kết nối của bạn và thử lại.",
-        "celebrating": "Chúc mừng xác nhận của bạn!",
+        "celebrating": "Hẹn gặp ngày 26 tháng 6 nhé!",
         "missYou": "Chúng tôi sẽ nhớ bạn!"
       }
     },
