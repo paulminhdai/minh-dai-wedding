@@ -488,6 +488,7 @@ a:hover, a:focus {
   font-weight: 600;
   font-size: 0.85rem;
   overflow: hidden;
+  color: var(--text-primary);
 }
 
 .language-toggle span {
@@ -496,7 +497,7 @@ a:hover, a:focus {
 }
 
 .language-toggle .lang-vi {
-  opacity: 0.4;
+  opacity: 0.5;
   margin-left: 2px;
 }
 
@@ -509,7 +510,7 @@ a:hover, a:focus {
 }
 
 [lang="vi"] .language-toggle .lang-en {
-  opacity: 0.4;
+  opacity: 0.5;
 }
 
 .language-toggle:hover {
