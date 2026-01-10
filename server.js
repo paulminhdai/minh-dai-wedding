@@ -385,7 +385,17 @@ app.get('/api/admin', async (req, res) => {
 
     } catch (error) {
         console.error('Admin endpoint error:', error);
-        res.status(500).json({ error: 'Server error' });
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack,
+            supabaseUrl: process.env.SUPABASE_URL ? 'SET' : 'NOT SET',
+            supabaseAnonKey: process.env.SUPABASE_ANON_KEY ? 'SET' : 'NOT SET',
+            supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'SET' : 'NOT SET'
+        });
+        res.status(500).json({ 
+            error: 'Server error',
+            details: process.env.NODE_ENV === 'development' ? error.message : 'Database error'
+        });
     }
 });
 
@@ -621,6 +631,56 @@ app.get('/api/health', (req, res) => {
         timestamp: new Date().toISOString(),
         uptime: process.uptime()
     });
+});
+
+// Environment check endpoint (admin only)
+app.get('/api/admin/env-check', async (req, res) => {
+    try {
+        // Simple password protection
+        const password = req.query.password;
+        const adminPassword = process.env.ADMIN_PASSWORD;
+        if (password !== adminPassword) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        // Check environment variables
+        const envCheck = {
+            adminPasswordSet: !!process.env.ADMIN_PASSWORD,
+            supabaseUrlSet: !!process.env.SUPABASE_URL,
+            supabaseAnonKeySet: !!process.env.SUPABASE_ANON_KEY,
+            supabaseServiceKeySet: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+            enableGuestValidation: process.env.ENABLE_GUEST_VALIDATION,
+            nodeEnv: process.env.NODE_ENV || 'development',
+            port: process.env.PORT || 3000
+        };
+
+        // Test database connection
+        let dbStatus = 'unknown';
+        let dbError = null;
+        try {
+            const dbConnected = await DatabaseUtils.init();
+            dbStatus = dbConnected ? 'connected' : 'failed';
+        } catch (error) {
+            dbStatus = 'error';
+            dbError = error.message;
+        }
+
+        res.json({
+            environment: envCheck,
+            database: {
+                status: dbStatus,
+                error: dbError
+            },
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        console.error('Env check error:', error);
+        res.status(500).json({ 
+            error: 'Server error',
+            message: error.message 
+        });
+    }
 });
 
 // 404 handler for SPA
