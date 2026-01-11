@@ -22,7 +22,7 @@
   --border-focus: var(--primary);
   
   /* Typography */
-  --font-serif: 'Cormorant Garamond', 'Didot', 'Bodoni MT', serif;
+  --font-serif: 'Playfair Display', 'Crimson Pro', 'Georgia', serif;
   --font-sans: 'Nunito', 'Helvetica Neue', Arial, 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
   
   /* Spacing */

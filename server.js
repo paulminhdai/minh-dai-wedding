@@ -56,6 +56,7 @@ app.use(helmet({
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
             imgSrc: ["'self'", "data:", "https:"],
             scriptSrc: ["'self'", "'unsafe-inline'", "https://www.googletagmanager.com"],
+            scriptSrcAttr: ["'unsafe-inline'"], // Allow inline event handlers (onclick, etc.)
             connectSrc: ["'self'", "https://www.google-analytics.com"],
             frameSrc: ["'self'", "https://www.google.com"],
             mediaSrc: ["'self'"]
