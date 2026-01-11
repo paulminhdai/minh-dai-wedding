@@ -11,6 +11,11 @@ function enforceHTTPS(req, res, next) {
         return next();
     }
 
+    // Skip health check endpoint (Railway health checks use HTTP)
+    if (req.path === '/api/health') {
+        return next();
+    }
+
     // Check if request is already HTTPS or if it's from a proxy
     const isSecure = req.secure || 
                      req.headers['x-forwarded-proto'] === 'https' ||
