@@ -1631,17 +1631,12 @@
         },
 
         loadGalleryImages() {
-            // Add your actual image filenames here
-            const galleryImages = [
-                'images/photo1.jpg',
-                'images/photo2.jpg', 
-                'images/photo3.jpg',
-                'images/photo4.jpg',
-                'images/photo5.jpg',
-                'images/photo6.jpg',
-                'images/photo7.jpg'
-                // Add more photos as needed
-            ];
+            // Generate photo filenames dynamically
+            const totalPhotos = 20; // Update this number if you add more photos
+            const galleryImages = [];
+            for (let i = 1; i <= totalPhotos; i++) {
+                galleryImages.push(`images/photo${i}.jpg`);
+            }
 
             // Remove placeholder text
             const placeholder = this.galleryGrid?.querySelector('.gallery__placeholder');
@@ -1702,16 +1697,12 @@
                 return;
             }
 
-            // Same image list for story gallery
-            const galleryImages = [
-                'images/photo1.jpg',
-                'images/photo2.jpg', 
-                'images/photo3.jpg',
-                'images/photo4.jpg',
-                'images/photo5.jpg',
-                'images/photo6.jpg',
-                'images/photo7.jpg'
-            ];
+            // Generate photo filenames dynamically
+            const totalPhotos = 27; // Update this number if you add more photos
+            const galleryImages = [];
+            for (let i = 1; i <= totalPhotos; i++) {
+                galleryImages.push(`images/photo${i}.jpg`);
+            }
 
             // Remove placeholder text
             const placeholder = this.storyGalleryGrid.querySelector('.gallery__placeholder');
