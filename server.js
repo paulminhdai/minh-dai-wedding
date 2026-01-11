@@ -254,6 +254,11 @@ app.get('/admin', (req, res) => {
     res.sendFile(path.join(PUBLIC_DIR, 'admin.html'));
 });
 
+// Serve find your table page
+app.get('/findyourtable', (req, res) => {
+    res.sendFile(path.join(PUBLIC_DIR, 'findyourtable.html'));
+});
+
 // ============================================
 // AUTHENTICATION ROUTES
 // ============================================

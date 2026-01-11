@@ -1,0 +1,46 @@
+{
+  "tables": [
+    {
+      "tableNumber": 1,
+      "tableName": "Bride's Family",
+      "guests": [
+        "Emily Johnson",
+        "Michael Johnson",
+        "Sarah Johnson",
+        "David Johnson",
+        "Lisa Rodriguez",
+        "James Rodriguez",
+        "Maria Garcia",
+        "Robert Wilson"
+      ]
+    },
+    {
+      "tableNumber": 2,
+      "tableName": "Groom's Family",
+      "guests": [
+        "John Smith",
+        "Mary Smith",
+        "Thomas Anderson",
+        "Patricia Anderson",
+        "Christopher Brown",
+        "Linda Brown",
+        "Daniel Martinez",
+        "Jennifer Martinez"
+      ]
+    },
+    {
+      "tableNumber": 3,
+      "tableName": "College Friends",
+      "guests": [
+        "Jessica Thompson",
+        "Matthew Davis",
+        "Ashley Miller",
+        "Ryan Taylor",
+        "Amanda White",
+        "Kevin Jackson",
+        "Nicole Harris",
+        "Brandon Clark"
+      ]
+    }
+  ]
+}
