@@ -581,6 +581,29 @@ a:hover, a:focus {
   opacity: 0;
 }
 
+.hero__verse {
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  margin-bottom: var(--space-2xl);
+  margin-top: calc(var(--space-2xl) * -1);
+  animation: verseFadeIn 2s ease-out 0.3s forwards;
+  opacity: 0;
+  font-weight: 400;
+}
+
+@keyframes verseFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 0.5;
+    transform: translateY(0);
+  }
+}
+
 .hero__names {
   font-family: 'Inspiration', cursive;
   font-size: 5rem;
@@ -2447,6 +2470,11 @@ fieldset:focus-within {
   }
   
   /* Mobile hero adjustments */
+  .hero__verse {
+    font-size: 0.8rem;
+    margin-bottom: var(--space-xl);
+  }
+
   .hero__names {
     font-size: 3.2rem;
     line-height: 1.1;
@@ -2509,6 +2537,11 @@ fieldset:focus-within {
 
 /* Small mobile devices */
 @media (max-width: 480px) {
+  .hero__verse {
+    font-size: 0.75rem;
+    margin-bottom: var(--space-lg);
+  }
+
   .hero__names {
     font-size: 2.8rem;
   }

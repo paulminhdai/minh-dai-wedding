@@ -7,6 +7,7 @@
       "rsvp": "RSVP"
     },
     "hero": {
+      "verse": "Love never fails (1 Cor 13:8)",
       "date": "June 26, 2026",
       "location": "Orange County, California",
       "countdown": {
@@ -70,7 +71,7 @@
       },
       "dressCode": {
         "title": "Dress Code",
-        "text": "Cocktail attire requested. Navy blue, dusty blue, sage green, and gold are our wedding colors."
+        "text": "Formal attire. If possible, our wedding colors are navy blue, dusty blue, sage green, and gold."
       }
     },
     "rsvp": {
@@ -78,7 +79,7 @@
       "subtitle": "Please respond by May 26, 2026",
       "form": {
         "names": "Name(s)",
-        "namesPlaceholder": "Enter your name match with that on invitation",
+        "namesPlaceholder": "Enter your name match with that on invitation (NO DIACRITICS)",
         "phone": "Phone Number",
         "phonePlaceholder": "(555) 123-4567",
         "attending": "Will you be attending?",
@@ -133,7 +134,7 @@
       "questions": {
         "whatToWear": {
           "question": "What should I wear?",
-          "answer": "Cocktail attire is requested. Think dressy but comfortable - you'll want to dance! Our wedding colors are navy blue, dusty blue, sage green, and gold."
+          "answer": "Formal attire. If possible, our wedding colors are navy blue, dusty blue, sage green, and gold."
         },
         "weather": {
           "question": "What's the weather like in June?",
@@ -157,6 +158,7 @@
       "rsvp": "Phúc Đáp"
     },
     "hero": {
+      "verse": "Lòng mến không bao giờ mất đi (1Cr 13:8)",
       "date": "26 Tháng 6, 2026",
       "location": "Quận Cam, California",
       "countdown": {
@@ -172,7 +174,7 @@
       "title": "Câu Chuyện Của Tụi Mình",
       "firstDate": {
         "title": "Lời Tỏ Tình",
-        "text": "Trong một ngày nắng đẹp, không phải bên bờ biển.<br>Ở một nơi bình thường, anh tìm thấy em.<br>Chúng ta nói chuyện, cười đùa, dưới một gốc cây,<br>Thời gian như dừng lại—chỉ có anh và em.<br><br>Em tựa lưng, an toàn trong vòng tay anh,<br>Rồi anh hỏi tình yêu có thể thay thế không.<br>Em nói có, không biết chúng ta sẽ đi đâu,<br>Bây giờ mãi mãi là tất cả những gì chúng ta biết."
+        "text": "Em gặp anh chính thức lần đầu tiên vào một ngày nắng đẹp, không có gì đặc biệt, ở Heritage Park, Cerritos. Chỉ là một buổi hẹn hò đầu tiên rất bình thường, nhưng lại trở thành khởi đầu của chúng ta.<br>Hai đứa mình đi dạo, nói đủ thứ chuyện trên đời. Em thì mau quên, còn anh lại nhớ rất kỹ. Nhưng lúc đó, chẳng điều gì đáng nhớ bằng cảm giác được ở cạnh anh—em thấy lòng mình nhẹ nhàng và dễ chịu đến lạ.<br>Hai đứa mình dừng lại dưới một cái cây lớn, ngồi yên nhìn trời nhìn đất để thời gian trôi chậm lại. Em tựa lưng vào anh, anh ôm em từ phía sau. Không ồn ào, không màu mè—chỉ là một khoảnh khắc rất yên bình và an toàn.<br>Rồi anh hỏi em có muốn làm người yêu anh không. Dù trước đó em từng ghét anh kinh khủng khiếp nhưng em vẫn gật đầu. Em gật đầu để trả thù anh, gật đầu để có cơ hội hành hạ anh, và gật đầu chỉ đơn giản vì muốn thử xem chúng ta có thể đi cùng nhau được bao xa khi biết rằng mỗi đứa sống mỗi nơi.<br>Em không mong đợi gì lớn lao, cũng không nghĩ đến mãi mãi. Nhưng từ một buổi chiều rất bình thường ấy, chúng ta đã cùng nhau đi được một chặng đường dài hơn mong đợi của em và tạ ơn Chúa, mình đã chọn là nhà của nhau."
       },
       "proposal": {
         "title": "Lời Cầu Hôn",
@@ -228,7 +230,7 @@
       "subtitle": "Vui lòng phúc đáp trước ngày 26 tháng 5, 2026",
       "form": {
         "names": "Tên",
-        "namesPlaceholder": "Nhập tên khớp với tên trên thiệp mời",
+        "namesPlaceholder": "Nhập tên khớp với tên trên thiệp mời (KHÔNG DẤU)",
         "phone": "Số Điện Thoại",
         "phonePlaceholder": "(XXX) XXX-XXXX",
         "attending": "Bạn có tham dự không?",
