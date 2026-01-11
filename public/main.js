@@ -757,48 +757,36 @@
                 this.autocompleteFocus = -1;
                 
                 if (data.suggestions && data.suggestions.length > 0) {
-                    data.suggestions.forEach((guest, index) => {
-                        const item = document.createElement('div');
-                        item.className = 'autocomplete-item';
-                        // Styles are now in CSS
-                        
-                        // Highlight matching part - escape special regex characters
-                        const escapedSearchTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                        const regex = new RegExp(`(${escapedSearchTerm})`, 'gi');
-                        const highlightedName = guest.name.replace(regex, '<strong>$1</strong>');
-                        
-                        item.innerHTML = `
-                            <div class="guest-name">${highlightedName}</div>
-                            <div class="guest-info">
-                                <span>${guest.side === 'bride' ? '👰 Bride\'s side' : 
-                                       guest.side === 'groom' ? '🤵 Groom\'s side' : 
-                                       '🤝 Mutual friend'}</span>
-                            </div>
-                        `;
-                        
-                        // Hover effects are now handled by CSS
-                        
-                        // Handle click
-                        item.addEventListener('click', () => {
-                            input.value = guest.name;
-                            this.hideDropdown(dropdown);
-                            this.validateField(input);
-                            
-                            // Trigger input event to update validation
-                            input.dispatchEvent(new Event('input', { bubbles: true }));
-                        });
-                        
-                        dropdown.appendChild(item);
-                    });
+                    // Guest found - show encouraging message instead of actual names for privacy
+                    const item = document.createElement('div');
+                    item.className = 'autocomplete-item autocomplete-success';
                     
+                    // Get current language
+                    const currentLang = i18n.currentLang || 'en';
+                    const foundText = i18n.getTranslation('rsvp.autocomplete.found') || '✓ Name found in guest list';
+                    const foundMessage = i18n.getTranslation('rsvp.autocomplete.foundMessage') || 'Please continue entering your full name as it appears on the invitation';
+                    
+                    item.innerHTML = `
+                        <div class="guest-name">${foundText}</div>
+                        <div class="guest-info">
+                            <span>${foundMessage}</span>
+                        </div>
+                    `;
+                    dropdown.appendChild(item);
                     this.showDropdown(dropdown);
                 } else if (searchTerm.length >= 2) {
-                    // Show no results message only if search term is long enough
+                    // No guest found - show helpful reminder
                     const noResults = document.createElement('div');
-                    noResults.className = 'autocomplete-no-results';
+                    noResults.className = 'autocomplete-no-results autocomplete-warning';
+                    
+                    // Get current language
+                    const currentLang = i18n.currentLang || 'en';
+                    const notFoundText = i18n.getTranslation('rsvp.autocomplete.notFound') || '⚠️ Name not found in guest list';
+                    const notFoundMessage = i18n.getTranslation('rsvp.autocomplete.notFoundMessage') || 'Please enter your name exactly as it appears on your invitation';
+                    
                     noResults.innerHTML = `
-                        <div class="main-message">No matching guests found.</div>
-                        <div class="help-message">Please enter your full name as it appears on the invitation.</div>
+                        <div class="main-message">${notFoundText}</div>
+                        <div class="help-message">${notFoundMessage}</div>
                     `;
                     dropdown.appendChild(noResults);
                     this.showDropdown(dropdown);
@@ -852,7 +840,7 @@
                     isValid = value.length === 0 || (digits.length >= 10 && digits.length <= 11);
                     if (field.required && value.length === 0) {
                         isValid = false;
-                        message = 'Phone number is required';
+                        message = i18n.getTranslation('rsvp.validation.phoneRequired') || this.validationMessages.phone;
                     } else if (digits.length < 10 || digits.length > 11) {
                         isValid = false;
                         message = this.validationMessages.phone;
@@ -960,10 +948,15 @@
             this.form.classList.add('loading');
 
             try {
+                // Get current language and set appropriate Accept-Language header
+                const currentLang = i18n.currentLang || 'en';
+                const langHeader = currentLang === 'vi' ? 'vi-VN,vi;q=0.9,en;q=0.8' : 'en-US,en;q=0.9';
+                
                 const response = await fetch(CONFIG.apiEndpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept-Language': langHeader
                     },
                     body: JSON.stringify(data)
                 });
@@ -976,7 +969,17 @@
                     this.form.reset();
                     this.attendingFields?.classList.remove('show');
                 } else {
-                    const errorMsg = result.error || i18n.getTranslation('rsvp.feedback.error') || 'Something went wrong. Please try again.';
+                    // Check if we have an errorCode, look it up in translations
+                    let errorMsg;
+                    if (result.errorCode) {
+                        errorMsg = i18n.getTranslation(`rsvp.errors.${result.errorCode}`) 
+                            || result.error 
+                            || i18n.getTranslation('rsvp.feedback.error') 
+                            || 'Something went wrong. Please try again.';
+                    } else {
+                        // Fallback to error field if no errorCode
+                        errorMsg = result.error || i18n.getTranslation('rsvp.feedback.error') || 'Something went wrong. Please try again.';
+                    }
                     this.showFeedback(errorMsg, 'error');
                 }
             } catch (error) {

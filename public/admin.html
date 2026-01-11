@@ -41,6 +41,26 @@
             color: var(--soft-white);
             border-radius: 15px;
             box-shadow: 0 8px 25px rgba(44, 62, 80, 0.2);
+            position: relative;
+        }
+
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+            transform: scale(1.05);
         }
 
         .header h1 {
@@ -428,6 +448,8 @@
         </div>
 
         <div class="dashboard" id="dashboard">
+            <button class="logout-btn" onclick="logout()">Logout</button>
+            
             <div class="stats" id="stats">
                 <div class="stat-card">
                     <div class="stat-number" id="totalRsvps">0</div>
@@ -494,12 +516,39 @@
 
     <script>
         const CONFIG = {
-            // Detect environment and set appropriate endpoints
-            adminEndpoint: '/api/admin',  // Express server endpoint
-            deleteEndpoint: '/api/admin/rsvp',  // Express server endpoint
-            guestsEndpoint: '/api/admin/guests',  // Express server endpoint
-            logsEndpoint: '/api/admin/logs'  // Express server endpoint
+            // API endpoints
+            loginEndpoint: '/api/auth/login',
+            logoutEndpoint: '/api/auth/logout',
+            verifyEndpoint: '/api/auth/verify',
+            adminEndpoint: '/api/admin/rsvps',
+            deleteEndpoint: '/api/admin/rsvp',
+            guestsEndpoint: '/api/admin/guests',
+            logsEndpoint: '/api/admin/logs'
         };
+
+        // Store token in memory (not localStorage for better security)
+        let authToken = null;
+
+        // Helper function to make authenticated requests
+        async function authenticatedFetch(url, options = {}) {
+            // Add Authorization header with JWT token
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers
+            };
+            
+            // Token is automatically sent via HTTP-only cookie
+            // But we also include it in Bearer token for compatibility
+            if (authToken) {
+                headers['Authorization'] = `Bearer ${authToken}`;
+            }
+            
+            return fetch(url, {
+                ...options,
+                headers,
+                credentials: 'include' // Include cookies
+            });
+        }
 
         // Notification functions
         function showGuestNotification(message, type = 'info') {
@@ -525,16 +574,10 @@
         }
 
         async function addGuest() {
-            const password = document.getElementById('password').value;
             const guestNameInput = document.getElementById('newGuestName');
             const guestName = guestNameInput.value.trim();
             const guestSide = document.getElementById('guestSide').value;
             const addBtn = document.getElementById('addGuestBtn');
-
-            if (!password) {
-                showGuestNotification('Session expired. Please login again.', 'error');
-                return;
-            }
 
             if (!guestName) {
                 showGuestNotification('Please enter a guest name.', 'error');
@@ -547,16 +590,19 @@
             addBtn.textContent = 'Adding...';
 
             try {
-                const response = await fetch(`${CONFIG.guestsEndpoint}?password=${encodeURIComponent(password)}`, {
+                const response = await authenticatedFetch(CONFIG.guestsEndpoint, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify({
                         name: guestName,
                         side: guestSide
                     })
                 });
+
+                if (response.status === 401) {
+                    showGuestNotification('Session expired. Please login again.', 'error');
+                    logout();
+                    return;
+                }
 
                 if (response.ok) {
                     const result = await response.json();
@@ -587,73 +633,85 @@
             }
 
             try {
-                console.log('Fetching from:', `${CONFIG.adminEndpoint}?password=${encodeURIComponent(password)}`); // Debug log
-                const response = await fetch(`${CONFIG.adminEndpoint}?password=${encodeURIComponent(password)}`);
+                // Attempt login with JWT authentication
+                const response = await fetch(CONFIG.loginEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include', // Include cookies
+                    body: JSON.stringify({ password })
+                });
                 
                 if (response.ok) {
+                    const data = await response.json();
+                    authToken = data.token; // Store token in memory
+                    
+                    // Hide login, show dashboard
                     document.getElementById('loginSection').classList.add('hidden');
                     document.getElementById('dashboard').classList.add('visible');
                     document.getElementById('refreshBtn').style.display = 'block';
                     
-                    const data = await response.json();
-                    console.log('Login successful, data received:', data); // Debug log
-                    displayRsvpData(data);
-                    loadGuestList(); // Load guest list after login
-                    loadAdminLogs(); // Load admin logs after login
+                    // Load all data
+                    await loadRsvpData();
+                    await loadGuestList();
+                    await loadAdminLogs();
+                    
+                    console.log('✅ Login successful');
                 } else {
-                    console.error('Login failed with status:', response.status); // Debug log
-                    showError('Invalid password. Please try again.', errorDiv);
+                    const error = await response.json();
+                    showError(error.error || 'Invalid password. Please try again.', errorDiv);
                 }
             } catch (error) {
                 console.error('Login error:', error);
-                
-                // If running locally without backend, show sample data
-                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                    console.log('Local development mode - showing sample data');
+                showError('Connection error. Please try again.', errorDiv);
+            }
+        }
+        
+        async function logout() {
+            try {
+                await authenticatedFetch(CONFIG.logoutEndpoint, {
+                    method: 'POST'
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            } finally {
+                // Clear token and redirect to login
+                authToken = null;
+                document.getElementById('loginSection').classList.remove('hidden');
+                document.getElementById('dashboard').classList.remove('visible');
+                document.getElementById('refreshBtn').style.display = 'none';
+                document.getElementById('password').value = '';
+            }
+        }
+        
+        async function checkAuth() {
+            try {
+                const response = await authenticatedFetch(CONFIG.verifyEndpoint);
+                if (response.ok) {
+                    // Already authenticated, load dashboard
                     document.getElementById('loginSection').classList.add('hidden');
                     document.getElementById('dashboard').classList.add('visible');
                     document.getElementById('refreshBtn').style.display = 'block';
                     
-                    // Sample data for local testing
-                    const sampleData = {
-                        total: 2,
-                        attending: 1,
-                        notAttending: 1,
-                        rsvps: [
-                            {
-                                id: '1',
-                                names: 'John & Jane Doe',
-                                phone: '555-0123',
-                                attending: 'yes',
-                                guests: 2,
-                                message: 'Looking forward to celebrating with you!',
-                                timestamp: new Date().toISOString()
-                            },
-                            {
-                                id: '2',
-                                names: 'Bob Smith',
-                                phone: '555-0456',
-                                attending: 'no',
-                                guests: 0,
-                                message: '',
-                                timestamp: new Date().toISOString()
-                            }
-                        ]
-                    };
-                    
-                    displayRsvpData(sampleData);
-                } else {
-                    showError('Connection error. Please try again.', errorDiv);
+                    await loadRsvpData();
+                    await loadGuestList();
+                    await loadAdminLogs();
                 }
+            } catch (error) {
+                // Not authenticated, show login
+                console.log('Not authenticated');
             }
         }
 
         async function loadRsvpData() {
-            const password = document.getElementById('password').value;
-            if (!password) return;
-
             try {
-                const response = await fetch(`${CONFIG.adminEndpoint}?password=${encodeURIComponent(password)}`);
+                const response = await authenticatedFetch(CONFIG.adminEndpoint);
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
                 
                 if (response.ok) {
                     const data = await response.json();
@@ -767,12 +825,6 @@
         }
 
         async function deleteRsvp(rsvpId, guestName) {
-            const password = document.getElementById('password').value;
-            if (!password) {
-                alert('Session expired. Please login again.');
-                return;
-            }
-
             // Double confirmation
             if (!confirm(`Are you sure you want to delete the RSVP for "${guestName}"? This action cannot be undone.`)) {
                 return;
@@ -786,12 +838,15 @@
             deleteBtn.textContent = 'Deleting...';
 
             try {
-                const response = await fetch(`${CONFIG.deleteEndpoint}/${rsvpId}?password=${encodeURIComponent(password)}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                const response = await authenticatedFetch(`${CONFIG.deleteEndpoint}/${rsvpId}`, {
+                    method: 'DELETE'
                 });
+
+                if (response.status === 401) {
+                    alert('Session expired. Please login again.');
+                    logout();
+                    return;
+                }
 
                 if (response.ok) {
                     const result = await response.json();
@@ -818,21 +873,25 @@
                 alert('Connection error. Please try again.');
             } finally {
                 // Reset button state
-                deleteBtn.disabled = false;
-                deleteBtn.textContent = 'Delete';
+                if (deleteBtn) {
+                    deleteBtn.disabled = false;
+                    deleteBtn.textContent = 'Delete';
+                }
             }
         }
 
         async function loadGuestList() {
-            const password = document.getElementById('password').value;
-            if (!password) return;
-
             try {
                 // Load both guests and RSVPs to show status
                 const [guestsResponse, rsvpsResponse] = await Promise.all([
-                    fetch(`${CONFIG.guestsEndpoint}?password=${encodeURIComponent(password)}`),
-                    fetch(`${CONFIG.adminEndpoint}?password=${encodeURIComponent(password)}`)
+                    authenticatedFetch(CONFIG.guestsEndpoint),
+                    authenticatedFetch(CONFIG.adminEndpoint)
                 ]);
+                
+                if (guestsResponse.status === 401 || rsvpsResponse.status === 401) {
+                    logout();
+                    return;
+                }
                 
                 if (guestsResponse.ok && rsvpsResponse.ok) {
                     const guestsData = await guestsResponse.json();
@@ -976,11 +1035,13 @@
 
 
         async function loadAdminLogs() {
-            const password = document.getElementById('password').value;
-            if (!password) return;
-
             try {
-                const response = await fetch(`${CONFIG.logsEndpoint}?password=${encodeURIComponent(password)}`);
+                const response = await authenticatedFetch(CONFIG.logsEndpoint);
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
                 
                 if (response.ok) {
                     const data = await response.json();
@@ -1057,24 +1118,21 @@
         }
 
         async function deleteGuest(guestName) {
-            const password = document.getElementById('password').value;
-            if (!password) {
-                alert('Session expired. Please login again.');
-                return;
-            }
-
             // Double confirmation
             if (!confirm(`Are you sure you want to remove "${guestName}" from the guest list? They will no longer be able to RSVP.`)) {
                 return;
             }
 
             try {
-                const response = await fetch(`${CONFIG.guestsEndpoint}/${encodeURIComponent(guestName)}?password=${encodeURIComponent(password)}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                const response = await authenticatedFetch(`${CONFIG.guestsEndpoint}/${encodeURIComponent(guestName)}`, {
+                    method: 'DELETE'
                 });
+
+                if (response.status === 401) {
+                    showGuestNotification('Session expired. Please login again.', 'error');
+                    logout();
+                    return;
+                }
 
                 if (response.ok) {
                     loadGuestList(); // Refresh the list
@@ -1103,13 +1161,8 @@
             }
         });
 
-        // Check if already logged in via URL parameter
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlPassword = urlParams.get('password');
-        if (urlPassword) {
-            document.getElementById('password').value = urlPassword;
-            login();
-        }
+        // Check if already authenticated on page load
+        checkAuth();
     </script>
 </body>
 </html>

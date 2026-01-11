@@ -78,7 +78,7 @@
       "subtitle": "Please respond by May 26, 2026",
       "form": {
         "names": "Name(s)",
-        "namesPlaceholder": "Enter your name",
+        "namesPlaceholder": "Enter your name match with that on invitation",
         "phone": "Phone Number",
         "phonePlaceholder": "(555) 123-4567",
         "attending": "Will you be attending?",
@@ -100,6 +100,7 @@
       "validation": {
         "names": "Please enter your name(s)",
         "phone": "Please enter a valid phone number",
+        "phoneRequired": "Phone number is required",
         "attending": "Please let us know if you'll be attending",
         "correctErrors": "Please correct the errors above."
       },
@@ -107,8 +108,24 @@
         "success": "Thank you for your RSVP!",
         "error": "Something went wrong. Please try again.",
         "networkError": "Network error. Please check your connection and try again.",
-        "celebrating": "Celebrating your RSVP!",
+        "celebrating": "See you on the 26th of June!",
         "missYou": "We'll miss you!"
+      },
+      "autocomplete": {
+        "found": "✓ Name found in guest list",
+        "foundMessage": "Please continue entering your full name as it appears on the invitation",
+        "notFound": "⚠️ Name not found in guest list",
+        "notFoundMessage": "Please enter your name exactly as it appears on your invitation"
+      },
+      "errors": {
+        "REQUIRED_FIELDS": "Names, phone number, and attendance status are required.",
+        "INVALID_GUEST_COUNT": "Please specify the number of guests (1-8 people).",
+        "INVALID_PHONE": "Please provide a valid phone number.",
+        "SHORT_NAME": "Please enter your full name as it appears on the invitation. Single first names may match multiple guests.",
+        "NOT_IN_GUEST_LIST": "We couldn't find your name on our guest list. Please enter your full name as shown on your invitation, or contact us directly.",
+        "ALREADY_EXISTS": "An RSVP already exists for this guest. Please contact us if you need to update your response.",
+        "MULTIPLE_GUESTS": "Multiple guests found matching your name. Please enter your full name as it appears on the invitation.",
+        "SERVER_ERROR": "Something went wrong processing your RSVP. Please try again later."
       }
     },
     "faq": {
@@ -211,9 +228,9 @@
       "subtitle": "Vui lòng phúc đáp trước ngày 26 tháng 5, 2026",
       "form": {
         "names": "Tên",
-        "namesPlaceholder": "Nhập tên của bạn",
+        "namesPlaceholder": "Nhập tên khớp với tên trên thiệp mời",
         "phone": "Số Điện Thoại",
-        "phonePlaceholder": "(555) 123-4567",
+        "phonePlaceholder": "(XXX) XXX-XXXX",
         "attending": "Bạn có tham dự không?",
         "attendingYes": "Có, tôi sẽ đến!",
         "attendingNo": "Xin lỗi, không thể tham dự",
@@ -233,6 +250,7 @@
       "validation": {
         "names": "Vui lòng nhập tên của bạn",
         "phone": "Vui lòng nhập số điện thoại hợp lệ",
+        "phoneRequired": "Vui lòng nhập số điện thoại",
         "attending": "Vui lòng cho chúng tôi biết bạn có tham dự không",
         "correctErrors": "Vui lòng sửa các lỗi ở trên."
       },
@@ -242,6 +260,22 @@
         "networkError": "Lỗi kết nối. Vui lòng kiểm tra kết nối của bạn và thử lại.",
         "celebrating": "Hẹn gặp ngày 26 tháng 6 nhé!",
         "missYou": "Chúng tôi sẽ nhớ bạn!"
+      },
+      "autocomplete": {
+        "found": "✓ Đã tìm thấy tên của bạn trong danh sách khách mời",
+        "foundMessage": "Tiếp tục nhập tên đầy đủ của bạn giống với tên trên thiệp mời",
+        "notFound": "⚠️ Không tìm thấy tên của bạn",
+        "notFoundMessage": "Vui lòng nhập tên của bạn chính xác như trên thiệp mời"
+      },
+      "errors": {
+        "REQUIRED_FIELDS": "Tên, số điện thoại và trạng thái tham dự là bắt buộc.",
+        "INVALID_GUEST_COUNT": "Vui lòng chỉ định số lượng khách (1-5 người).",
+        "INVALID_PHONE": "Vui lòng cung cấp số điện thoại hợp lệ.",
+        "SHORT_NAME": "Vui lòng nhập tên đầy đủ của bạn như trên thiệp mời. Tên này có thể khớp với khách mời khác.",
+        "NOT_IN_GUEST_LIST": "Chúng tôi không tìm thấy tên của bạn trong danh sách khách mời. Vui lòng nhập tên đầy đủ như trên thiệp mời của bạn, hoặc liên lạc trực tiếp với chúng mình.",
+        "ALREADY_EXISTS": "Đã có phúc đáp cho tên bạn đã nhập này. Vui lòng liên lạc với chúng mình nếu bạn cần cập nhật câu trả lời của mình.",
+        "MULTIPLE_GUESTS": "Tìm thấy nhiều khách khớp với tên của bạn. Vui lòng nhập tên đầy đủ của bạn như trên thiệp mời.",
+        "SERVER_ERROR": "Đã xảy ra lỗi khi xử lý phúc đáp của bạn. Vui lòng thử lại sau."
       }
     },
     "faq": {
@@ -256,7 +290,7 @@
           "answer": "Tháng 6 ở Nam California thường ấm áp và nắng với nhiệt độ khoảng 70-80 độ F. Lễ cưới được tổ chức trong nhà và địa điểm tiệc chiêu đãi có điều hòa không khí."
         },
         "contact": {
-          "question": "Làm thế nào để liên hệ với cô dâu và chú rể?",
+          "question": "Làm thế nào để liên lạc với cô dâu và chú rể?",
           "answer": "Hãy gọi hoặc nhắn tin cho chúng mình theo số (714) 603 - 9152 hoặc (657) 246 - 5497."
         }
       }

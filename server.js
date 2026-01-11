@@ -4,8 +4,32 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const fs = require('fs').promises;
-const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const { DatabaseUtils } = require('./database/supabase-config');
+
+// Import middleware
+const { verifyToken, generateToken } = require('./middleware/auth');
+const { 
+    enforceHTTPS, 
+    rsvpLimiter, 
+    loginLimiter, 
+    adminLimiter,
+    searchLimiter,
+    apiLimiter,
+    requestLogger,
+    securityHeaders,
+    sanitizeInput
+} = require('./middleware/security');
+const { 
+    validateRSVP, 
+    validateLogin,
+    validateGuestName,
+    validateRSVPId,
+    validateGuestSearch,
+    validateGuestNameParam
+} = require('./middleware/validation');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,8 +40,79 @@ const DATA_DIR = path.join(__dirname, 'data');
 const RSVPS_FILE = path.join(DATA_DIR, 'rsvps.json');
 const GUESTS_FILE = path.join(DATA_DIR, 'guests.txt');
 
-// Middleware
-app.use(express.json({ limit: '10mb' }));
+// ============================================
+// SECURITY MIDDLEWARE
+// ============================================
+
+// Trust proxy - Important for rate limiting and getting real IP addresses
+app.set('trust proxy', 1);
+
+// Helmet - Security headers
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com"],
+            imgSrc: ["'self'", "data:", "https:"],
+            scriptSrc: ["'self'", "'unsafe-inline'"],
+            connectSrc: ["'self'"],
+            mediaSrc: ["'self'"]
+        }
+    },
+    hsts: {
+        maxAge: 31536000, // 1 year
+        includeSubDomains: true,
+        preload: true
+    }
+}));
+
+// CORS - Allow only specific origins in production
+const corsOptions = {
+    origin: function (origin, callback) {
+        // Allow requests with no origin (mobile apps, curl, etc.)
+        if (!origin) return callback(null, true);
+        
+        const allowedOrigins = process.env.ALLOWED_ORIGINS 
+            ? process.env.ALLOWED_ORIGINS.split(',')
+            : ['http://localhost:3000', 'http://127.0.0.1:3000'];
+        
+        // In production, strictly check origin
+        if (process.env.NODE_ENV === 'production') {
+            if (allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        } else {
+            // In development, be more permissive
+            callback(null, true);
+        }
+    },
+    credentials: true, // Allow cookies
+    optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
+
+// HTTPS enforcement (only in production)
+app.use(enforceHTTPS);
+
+// Body parsing
+app.use(express.json({ limit: '1mb' })); // Reduced from 10mb for security
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+app.use(cookieParser());
+
+// Request logging for security monitoring
+app.use(requestLogger);
+
+// Input sanitization
+app.use(sanitizeInput);
+
+// Additional security headers
+app.use(securityHeaders);
+
+// Rate limiting for all API routes
+app.use('/api/', apiLimiter);
 
 // Disable caching in development
 if (process.env.NODE_ENV !== 'production') {
@@ -29,18 +124,8 @@ if (process.env.NODE_ENV !== 'production') {
     });
 }
 
+// Serve static files
 app.use(express.static(PUBLIC_DIR));
-
-// Rate limiting for RSVP endpoint
-const rsvpLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // Limit each IP to 5 requests per windowMs
-    message: {
-        error: 'Too many RSVP attempts. Please try again later.'
-    },
-    standardHeaders: true,
-    legacyHeaders: false
-});
 
 // Utility functions
 const utils = {
@@ -155,7 +240,9 @@ const utils = {
     }
 };
 
-// Routes
+// ============================================
+// ROUTES
+// ============================================
 
 // Serve main page
 app.get('/', (req, res) => {
@@ -167,8 +254,106 @@ app.get('/admin', (req, res) => {
     res.sendFile(path.join(PUBLIC_DIR, 'admin.html'));
 });
 
-// RSVP endpoint
-app.post('/api/rsvp', rsvpLimiter, async (req, res) => {
+// ============================================
+// AUTHENTICATION ROUTES
+// ============================================
+
+// Admin login endpoint
+app.post('/api/auth/login', loginLimiter, validateLogin, async (req, res) => {
+    try {
+        const { password } = req.body;
+        const adminPassword = process.env.ADMIN_PASSWORD;
+        
+        if (!adminPassword) {
+            console.error('ADMIN_PASSWORD not configured');
+            return res.status(500).json({ 
+                error: 'Server configuration error' 
+            });
+        }
+        
+        // Verify password
+        if (password !== adminPassword) {
+            await DatabaseUtils.logAdminAction(
+                'login_failed',
+                'Failed login attempt',
+                req.ip || req.connection.remoteAddress || 'unknown'
+            );
+            return res.status(401).json({ 
+                error: 'Invalid password' 
+            });
+        }
+        
+        // Generate JWT token
+        const token = generateToken({ admin: true });
+        
+        // Set HTTP-only cookie (more secure than localStorage)
+        res.cookie('admin_token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+            sameSite: 'strict',
+            maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        });
+        
+        // Log successful login
+        await DatabaseUtils.logAdminAction(
+            'login_success',
+            'Admin logged in successfully',
+            req.ip || req.connection.remoteAddress || 'unknown'
+        );
+        
+        res.json({ 
+            success: true,
+            message: 'Login successful',
+            token // Also return token for Bearer auth if needed
+        });
+        
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ 
+            error: 'Login failed' 
+        });
+    }
+});
+
+// Admin logout endpoint
+app.post('/api/auth/logout', verifyToken, async (req, res) => {
+    try {
+        // Clear cookie
+        res.clearCookie('admin_token');
+        
+        await DatabaseUtils.logAdminAction(
+            'logout',
+            'Admin logged out',
+            req.ip || req.connection.remoteAddress || 'unknown'
+        );
+        
+        res.json({ 
+            success: true,
+            message: 'Logged out successfully' 
+        });
+    } catch (error) {
+        console.error('Logout error:', error);
+        res.status(500).json({ 
+            error: 'Logout failed' 
+        });
+    }
+});
+
+// Verify token endpoint (for frontend to check if logged in)
+app.get('/api/auth/verify', verifyToken, (req, res) => {
+    res.json({ 
+        success: true,
+        authenticated: true,
+        user: req.user 
+    });
+});
+
+// ============================================
+// PUBLIC ROUTES
+// ============================================
+
+// RSVP endpoint (with validation)
+app.post('/api/rsvp', rsvpLimiter, validateRSVP, async (req, res) => {
     try {
         console.log('📝 RSVP request received:', req.body);
         
@@ -191,7 +376,7 @@ app.post('/api/rsvp', rsvpLimiter, async (req, res) => {
                 req.ip || req.connection.remoteAddress || 'unknown'
             );
             return res.status(400).json({
-                error: 'Names, phone number, and attendance status are required.'
+                errorCode: 'REQUIRED_FIELDS'
             });
         }
 
@@ -203,7 +388,7 @@ app.post('/api/rsvp', rsvpLimiter, async (req, res) => {
                 req.ip || req.connection.remoteAddress || 'unknown'
             );
             return res.status(400).json({
-                error: 'Please specify the number of guests (1-8 people).'
+                errorCode: 'INVALID_GUEST_COUNT'
             });
         }
 
@@ -236,7 +421,7 @@ app.post('/api/rsvp', rsvpLimiter, async (req, res) => {
                 sanitizedData.ipAddress
             );
             return res.status(400).json({
-                error: 'Please provide a valid phone number.'
+                errorCode: 'INVALID_PHONE'
             });
         }
 
@@ -254,7 +439,7 @@ app.post('/api/rsvp', rsvpLimiter, async (req, res) => {
                     sanitizedData.ipAddress
                 );
                 return res.status(400).json({
-                    error: 'Please enter your full name as it appears on the invitation. Single first names may match multiple guests.'
+                    errorCode: 'SHORT_NAME'
                 });
             }
             
@@ -268,7 +453,7 @@ app.post('/api/rsvp', rsvpLimiter, async (req, res) => {
                     sanitizedData.ipAddress
                 );
                 return res.status(403).json({
-                    error: 'We couldn\'t find your name on our guest list. Please enter your full name as shown on your invitation, or contact us directly.'
+                    errorCode: 'NOT_IN_GUEST_LIST'
                 });
             }
             
@@ -326,7 +511,7 @@ app.post('/api/rsvp', rsvpLimiter, async (req, res) => {
                 ipAddress
             );
             res.status(409).json({
-                error: 'An RSVP already exists for this guest. Please contact us if you need to update your response.'
+                errorCode: 'ALREADY_EXISTS'
             });
         } else if (errorMessage.includes('Multiple guests found')) {
             await DatabaseUtils.logAdminAction(
@@ -335,7 +520,7 @@ app.post('/api/rsvp', rsvpLimiter, async (req, res) => {
                 ipAddress
             );
             res.status(400).json({
-                error: errorMessage
+                errorCode: 'MULTIPLE_GUESTS'
             });
         } else {
             await DatabaseUtils.logAdminAction(
@@ -344,25 +529,22 @@ app.post('/api/rsvp', rsvpLimiter, async (req, res) => {
                 ipAddress
             );
             res.status(500).json({
-                error: 'Something went wrong processing your RSVP. Please try again later.',
+                errorCode: 'SERVER_ERROR',
                 debug: process.env.NODE_ENV === 'development' ? error.message : undefined
             });
         }
     }
 });
 
-// Admin endpoint to view RSVPs (basic protection)
-app.get('/api/admin', async (req, res) => {
-    try {
-        // Simple password protection (in production, use proper authentication)
-        const password = req.query.password;
-        const adminPassword = process.env.ADMIN_PASSWORD;
-        if (password !== adminPassword) {
-            return res.status(401).json({ error: 'Unauthorized' });
-        }
+// ============================================
+// ADMIN ROUTES (Protected with JWT)
+// ============================================
 
-        // Get RSVPs from database
-        const rsvps = await DatabaseUtils.getRSVPs(password);
+// Admin endpoint to view RSVPs (JWT protected)
+app.get('/api/admin/rsvps', verifyToken, adminLimiter, async (req, res) => {
+    try {
+        // Get RSVPs from database (no password needed, JWT verified)
+        const rsvps = await DatabaseUtils.getRSVPs(process.env.ADMIN_PASSWORD);
         
         // Include all relevant fields for admin view
         const adminRSVPs = rsvps.map(rsvp => ({
@@ -385,13 +567,6 @@ app.get('/api/admin', async (req, res) => {
 
     } catch (error) {
         console.error('Admin endpoint error:', error);
-        console.error('Error details:', {
-            message: error.message,
-            stack: error.stack,
-            supabaseUrl: process.env.SUPABASE_URL ? 'SET' : 'NOT SET',
-            supabaseAnonKey: process.env.SUPABASE_ANON_KEY ? 'SET' : 'NOT SET',
-            supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'SET' : 'NOT SET'
-        });
         res.status(500).json({ 
             error: 'Server error',
             details: process.env.NODE_ENV === 'development' ? error.message : 'Database error'
@@ -399,23 +574,13 @@ app.get('/api/admin', async (req, res) => {
     }
 });
 
-// Admin delete RSVP endpoint
-app.delete('/api/admin/rsvp/:id', async (req, res) => {
+// Admin delete RSVP endpoint (JWT protected)
+app.delete('/api/admin/rsvp/:id', verifyToken, adminLimiter, validateRSVPId, async (req, res) => {
     try {
-        // Simple password protection (in production, use proper authentication)
-        const password = req.query.password;
-        const adminPassword = process.env.ADMIN_PASSWORD;
-        if (password !== adminPassword) {
-            return res.status(401).json({ error: 'Unauthorized' });
-        }
-
         const rsvpId = req.params.id;
-        if (!rsvpId) {
-            return res.status(400).json({ error: 'RSVP ID is required' });
-        }
 
-        // Delete RSVP from database
-        const deletedRsvp = await DatabaseUtils.deleteRSVP(rsvpId, password);
+        // Delete RSVP from database (no password needed, JWT verified)
+        const deletedRsvp = await DatabaseUtils.deleteRSVP(rsvpId, process.env.ADMIN_PASSWORD);
         
         if (!deletedRsvp) {
             return res.status(404).json({ error: 'RSVP not found' });
@@ -438,17 +603,10 @@ app.delete('/api/admin/rsvp/:id', async (req, res) => {
     }
 });
 
-// Admin get guest list endpoint
-app.get('/api/admin/guests', async (req, res) => {
+// Admin get guest list endpoint (JWT protected)
+app.get('/api/admin/guests', verifyToken, adminLimiter, async (req, res) => {
     try {
-        // Simple password protection (in production, use proper authentication)
-        const password = req.query.password;
-        const adminPassword = process.env.ADMIN_PASSWORD;
-        if (password !== adminPassword) {
-            return res.status(401).json({ error: 'Unauthorized' });
-        }
-
-        const guests = await DatabaseUtils.getGuestList(password);
+        const guests = await DatabaseUtils.getGuestList(process.env.ADMIN_PASSWORD);
 
         res.json({
             success: true,
@@ -465,20 +623,10 @@ app.get('/api/admin/guests', async (req, res) => {
     }
 });
 
-// Admin add guest endpoint
-app.post('/api/admin/guests', async (req, res) => {
+// Admin add guest endpoint (JWT protected)
+app.post('/api/admin/guests', verifyToken, adminLimiter, validateGuestName, async (req, res) => {
     try {
-        // Simple password protection (in production, use proper authentication)
-        const password = req.query.password;
-        const adminPassword = process.env.ADMIN_PASSWORD;
-        if (password !== adminPassword) {
-            return res.status(401).json({ error: 'Unauthorized' });
-        }
-
         const { name, side = 'mutual' } = req.body;
-        if (!name || !name.trim()) {
-            return res.status(400).json({ error: 'Guest name is required' });
-        }
 
         const sanitizedName = utils.sanitizeInput(name.trim());
 
@@ -487,7 +635,7 @@ app.post('/api/admin/guests', async (req, res) => {
             name: sanitizedName,
             side: side,
             is_invited: true
-        }, password);
+        }, process.env.ADMIN_PASSWORD);
 
         if (!newGuest) {
             throw new Error('Failed to create guest in database');
@@ -496,7 +644,7 @@ app.post('/api/admin/guests', async (req, res) => {
         console.log(`Admin added guest: ${sanitizedName}`);
 
         // Get updated total count
-        const allGuests = await DatabaseUtils.getGuestList(password);
+        const allGuests = await DatabaseUtils.getGuestList(process.env.ADMIN_PASSWORD);
 
         res.json({
             success: true,
@@ -511,20 +659,10 @@ app.post('/api/admin/guests', async (req, res) => {
     }
 });
 
-// Admin delete guest endpoint
-app.delete('/api/admin/guests/:name', async (req, res) => {
+// Admin delete guest endpoint (JWT protected)
+app.delete('/api/admin/guests/:name', verifyToken, adminLimiter, validateGuestNameParam, async (req, res) => {
     try {
-        // Simple password protection (in production, use proper authentication)
-        const password = req.query.password;
-        const adminPassword = process.env.ADMIN_PASSWORD;
-        if (password !== adminPassword) {
-            return res.status(401).json({ error: 'Unauthorized' });
-        }
-
         const guestName = decodeURIComponent(req.params.name);
-        if (!guestName) {
-            return res.status(400).json({ error: 'Guest name is required' });
-        }
 
         // Find guest in database
         const guests = await DatabaseUtils.findGuestByName(guestName);
@@ -534,7 +672,7 @@ app.delete('/api/admin/guests/:name', async (req, res) => {
         }
 
         // Delete the guest from database
-        const deletedGuest = await DatabaseUtils.deleteGuest(guests[0].id, password);
+        const deletedGuest = await DatabaseUtils.deleteGuest(guests[0].id, process.env.ADMIN_PASSWORD);
         
         if (!deletedGuest) {
             return res.status(500).json({ error: 'Failed to delete guest' });
@@ -543,7 +681,7 @@ app.delete('/api/admin/guests/:name', async (req, res) => {
         console.log(`Admin deleted guest: ${deletedGuest.name}`);
 
         // Get updated total count
-        const remainingGuests = await DatabaseUtils.getGuestList(password);
+        const remainingGuests = await DatabaseUtils.getGuestList(process.env.ADMIN_PASSWORD);
 
         res.json({
             success: true,
@@ -558,16 +696,9 @@ app.delete('/api/admin/guests/:name', async (req, res) => {
     }
 });
 
-// Admin get logs endpoint
-app.get('/api/admin/logs', async (req, res) => {
+// Admin get logs endpoint (JWT protected)
+app.get('/api/admin/logs', verifyToken, adminLimiter, async (req, res) => {
     try {
-        // Simple password protection (in production, use proper authentication)
-        const password = req.query.password;
-        const adminPassword = process.env.ADMIN_PASSWORD;
-        if (password !== adminPassword) {
-            return res.status(401).json({ error: 'Unauthorized' });
-        }
-
         // Get admin logs from database (last 50 entries)
         const { supabaseAdmin } = require('./database/supabase-config');
         const { data: logs, error } = await supabaseAdmin
@@ -593,8 +724,8 @@ app.get('/api/admin/logs', async (req, res) => {
     }
 });
 
-// Guest search endpoint - returns possible matches for autocomplete
-app.get('/api/guests/search', async (req, res) => {
+// Guest search endpoint - returns possible matches for autocomplete (with rate limiting)
+app.get('/api/guests/search', searchLimiter, validateGuestSearch, async (req, res) => {
     try {
         const searchTerm = req.query.q;
         
@@ -633,19 +764,13 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// Environment check endpoint (admin only)
-app.get('/api/admin/env-check', async (req, res) => {
+// Environment check endpoint (admin only, JWT protected)
+app.get('/api/admin/env-check', verifyToken, adminLimiter, async (req, res) => {
     try {
-        // Simple password protection
-        const password = req.query.password;
-        const adminPassword = process.env.ADMIN_PASSWORD;
-        if (password !== adminPassword) {
-            return res.status(401).json({ error: 'Unauthorized' });
-        }
-
         // Check environment variables
         const envCheck = {
             adminPasswordSet: !!process.env.ADMIN_PASSWORD,
+            jwtSecretSet: !!process.env.JWT_SECRET,
             supabaseUrlSet: !!process.env.SUPABASE_URL,
             supabaseAnonKeySet: !!process.env.SUPABASE_ANON_KEY,
             supabaseServiceKeySet: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
