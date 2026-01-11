@@ -141,7 +141,7 @@
     },
     "hero": {
       "date": "26 Tháng 6, 2026",
-      "location": "Orange County, California",
+      "location": "Quận Cam, California",
       "countdown": {
         "daysToGo": "ngày nữa",
         "dayToGo": "ngày nữa",
@@ -203,7 +203,7 @@
       },
       "dressCode": {
         "title": "Trang Phục",
-        "text": "Trang phục màu xanh navy, xanh dusty, xanh sage và vàng là màu đám cưới của chúng mình."
+        "text": "Nếu có thể, màu xanh navy, xanh dusty, xanh sage và vàng là màu đám cưới của chúng mình."
       }
     },
     "rsvp": {
@@ -249,7 +249,7 @@
       "questions": {
         "whatToWear": {
           "question": "Tôi nên mặc gì?",
-          "answer": "Trang phục tiệc cưới lịch sự - bạn sẽ muốn nhảy múa! Màu đám cưới của chúng tôi là xanh navy, xanh dusty, xanh sage và vàng."
+          "answer": "Trang phục tiệc cưới lịch sự - Nếu có thể, Màu đám cưới của chúng tôi là xanh navy, xanh dusty, xanh sage và vàng."
         },
         "weather": {
           "question": "Thời tiết vào tháng 6 như thế nào?",

@@ -1226,6 +1226,8 @@ a:hover, a:focus {
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0;
+  padding: 0;
 }
 
 @media (max-width: 767px) {
@@ -1272,6 +1274,32 @@ a:hover, a:focus {
   
   .story__gallery {
     height: 300px;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Remove extra padding/margin from gallery grid on mobile */
+  .gallery__grid {
+    margin: 0;
+    padding: 0;
+    height: 300px;
+    line-height: 0;
+  }
+  
+  /* Remove extra space from gallery carousel on mobile */
+  .gallery__carousel {
+    margin: 0;
+    padding: 0;
+    height: 300px;
+    line-height: 0;
+  }
+  
+  /* Ensure image set fills container properly */
+  .gallery__image-set {
+    margin: 0;
+    padding: 0;
+    height: 300px;
+    align-items: center;
   }
 }
 
@@ -2117,6 +2145,9 @@ fieldset:focus-within {
   width: 100%;
   height: 100%;
   position: relative;
+  margin: 0;
+  padding: 0;
+  display: block;
 }
 
 .gallery__grid::before,
