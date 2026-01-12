@@ -72,18 +72,25 @@ app.use(helmet({
 // CORS - Allow only specific origins in production
 const corsOptions = {
     origin: function (origin, callback) {
-        // Allow requests with no origin (mobile apps, curl, etc.)
+        // Allow requests with no origin (mobile apps, curl, Postman, same-origin requests)
         if (!origin) return callback(null, true);
         
         const allowedOrigins = process.env.ALLOWED_ORIGINS 
-            ? process.env.ALLOWED_ORIGINS.split(',')
+            ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
             : ['http://localhost:3000', 'http://127.0.0.1:3000'];
         
-        // In production, strictly check origin
+        // In production, check origin but be flexible for same-origin requests
         if (process.env.NODE_ENV === 'production') {
+            // If ALLOWED_ORIGINS is not set, allow the request origin (same-origin)
+            if (allowedOrigins.length === 2 && allowedOrigins[0] === 'http://localhost:3000') {
+                // No custom origins configured, allow same-origin requests
+                return callback(null, true);
+            }
+            
             if (allowedOrigins.includes(origin)) {
                 callback(null, true);
             } else {
+                console.warn(`CORS blocked origin: ${origin}`);
                 callback(new Error('Not allowed by CORS'));
             }
         } else {
@@ -271,6 +278,18 @@ app.post('/api/auth/login', loginLimiter, validateLogin, async (req, res) => {
         const { password } = req.body;
         const adminPassword = process.env.ADMIN_PASSWORD;
         
+        console.log('🔐 Login attempt received', {
+            hasPassword: !!password,
+            hasAdminPassword: !!adminPassword,
+            nodeEnv: process.env.NODE_ENV,
+            secure: req.secure,
+            protocol: req.protocol,
+            headers: {
+                'x-forwarded-proto': req.headers['x-forwarded-proto'],
+                'x-forwarded-ssl': req.headers['x-forwarded-ssl']
+            }
+        });
+        
         if (!adminPassword) {
             console.error('ADMIN_PASSWORD not configured');
             return res.status(500).json({ 
@@ -297,8 +316,16 @@ app.post('/api/auth/login', loginLimiter, validateLogin, async (req, res) => {
         res.cookie('admin_token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production', // HTTPS only in production
-            sameSite: 'strict',
-            maxAge: 24 * 60 * 60 * 1000 // 24 hours
+            sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'strict', // 'lax' is better for production with HTTPS redirects
+            maxAge: 24 * 60 * 60 * 1000, // 24 hours
+            path: '/' // Explicitly set path to ensure cookie is available everywhere
+        });
+        
+        console.log('✅ Login successful, cookie set with:', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'strict',
+            path: '/'
         });
         
         // Log successful login
