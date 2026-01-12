@@ -33,7 +33,7 @@
 
         /* Additional styles for table seating page */
         .tables-hero {
-            min-height: 30vh;
+            min-height: 50vh;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -41,52 +41,81 @@
             background-image: 
                 linear-gradient(135deg, rgba(156, 175, 136, 0.05) 0%, rgba(168, 192, 212, 0.03) 50%, rgba(212, 175, 55, 0.02) 100%);
             text-align: center;
-            padding: var(--space-2xl) var(--space-md) var(--space-xl);
+            padding: calc(80px + var(--space-2xl)) var(--space-md) var(--space-2xl);
+            margin-top: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tables-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(212, 175, 55, 0.05) 0%, transparent 70%);
+            pointer-events: none;
         }
 
         .tables-hero__content {
-            max-width: 800px;
+            max-width: 700px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
         }
 
         .tables-hero__title {
             font-family: 'Inspiration', cursive;
-            font-size: 4rem;
-            margin-bottom: var(--space-md);
+            font-size: 5rem;
+            margin-bottom: var(--space-xl);
             color: var(--accent-gold);
+            line-height: 1.2;
+            text-shadow: 0 2px 10px rgba(212, 175, 55, 0.2);
         }
 
         .tables-hero__subtitle {
             font-size: 1.25rem;
             color: var(--text-secondary);
-            margin-bottom: 0;
+            margin-bottom: var(--space-xl);
+            font-weight: 300;
         }
 
         .search-section {
             max-width: 600px;
-            margin: 0 auto var(--space-2xl);
-            padding-top: var(--space-xl);
+            margin: 0 auto;
+            padding: 0 var(--space-md);
         }
 
         .search-box {
             position: relative;
+            filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.1));
         }
 
         .search-input {
             width: 100%;
-            padding: var(--space-md) var(--space-lg);
+            padding: var(--space-lg) var(--space-xl);
+            padding-right: 60px;
             font-size: 1.125rem;
-            border: 2px solid var(--border);
+            border: 2px solid rgba(156, 175, 136, 0.2);
             border-radius: 50px;
             font-family: var(--font-sans);
-            transition: var(--transition);
-            background-color: var(--bg-primary);
+            transition: all 0.3s ease;
+            background-color: var(--bg-secondary);
             color: var(--text-primary);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-light);
+            opacity: 0.7;
         }
 
         .search-input:focus {
             outline: none;
             border-color: var(--accent-sage);
-            box-shadow: 0 0 0 4px rgba(156, 175, 136, 0.1);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1), 0 0 0 4px rgba(156, 175, 136, 0.1);
+            transform: translateY(-2px);
         }
 
         .search-icon {
@@ -96,6 +125,13 @@
             transform: translateY(-50%);
             color: var(--text-light);
             font-size: 1.25rem;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus ~ .search-icon {
+            color: var(--accent-sage);
+            transform: translateY(-50%) scale(1.1);
         }
 
         .tables-grid {
@@ -139,12 +175,12 @@
             font-family: var(--font-serif);
             font-size: 2.5rem;
             font-weight: 700;
-            color: var(--primary);
+            color: var(--text-primary);
         }
 
         .table-name {
             font-family: var(--font-serif);
-            font-size: 1.25rem;
+            font-size: 1rem;
             font-weight: 600;
             color: var(--accent-gold);
             text-align: right;
@@ -201,16 +237,33 @@
         }
 
         @media (max-width: 768px) {
-            .tables-hero__title {
-                font-size: 2.5rem;
+            .tables-hero {
+                min-height: 40vh;
+                padding: calc(70px + var(--space-xl)) var(--space-md) var(--space-xl);
             }
 
-            .tables-grid {
-                grid-template-columns: 1fr;
+            .tables-hero__title {
+                font-size: 3rem;
+                margin-bottom: var(--space-lg);
+            }
+
+            .search-section {
+                padding: 0 var(--space-sm);
             }
 
             .search-input {
                 font-size: 1rem;
+                padding: var(--space-md) var(--space-lg);
+                padding-right: 55px;
+            }
+
+            .search-icon {
+                font-size: 1.125rem;
+                right: var(--space-md);
+            }
+
+            .tables-grid {
+                grid-template-columns: 1fr;
             }
 
             .table-header {
@@ -221,6 +274,21 @@
 
             .table-name {
                 text-align: left;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .tables-hero {
+                padding-top: calc(70px + var(--space-md));
+            }
+
+            .tables-hero__title {
+                font-size: 2.5rem;
+            }
+
+            .search-input {
+                padding: var(--space-sm) var(--space-md);
+                padding-right: 50px;
             }
         }
     </style>
@@ -238,7 +306,6 @@
                 <li><a href="/#schedule" class="nav__link">Schedule</a></li>
                 <li><a href="/#venue" class="nav__link">Venue & Travel</a></li>
                 <li><a href="/#rsvp" class="nav__link">RSVP</a></li>
-                <li><a href="/findyourtable" class="nav__link nav__link--cta">Find Your Table</a></li>
             </ul>
             <div class="nav__controls">
                 <button class="theme-toggle" aria-label="Toggle dark mode">🌙</button>
@@ -250,18 +317,6 @@
     <section class="tables-hero">
         <div class="tables-hero__content">
             <h1 class="tables-hero__title">Find Your Table</h1>
-            <p class="tables-hero__subtitle">Search for your name to find your table assignment</p>
-        </div>
-    </section>
-
-    <!-- Main Content -->
-    <section class="section">
-        <div class="container">
-            <a href="/" class="back-link">
-                <span>←</span>
-                <span>Back to Home</span>
-            </a>
-
             <!-- Search Box -->
             <div class="search-section">
                 <div class="search-box">
@@ -275,6 +330,13 @@
                     <span class="search-icon">🔍</span>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="section">
+        <div class="container">
+            
 
             <!-- Tables Grid -->
             <div id="tablesContainer" class="tables-grid">
