@@ -46,11 +46,11 @@
       },
       "cocktailHour": {
         "title": "Cocktail Hour",
-        "location": "White Place 2, Santa Ana"
+        "location": "White Palace 2, Santa Ana"
       },
       "reception": {
         "title": "Reception",
-        "location": "White Place 2, Santa Ana"
+        "location": "White Palace 2, Santa Ana"
       }
     },
     "venue": {
@@ -174,15 +174,15 @@
       "title": "Câu Chuyện Của Tụi Mình",
       "firstDate": {
         "title": "Lời Tỏ Tình",
-        "text": "Em gặp anh chính thức lần đầu tiên vào một ngày nắng đẹp, không có gì đặc biệt, ở Heritage Park, Cerritos. Chỉ là một buổi hẹn hò đầu tiên rất bình thường, nhưng lại trở thành khởi đầu của chúng ta."
+        "text": "Giữa những thử thách của cuộc sống, chúng mình tin rằng Chúa đã an bài để cả hai tìm thấy nhau đúng lúc nhất.<br> Sau trại hè của Hội sinh viên Công giáo năm ấy, hai trái tim đã quyết định mở ra để bắt đầu hành trình tìm hiểu nhau. Lời tỏ tình đơn sơ tại một công viên nho nhỏ tuy giản dị nhưng chứa đựng tất cả chân tình mà chúng mình dành cho nhau.<br> Từ khoảnh khắc ấy, một tình yêu bắt đầu chớm nở, được nuôi dưỡng bởi đức tin và sự đồng cảm. Đó chính là khởi đầu bình yên cho câu chuyện hạnh phúc mà tụi mình đang viết tiếp hôm nay."
       },
       "proposal": {
         "title": "Lời Cầu Hôn",
-        "text": "Trong một ngày nắng đẹp, dưới bầu trời yên tĩnh,<br>Tại một nhà nguyện nơi vách đá gặp ánh sáng,<br>Điều cảm thấy như chỉ là một bức ảnh, một khoảnh khắc trôi qua,<br>Biến thành một câu hỏi đã thay đổi cuộc đời em.<br><br>Không có bất ngờ lớn lao, chỉ một trái tim chân thành,<br>Anh hỏi em một cách giản dị, chắc chắn và rõ ràng.<br>Em hỏi hai lần—anh thực sự chắc chắn chứ?—<br>Anh mỉm cười, và mãi mãi đột nhiên ở đây."
+        "text": "Sáu tháng kể từ ngày tỏ tình —  đó là thời điểm trái tim đã tìm thấy câu trả lời. Sáu tháng trôi qua với biết bao biến động lớn, nhưng chính trong gian nan, chúng mình mới nhận ra đối phương là mảnh ghép của chính mình và là người bạn đồng hành lý tưởng trên những nẻo đường.<br> Tụi mình đã không chỉ yêu, mà còn cùng nắm tay vượt qua khó khăn, nâng đỡ nhau để cùng thăng tiến và trưởng thành hơn mỗi ngày. Để rồi, trong không gian thiêng liêng của một nhà nguyện nhỏ bên vách đá, cô ấy đã mỉm cười nói 'Đồng ý' trước lời cầu hôn của mình."
       },
       "wedding": {
         "title": "Ngày Cưới Của Chúng Tôi",
-        "text": "Mỗi câu chuyện tình yêu đều có một trang mới.<br>Câu chuyện của chúng tôi chờ đợi ngày chúng tôi nói lời 'Anh/em nhận em/anh làm vợ/chồng'.<br>Hãy tham gia cùng chúng tôi tại tiệc chiêu đãi,<br>nơi phần còn lại của câu chuyện chúng tôi cuối cùng sẽ được kể."
+        "text": "Mỗi câu chuyện tình yêu đều có một trang mới.<br>Câu chuyện của chúng mình chờ đợi ngày chúng mình nói lời 'Anh/em nhận em/anh làm vợ/chồng'.<br>Hãy tham gia cùng chúng mình tại lễ cưới,<br>nơi phần còn lại của câu chuyện chúng mình cuối cùng sẽ được kể."
       }
     },
     "schedule": {
@@ -193,15 +193,15 @@
       },
       "weddingMass": {
         "title": "Thánh Lễ Hôn Phối",
-        "location": "Trung Tâm Công Giáo Korean Martys, Westminster"
+        "location": "Trung Tâm Công Giáo Các Thánh Tử Đạo Hàn Quốc, Westminster"
       },
       "cocktailHour": {
         "title": "Đón Khách",
-        "location": "Nhà hàng White Place 2, Santa Ana"
+        "location": "Nhà hàng White Palace 2, Santa Ana"
       },
       "reception": {
         "title": "Tiệc Mừng",
-        "location": "Nhà hàng White Place 2, Santa Ana"
+        "location": "Nhà hàng White Palace 2, Santa Ana"
       }
     },
     "venue": {
@@ -253,7 +253,7 @@
         "names": "Vui lòng nhập tên của bạn",
         "phone": "Vui lòng nhập số điện thoại hợp lệ",
         "phoneRequired": "Vui lòng nhập số điện thoại",
-        "attending": "Vui lòng cho chúng tôi biết bạn có tham dự không",
+        "attending": "Vui lòng cho chúng mình biết bạn có tham dự không",
         "correctErrors": "Vui lòng sửa các lỗi ở trên."
       },
       "feedback": {
@@ -261,7 +261,7 @@
         "error": "Đã xảy ra lỗi. Vui lòng thử lại.",
         "networkError": "Lỗi kết nối. Vui lòng kiểm tra kết nối của bạn và thử lại.",
         "celebrating": "Hẹn gặp ngày 26 tháng 6 nhé!",
-        "missYou": "Chúng tôi sẽ nhớ bạn!"
+        "missYou": "Chúng mình sẽ nhớ bạn!"
       },
       "autocomplete": {
         "found": "✓ Đã tìm thấy tên của bạn trong danh sách khách mời",
@@ -274,7 +274,7 @@
         "INVALID_GUEST_COUNT": "Vui lòng chỉ định số lượng khách (1-5 người).",
         "INVALID_PHONE": "Vui lòng cung cấp số điện thoại hợp lệ.",
         "SHORT_NAME": "Vui lòng nhập tên đầy đủ của bạn như trên thiệp mời. Tên này có thể khớp với khách mời khác.",
-        "NOT_IN_GUEST_LIST": "Chúng tôi không tìm thấy tên của bạn trong danh sách khách mời. Vui lòng nhập tên đầy đủ như trên thiệp mời của bạn, hoặc liên lạc trực tiếp với chúng mình.",
+        "NOT_IN_GUEST_LIST": "Không tìm thấy tên của bạn trong danh sách khách mời. Vui lòng nhập tên đầy đủ như trên thiệp mời của bạn, hoặc liên lạc trực tiếp với chúng mình.",
         "ALREADY_EXISTS": "Đã có phúc đáp cho tên bạn đã nhập này. Vui lòng liên lạc với chúng mình nếu bạn cần cập nhật câu trả lời của mình.",
         "MULTIPLE_GUESTS": "Tìm thấy nhiều khách khớp với tên của bạn. Vui lòng nhập tên đầy đủ của bạn như trên thiệp mời.",
         "SERVER_ERROR": "Đã xảy ra lỗi khi xử lý phúc đáp của bạn. Vui lòng thử lại sau."
@@ -285,7 +285,7 @@
       "questions": {
         "whatToWear": {
           "question": "Tôi nên mặc gì?",
-          "answer": "Trang phục tiệc cưới lịch sự - Nếu có thể, Màu đám cưới của chúng tôi là xanh navy, xanh dusty, xanh sage và vàng."
+          "answer": "Trang phục tiệc cưới lịch sự - Nếu có thể, Màu đám cưới của chúng mình là xanh navy, xanh dusty, xanh sage và vàng."
         },
         "weather": {
           "question": "Thời tiết vào tháng 6 như thế nào?",
