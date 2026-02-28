@@ -1717,16 +1717,44 @@ fieldset:focus-within {
 
 .fireworks-info-text {
   position: absolute;
-  top: 20px;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   z-index: 2;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 2rem;
+  font-weight: bold;
   pointer-events: none;
   font-family: var(--font-sans);
   text-align: center;
-  animation: fadeInOut 3s ease-in-out;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  animation: celebrationPulse 3s ease-in-out;
+  max-width: 90%;
+  line-height: 1.2;
+}
+
+@keyframes celebrationPulse {
+  0% { 
+    opacity: 0; 
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  20% { 
+    opacity: 1; 
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  40% { 
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  60% { 
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+  80% { 
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% { 
+    opacity: 1; 
+    transform: translate(-50%, -50%) scale(1);
+  }
 }
 
 @keyframes fadeInOut {
@@ -3378,6 +3406,13 @@ fieldset:focus-within {
   
   .rain-drop {
     animation-duration: 2s !important;
+  }
+  
+  /* Make celebration text responsive on mobile */
+  .fireworks-info-text {
+    font-size: 1.5rem !important;
+    max-width: 95% !important;
+    padding: 0 10px !important;
   }
   
   /* Ensure animations are visible above mobile UI elements */
