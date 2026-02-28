@@ -71,7 +71,7 @@
       },
       "dressCode": {
         "title": "Dress Code",
-        "text": "Formal attire. If possible, our wedding colors are navy blue, dusty blue, sage green, and gold."
+        "text": "Formal attires. Please avoid wearing white/off-white tones so the bride may be the only one in white on this special day."
       }
     },
     "rsvp": {
@@ -134,7 +134,7 @@
       "questions": {
         "whatToWear": {
           "question": "What should I wear?",
-          "answer": "Formal attire. If possible, our wedding colors are navy blue, dusty blue, sage green, and gold."
+          "answer": "Formal wedding attire. We warmly invite you to wear whatever makes you feel elegant and comfortable — no specific colors required. Our wedding theme embraces dark blue / navy tones, and you are welcome to wear shades within this palette if you wish. Kindly avoid white or off-white tones. Thank you so much for your understanding and love."
         },
         "weather": {
           "question": "What's the weather like in June?",
@@ -209,20 +209,20 @@
       "ceremony": "Lễ Cưới",
       "reception": "Tiệc Mừng",
       "parking": {
-        "title": "Bãi Đậu Xe",
-        "text": "Bãi đậu xe rộng rãi tại cả hai địa điểm. Nhà hàng có thêm bãi đậu xe phía sau."
+        "title": "Chỗ Đậu Xe",
+        "text": "Chỗ đậu xe rộng rãi tại cả hai địa điểm. Nhà hàng có thêm chỗ đậu xe phía sau."
       },
       "airport": {
         "title": "Phi Trường",
         "text": "John Wayne (SNA) - 20 phút<br>Long Beach (LGB) - 20 phút<br>Los Angeles (LAX) - 45 phút"
       },
       "accommodations": {
-        "title": "Chỗ Ở",
+        "title": "Nơi Ở",
         "text": "Liên lạc với chúng mình để biết giá đặc biệt đặt phòng khách sạn gần nhất."
       },
       "dressCode": {
         "title": "Trang Phục",
-        "text": "Nếu có thể, màu xanh navy, xanh dusty, xanh sage và vàng là màu đám cưới của chúng mình."
+        "text": "Trang trọng, lịch sự. Xin vui lòng không mặc màu trắng hoặc trắng ngà để cô dâu được là người duy nhất mặc màu trắng trong ngày trọng đại này"
       }
     },
     "rsvp": {
@@ -285,7 +285,7 @@
       "questions": {
         "whatToWear": {
           "question": "Tôi nên mặc gì?",
-          "answer": "Trang phục tiệc cưới lịch sự - Nếu có thể, Màu đám cưới của chúng mình là xanh navy, xanh dusty, xanh sage và vàng."
+          "answer": "Trang trọng, lịch sự. Tông màu chủ đề là xanh đậm / xanh navy; quý khách có thể chọn trang phục theo gam màu này. Vui lòng KHÔNG mặc màu trắng hoặc trắng ngà. Chân thành cảm ơn mọi người."
         },
         "weather": {
           "question": "Thời tiết vào tháng 6 như thế nào?",
