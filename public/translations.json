@@ -76,10 +76,10 @@
     },
     "rsvp": {
       "title": "RSVP",
-      "subtitle": "Please respond by May 26, 2026",
+      "subtitle": "Please respond by May 10, 2026",
       "form": {
         "names": "Name(s)",
-        "namesPlaceholder": "Enter your name match with that on invitation (NO DIACRITICS)",
+        "namesPlaceholder": "Enter your name match with invitation (NO DIACRITICS)",
         "phone": "Phone Number",
         "phonePlaceholder": "(555) 123-4567",
         "attending": "Will you be attending?",
@@ -227,10 +227,10 @@
     },
     "rsvp": {
       "title": "Phúc Đáp",
-      "subtitle": "Vui lòng phúc đáp trước ngày 26 tháng 5, 2026",
+      "subtitle": "Vui lòng phúc đáp trước ngày 10 tháng 5, 2026",
       "form": {
         "names": "Tên",
-        "namesPlaceholder": "Nhập tên khớp với tên trên thiệp mời (KHÔNG DẤU)",
+        "namesPlaceholder": "Nhập tên khớp với tên trên thiệp (KHÔNG DẤU)",
         "phone": "Số Điện Thoại",
         "phonePlaceholder": "(XXX) XXX-XXXX",
         "attending": "Bạn có tham dự không?",
