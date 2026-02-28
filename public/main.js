@@ -29,7 +29,7 @@
                 console.log('Translations loaded successfully:', this.translations);
                 
                 // Load saved language preference
-                const savedLang = localStorage.getItem('preferredLanguage') || 'en';
+                const savedLang = localStorage.getItem('preferredLanguage') || 'vi';
                 console.log('Setting language to:', savedLang);
                 
                 // Set language without trying to update components yet
