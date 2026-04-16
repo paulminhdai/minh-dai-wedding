@@ -2197,6 +2197,11 @@
 
     // Initialize everything when DOM is loaded
     document.addEventListener('DOMContentLoaded', async () => {
+        // Wait for fonts to load before revealing hero content
+        if ('fonts' in document) {
+            await document.fonts.ready;
+        }
+        
         // Initialize mobile detection first
         MobileUtils.handleResize();
         window.addEventListener('resize', MobileUtils.handleResize);
