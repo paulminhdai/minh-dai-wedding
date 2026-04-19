@@ -34,6 +34,8 @@
             padding: 0;
             overflow: hidden;
             height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         /* Hide navigation */
@@ -41,16 +43,57 @@
             display: none;
         }
 
+        /* Header section */
+        .page-header {
+            background: var(--bg-secondary);
+            padding: var(--space-xl) var(--space-md);
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .page-header__welcome {
+            font-family: var(--font-sans);
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin: 0 0 var(--space-xs) 0;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+
+        .page-header__title {
+            font-family: 'Inspiration', cursive;
+            font-size: 3rem;
+            color: var(--accent-gold);
+            margin: 0 0 var(--space-xs) 0;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .page-header__couple {
+            font-family: 'Inspiration', cursive;
+            font-size: 2rem;
+            color: #EFBF04;
+            margin: 0 0 var(--space-xs) 0;
+            font-weight: 400;
+            letter-spacing: 0.05em;
+        }
+
+        .page-header__date {
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin: 0;
+            font-weight: 400;
+        }
+
         .map-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            flex: 1;
+            position: relative;
             padding: 0;
             margin: 0;
             width: 100vw;
-            height: 100vh;
+            overflow: hidden;
         }
 
         .venue-map {
@@ -80,7 +123,7 @@
         .search-input {
             width: 100%;
             padding: var(--space-lg) var(--space-xl);
-            padding-right: 70px;
+            padding-right: 120px;
             font-size: 1.25rem;
             border: none;
             border-radius: 60px;
@@ -125,16 +168,17 @@
 
         .search-clear {
             position: absolute;
-            right: 60px;
+            right: 70px;
             top: 50%;
             transform: translateY(-50%);
-            background: var(--text-light);
-            color: white;
+            background: transparent;
+            color: var(--text-secondary);
             border: none;
             border-radius: 50%;
-            width: 28px;
-            height: 28px;
+            width: 20px;
+            height: 20px;
             font-size: 1.25rem;
+            font-weight: 300;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -146,32 +190,23 @@
             line-height: 1;
         }
 
+        [data-theme="dark"] .search-clear {
+            color: var(--text-light);
+        }
+
         .search-clear.visible {
-            opacity: 1;
+            opacity: 0.6;
             pointer-events: auto;
         }
 
         .search-clear:hover {
-            background: var(--accent-sage);
-            transform: translateY(-50%) scale(1.1);
+            opacity: 1;
+            color: var(--accent-sage);
+            transform: translateY(-50%) scale(1.2);
         }
 
         .search-clear:active {
-            transform: translateY(-50%) scale(0.95);
-        }
-
-        /* Title overlay */
-        .map-title {
-            position: absolute;
-            top: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 90;
-            font-family: 'Inspiration', cursive;
-            font-size: 3.5rem;
-            color: var(--accent-gold);
-            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            pointer-events: none;
+            transform: translateY(-50%) scale(0.9);
         }
 
         .map-svg {
@@ -437,17 +472,54 @@
             display: none;
         }
 
-        @media (max-width: 768px) {
+        /* iPad and larger tablets */
+        @media (min-width: 481px) and (max-width: 1024px) {
             .search-overlay {
-                bottom: 20px;
-                width: 95%;
-                max-width: none;
+                bottom: 200px !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-header {
+                padding: var(--space-lg) var(--space-sm);
+            }
+
+            .page-header__welcome {
+                font-size: 0.85rem;
+            }
+
+            .page-header__title {
+                font-size: 2.5rem;
+            }
+
+            .page-header__couple {
+                font-size: 1.75rem;
+            }
+
+            .page-header__date {
+                font-size: 0.85rem;
+            }
+
+            .map-container {
+                padding-top: 0;
+            }
+
+            .venue-map {
+                padding-top: 20px;
+            }
+
+            .map-svg {
+                transform: scale(1.15) translateY(-100px);
+            }
+
+            .search-overlay {
+                bottom: 250px;
             }
 
             .search-input {
                 font-size: 1rem;
                 padding: var(--space-md) var(--space-lg);
-                padding-right: 55px;
+                padding-right: 90px;
             }
 
             .search-icon {
@@ -456,15 +528,8 @@
             }
 
             .search-clear {
-                right: 50px;
-                width: 24px;
-                height: 24px;
+                right: 55px;
                 font-size: 1.125rem;
-            }
-
-            .map-title {
-                font-size: 2.5rem;
-                top: 30px;
             }
 
             .info-panel {
@@ -482,16 +547,47 @@
             .info-panel.active {
                 transform: translateY(0);
             }
+
+            .info-panel.position-left,
+            .info-panel.position-right,
+            .info-panel.position-top {
+                left: 0;
+                right: 0;
+                bottom: 0;
+                top: auto;
+            }
+
+            .info-panel.position-left.active,
+            .info-panel.position-right.active,
+            .info-panel.position-top.active {
+                transform: translateY(0);
+            }
         }
 
         @media (max-width: 480px) {
-            .map-title {
+            .page-header__welcome {
+                font-size: 0.8rem;
+            }
+
+            .page-header__title {
                 font-size: 2rem;
+            }
+
+            .page-header__couple {
+                font-size: 1.5rem;
+            }
+
+            .page-header__date {
+                font-size: 0.8rem;
+            }
+
+            .search-overlay {
+                bottom: 120px;
             }
 
             .search-input {
                 padding: var(--space-sm) var(--space-md);
-                padding-right: 50px;
+                padding-right: 80px;
                 font-size: 0.95rem;
             }
 
@@ -500,21 +596,23 @@
             }
 
             .search-clear {
-                right: 45px;
-                width: 22px;
-                height: 22px;
+                right: 50px;
                 font-size: 1rem;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Header Section -->
+    <header class="page-header">
+        <p class="page-header__welcome">Welcome to Our Wedding</p>
+        <p class="page-header__couple">Đại & Minh</p>
+        <p class="page-header__date">June 26, 2026</p>
+    </header>
+
     <!-- Full-Screen Map Container -->
     <div class="map-container">
         <div class="venue-map">
-            <!-- Title Overlay -->
-            <div class="map-title">Find Your Table</div>
-
             <!-- Search Box Overlay -->
             <div class="search-overlay">
                 <div class="search-box">
