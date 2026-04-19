@@ -268,6 +268,11 @@ app.get('/findyourtable', (req, res) => {
     res.sendFile(path.join(PUBLIC_DIR, 'findyourtable.html'));
 });
 
+// Serve your table interactive map page
+app.get('/yourtable', (req, res) => {
+    res.sendFile(path.join(PUBLIC_DIR, 'yourtable.html'));
+});
+
 // ============================================
 // AUTHENTICATION ROUTES
 // ============================================

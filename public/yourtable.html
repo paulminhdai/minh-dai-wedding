@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Find Your Table">
+    <meta name="theme-color" content="#2c3e50">
+    <title>Find Your Table - Interactive Map</title>
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
+    <meta name="description" content="Find your table with our interactive venue map.">
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0SP0595MB5"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-0SP0595MB5');
+    </script>
+
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Nunito:wght@300;400;600;700&family=Inspiration&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Full-screen immersive layout */
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Hide navigation */
+        .nav {
+            display: none;
+        }
+
+        .map-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 0;
+            margin: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .venue-map {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-secondary);
+            overflow: hidden;
+        }
+
+        /* Floating search box at the bottom */
+        .search-overlay {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        .search-box {
+            position: relative;
+            filter: drop-shadow(0 8px 30px rgba(0, 0, 0, 0.2));
+        }
+
+        .search-input {
+            width: 100%;
+            padding: var(--space-lg) var(--space-xl);
+            padding-right: 70px;
+            font-size: 1.25rem;
+            border: none;
+            border-radius: 60px;
+            font-family: var(--font-sans);
+            transition: all 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            color: var(--text-primary);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        [data-theme="dark"] .search-input {
+            background-color: rgba(44, 62, 80, 0.98);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-light);
+            opacity: 0.7;
+        }
+
+        .search-input:focus {
+            outline: none;
+            box-shadow: 0 12px 50px rgba(0, 0, 0, 0.25), 0 0 0 4px rgba(156, 175, 136, 0.3);
+            transform: translateY(-4px);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: var(--space-xl);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            font-size: 1.5rem;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus ~ .search-icon {
+            color: var(--accent-sage);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .search-clear {
+            position: absolute;
+            right: 60px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--text-light);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            font-size: 1.25rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .search-clear.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .search-clear:hover {
+            background: var(--accent-sage);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .search-clear:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+
+        /* Title overlay */
+        .map-title {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 90;
+            font-family: 'Inspiration', cursive;
+            font-size: 3.5rem;
+            color: var(--accent-gold);
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+        }
+
+        .map-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .stage {
+            fill: var(--accent-gold);
+            opacity: 0.3;
+            stroke: var(--accent-gold);
+            stroke-width: 3;
+        }
+
+        .dance-floor {
+            fill: var(--accent-sage);
+            opacity: 0.2;
+            stroke: var(--accent-sage);
+            stroke-width: 2;
+            stroke-dasharray: 5,5;
+        }
+
+        .walkway {
+            fill: none;
+            stroke: var(--text-light);
+            stroke-width: 3;
+            stroke-dasharray: 10,5;
+            opacity: 0.3;
+        }
+
+        .entrance {
+            fill: var(--primary);
+            opacity: 0.3;
+        }
+
+        .table-group {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .table-circle {
+            fill: var(--bg-primary);
+            stroke: var(--border);
+            stroke-width: 2;
+            transition: all 0.3s ease;
+        }
+
+        .table-group:hover .table-circle {
+            fill: var(--accent-sage);
+            opacity: 0.3;
+            stroke: var(--accent-sage);
+            stroke-width: 3;
+            transform-origin: center;
+        }
+
+        .table-group.highlighted .table-circle {
+            fill: var(--accent-gold);
+            opacity: 0.4;
+            stroke: var(--accent-gold);
+            stroke-width: 4;
+            filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.6));
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.4;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        .table-number {
+            font-family: var(--font-serif);
+            font-size: 20px;
+            font-weight: 700;
+            fill: var(--text-primary);
+            text-anchor: middle;
+            dominant-baseline: middle;
+            pointer-events: none;
+        }
+
+        .table-group.highlighted .table-number {
+            fill: var(--accent-gold);
+            font-size: 24px;
+        }
+
+        .label-text {
+            font-family: var(--font-sans);
+            font-size: 16px;
+            font-weight: 600;
+            fill: var(--text-secondary);
+            text-anchor: middle;
+        }
+
+        .path-line {
+            fill: none;
+            stroke: var(--accent-gold);
+            stroke-width: 4;
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            opacity: 0;
+            filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.5));
+        }
+
+        .path-line.active {
+            animation: drawPath 2s ease-out forwards;
+            opacity: 1;
+        }
+
+        @keyframes drawPath {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        .path-arrow {
+            fill: var(--accent-gold);
+            opacity: 0;
+            filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.5));
+        }
+
+        .path-arrow.active {
+            animation: fadeIn 0.5s ease-out 1.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .info-panel {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border: 2px solid var(--accent-gold);
+            border-radius: var(--radius);
+            padding: var(--space-xl);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
+            max-width: 350px;
+            max-height: 70vh;
+            overflow-y: auto;
+            opacity: 0;
+            transition: all 0.4s ease;
+            pointer-events: none;
+            z-index: 200;
+        }
+
+        [data-theme="dark"] .info-panel {
+            background: rgba(44, 62, 80, 0.98);
+        }
+
+        .info-panel.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Dynamic positioning classes */
+        .info-panel.position-right {
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%) translateX(30px);
+        }
+
+        .info-panel.position-right.active {
+            transform: translateY(-50%) translateX(0);
+        }
+
+        .info-panel.position-left {
+            left: 40px;
+            top: 50%;
+            transform: translateY(-50%) translateX(-30px);
+        }
+
+        .info-panel.position-left.active {
+            transform: translateY(-50%) translateX(0);
+        }
+
+        .info-panel.position-top {
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-30px);
+        }
+
+        .info-panel.position-top.active {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .info-panel__title {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            color: var(--accent-gold);
+            margin-bottom: var(--space-sm);
+        }
+
+        .info-panel__name {
+            font-family: var(--font-serif);
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-md);
+        }
+
+        .info-panel__guests {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .info-panel__guest {
+            padding: var(--space-xs) 0;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            border-bottom: 1px solid var(--bg-tertiary);
+        }
+
+        .info-panel__guest:last-child {
+            border-bottom: none;
+        }
+
+        .info-panel__guest.matched {
+            color: var(--accent-gold);
+            font-weight: 600;
+        }
+
+        .info-panel__table-link {
+            font-weight: 600;
+            margin-top: 12px;
+            color: var(--accent-gold);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .info-panel__table-link:hover {
+            color: var(--accent-sage);
+            padding-left: 8px;
+        }
+
+        .info-panel__close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 5px;
+            line-height: 1;
+            transition: all 0.3s ease;
+        }
+
+        .info-panel__close:hover {
+            color: var(--accent-gold);
+            transform: rotate(90deg);
+        }
+
+        /* Hide legend */
+        .legend {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .search-overlay {
+                bottom: 20px;
+                width: 95%;
+                max-width: none;
+            }
+
+            .search-input {
+                font-size: 1rem;
+                padding: var(--space-md) var(--space-lg);
+                padding-right: 55px;
+            }
+
+            .search-icon {
+                font-size: 1.25rem;
+                right: var(--space-lg);
+            }
+
+            .search-clear {
+                right: 50px;
+                width: 24px;
+                height: 24px;
+                font-size: 1.125rem;
+            }
+
+            .map-title {
+                font-size: 2.5rem;
+                top: 30px;
+            }
+
+            .info-panel {
+                position: fixed;
+                top: auto;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                max-width: 100%;
+                max-height: 60vh;
+                border-radius: var(--radius) var(--radius) 0 0;
+                transform: translateY(100%);
+            }
+
+            .info-panel.active {
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .map-title {
+                font-size: 2rem;
+            }
+
+            .search-input {
+                padding: var(--space-sm) var(--space-md);
+                padding-right: 50px;
+                font-size: 0.95rem;
+            }
+
+            .search-icon {
+                font-size: 1.125rem;
+            }
+
+            .search-clear {
+                right: 45px;
+                width: 22px;
+                height: 22px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Full-Screen Map Container -->
+    <div class="map-container">
+        <div class="venue-map">
+            <!-- Title Overlay -->
+            <div class="map-title">Find Your Table</div>
+
+            <!-- Search Box Overlay -->
+            <div class="search-overlay">
+                <div class="search-box">
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        class="search-input" 
+                        placeholder="Search your name to find your table..."
+                        autocomplete="off"
+                    >
+                    <button id="searchClear" class="search-clear" aria-label="Clear search">×</button>
+                    <span class="search-icon">🔍</span>
+                </div>
+            </div>
+
+            <svg class="map-svg" viewBox="0 0 1000 800" preserveAspectRatio="xMidYMid meet">
+                <!-- Entrance -->
+                <rect class="entrance" x="450" y="750" width="100" height="40" rx="5"/>
+                <text class="label-text" x="500" y="770">Entrance</text>
+
+                <!-- Stage -->
+                <rect class="stage" x="400" y="50" width="200" height="80" rx="10"/>
+                <text class="label-text" x="500" y="90">Stage</text>
+
+                <!-- Dance Floor -->
+                <ellipse class="dance-floor" cx="500" cy="200" rx="120" ry="80"/>
+                <text class="label-text" x="500" y="205">Dance Floor</text>
+
+                <!-- Walkway (vertical middle) -->
+                <line class="walkway" x1="500" y1="300" x2="500" y2="700"/>
+
+                <!-- Path line (will be drawn when searching) -->
+                <path id="pathLine" class="path-line" d=""/>
+                <polygon id="pathArrow" class="path-arrow" points=""/>
+
+                <!-- Tables Container -->
+                <g id="tablesContainer">
+                    <!-- Tables will be dynamically generated here -->
+                </g>
+            </svg>
+
+            <!-- Info Panel -->
+            <div id="infoPanel" class="info-panel">
+                <button class="info-panel__close" onclick="closeInfoPanel()">×</button>
+                <h3 class="info-panel__title" id="infoTableNumber"></h3>
+                <div class="info-panel__name" id="infoTableName"></div>
+                <ul class="info-panel__guests" id="infoGuestsList"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme Management (simplified - no toggle button)
+        const ThemeManager = {
+            init() {
+                this.loadTheme();
+            },
+
+            loadTheme() {
+                const savedTheme = localStorage.getItem('theme');
+                const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const theme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+                this.setTheme(theme);
+            },
+
+            setTheme(theme) {
+                document.documentElement.setAttribute('data-theme', theme);
+            }
+        };
+
+        // Table Map Functionality
+        let tablesData = [];
+        let currentHighlightedTable = null;
+
+        // Table positions arranged around the venue (20 tables)
+        const tablePositions = [
+            // Left side (10 tables)
+            { x: 150, y: 320 }, { x: 150, y: 420 }, { x: 150, y: 520 }, { x: 150, y: 620 },
+            { x: 250, y: 320 }, { x: 250, y: 420 }, { x: 250, y: 520 }, { x: 250, y: 620 },
+            { x: 350, y: 380 }, { x: 350, y: 560 },
+            
+            // Right side (10 tables)
+            { x: 850, y: 320 }, { x: 850, y: 420 }, { x: 850, y: 520 }, { x: 850, y: 620 },
+            { x: 750, y: 320 }, { x: 750, y: 420 }, { x: 750, y: 520 }, { x: 750, y: 620 },
+            { x: 650, y: 380 }, { x: 650, y: 560 }
+        ];
+
+        async function loadTables() {
+            try {
+                const response = await fetch('tables.json');
+                const data = await response.json();
+                tablesData = data.tables;
+                
+                // Generate 20 tables if we don't have enough data
+                while (tablesData.length < 20) {
+                    const num = tablesData.length + 1;
+                    tablesData.push({
+                        tableNumber: num,
+                        tableName: `Table ${num}`,
+                        guests: []
+                    });
+                }
+                
+                renderTables();
+            } catch (error) {
+                console.error('Error loading tables:', error);
+            }
+        }
+
+        function renderTables() {
+            const container = document.getElementById('tablesContainer');
+            const svgNS = "http://www.w3.org/2000/svg";
+            
+            tablesData.forEach((table, index) => {
+                if (index >= tablePositions.length) return;
+                
+                const pos = tablePositions[index];
+                const group = document.createElementNS(svgNS, 'g');
+                group.classList.add('table-group');
+                group.setAttribute('data-table-number', table.tableNumber);
+                
+                // Table circle
+                const circle = document.createElementNS(svgNS, 'circle');
+                circle.classList.add('table-circle');
+                circle.setAttribute('cx', pos.x);
+                circle.setAttribute('cy', pos.y);
+                circle.setAttribute('r', 35);
+                
+                // Table number
+                const text = document.createElementNS(svgNS, 'text');
+                text.classList.add('table-number');
+                text.setAttribute('x', pos.x);
+                text.setAttribute('y', pos.y);
+                text.textContent = table.tableNumber;
+                
+                group.appendChild(circle);
+                group.appendChild(text);
+                
+                // Click handler
+                group.addEventListener('click', () => {
+                    showTableInfo(table, pos);
+                });
+                
+                container.appendChild(group);
+            });
+        }
+
+        function searchTables(searchTerm) {
+            clearHighlight();
+            
+            if (!searchTerm.trim()) {
+                return;
+            }
+
+            // Find all matching tables
+            const foundTables = tablesData.filter(table => 
+                table.guests.some(guest => 
+                    guest.toLowerCase().includes(searchTerm.toLowerCase())
+                )
+            );
+
+            if (foundTables.length === 0) {
+                return;
+            }
+
+            // If multiple matches found, highlight all and show disambiguation
+            if (foundTables.length > 1) {
+                foundTables.forEach(table => {
+                    highlightTable(table.tableNumber);
+                });
+                showMultipleMatches(foundTables, searchTerm);
+            } else {
+                // Single match - show path and info as before
+                const foundTable = foundTables[0];
+                const tableIndex = tablesData.indexOf(foundTable);
+                const pos = tablePositions[tableIndex];
+                highlightTable(foundTable.tableNumber);
+                drawPath(pos);
+                showTableInfo(foundTable, pos, searchTerm);
+            }
+        }
+
+        function highlightTable(tableNumber) {
+            const tableGroup = document.querySelector(`[data-table-number="${tableNumber}"]`);
+            if (tableGroup) {
+                tableGroup.classList.add('highlighted');
+            }
+        }
+
+        function clearHighlight() {
+            // Clear all highlighted tables
+            document.querySelectorAll('.table-group.highlighted').forEach(table => {
+                table.classList.remove('highlighted');
+            });
+            
+            // Clear path
+            const pathLine = document.getElementById('pathLine');
+            const pathArrow = document.getElementById('pathArrow');
+            pathLine.classList.remove('active');
+            pathArrow.classList.remove('active');
+            pathLine.setAttribute('d', '');
+            pathArrow.setAttribute('points', '');
+        }
+
+        function drawPath(targetPos) {
+            const startX = 500;
+            const startY = 730;
+            const endX = targetPos.x;
+            const endY = targetPos.y;
+            
+            // Calculate control points for curved path
+            const midY = (startY + endY) / 2;
+            const path = `M ${startX} ${startY} Q ${startX} ${midY}, ${endX} ${endY}`;
+            
+            const pathLine = document.getElementById('pathLine');
+            pathLine.setAttribute('d', path);
+            
+            // Reset animation
+            pathLine.style.animation = 'none';
+            setTimeout(() => {
+                pathLine.classList.add('active');
+                pathLine.style.animation = '';
+            }, 10);
+            
+            // Draw arrow at the end
+            const arrowSize = 15;
+            const angle = Math.atan2(endY - midY, endX - startX);
+            const arrowPoints = [
+                [endX, endY],
+                [endX - arrowSize * Math.cos(angle - Math.PI / 6), endY - arrowSize * Math.sin(angle - Math.PI / 6)],
+                [endX - arrowSize * Math.cos(angle + Math.PI / 6), endY - arrowSize * Math.sin(angle + Math.PI / 6)]
+            ].map(p => p.join(',')).join(' ');
+            
+            const pathArrow = document.getElementById('pathArrow');
+            pathArrow.setAttribute('points', arrowPoints);
+            pathArrow.classList.add('active');
+        }
+
+        function showTableInfo(table, pos, searchTerm = '') {
+            const panel = document.getElementById('infoPanel');
+            const tableNumber = document.getElementById('infoTableNumber');
+            const tableName = document.getElementById('infoTableName');
+            const guestsList = document.getElementById('infoGuestsList');
+            
+            tableNumber.textContent = `Table ${table.tableNumber}`;
+            tableName.textContent = table.tableName;
+            
+            guestsList.innerHTML = table.guests.map(guest => {
+                const isMatched = searchTerm && guest.toLowerCase().includes(searchTerm.toLowerCase());
+                return `<li class="info-panel__guest ${isMatched ? 'matched' : ''}">${guest}</li>`;
+            }).join('');
+            
+            // Remove all position classes
+            panel.classList.remove('position-left', 'position-right', 'position-top');
+            
+            // Determine position based on table location
+            // pos.x < 500 means left side, >= 500 means right side
+            if (pos.x < 400) {
+                // Table on left side - show panel on right
+                panel.classList.add('position-right');
+            } else if (pos.x > 600) {
+                // Table on right side - show panel on left
+                panel.classList.add('position-left');
+            } else {
+                // Table in middle - show panel at top
+                panel.classList.add('position-top');
+            }
+            
+            panel.classList.add('active');
+        }
+
+        function showMultipleMatches(tables, searchTerm) {
+            const panel = document.getElementById('infoPanel');
+            const tableNumber = document.getElementById('infoTableNumber');
+            const tableName = document.getElementById('infoTableName');
+            const guestsList = document.getElementById('infoGuestsList');
+            
+            tableNumber.textContent = `Multiple Matches Found`;
+            tableName.textContent = `Found ${tables.length} tables with "${searchTerm}"`;
+            
+            // Show all matching guests grouped by table
+            guestsList.innerHTML = tables.map(table => {
+                const matchingGuests = table.guests.filter(guest => 
+                    guest.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+                
+                return `
+                    <li class="info-panel__guest" style="font-weight: 600; margin-top: 12px; color: var(--accent-gold); cursor: pointer;" 
+                        onclick="showSingleTable(${table.tableNumber})">
+                        Table ${table.tableNumber} - ${table.tableName}
+                    </li>
+                    ${matchingGuests.map(guest => 
+                        `<li class="info-panel__guest matched" style="padding-left: 16px;">${guest}</li>`
+                    ).join('')}
+                `;
+            }).join('');
+            
+            panel.classList.add('active');
+        }
+
+        function showSingleTable(tableNumber) {
+            const table = tablesData.find(t => t.tableNumber === tableNumber);
+            const tableIndex = tablesData.indexOf(table);
+            const pos = tablePositions[tableIndex];
+            
+            clearHighlight();
+            highlightTable(tableNumber);
+            drawPath(pos);
+            
+            // Update info panel to show just this table
+            const searchInput = document.getElementById('searchInput');
+            showTableInfo(table, pos, searchInput.value);
+        }
+
+        function closeInfoPanel() {
+            const panel = document.getElementById('infoPanel');
+            panel.classList.remove('active');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            ThemeManager.init();
+            loadTables();
+
+            // Setup search with debounce
+            const searchInput = document.getElementById('searchInput');
+            const searchClear = document.getElementById('searchClear');
+            let debounceTimer;
+            
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    searchTables(e.target.value);
+                }, 300);
+                
+                // Show/hide clear button
+                if (e.target.value.length > 0) {
+                    searchClear.classList.add('visible');
+                } else {
+                    searchClear.classList.remove('visible');
+                }
+            });
+
+            // Clear button functionality
+            searchClear.addEventListener('click', () => {
+                searchInput.value = '';
+                searchClear.classList.remove('visible');
+                clearHighlight();
+                closeInfoPanel();
+                searchInput.focus();
+            });
+
+            // Focus search input on load
+            searchInput.focus();
+
+            // Close info panel when clicking outside
+            document.addEventListener('click', (e) => {
+                const panel = document.getElementById('infoPanel');
+                if (!panel.contains(e.target) && !e.target.closest('.table-group')) {
+                    closeInfoPanel();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
