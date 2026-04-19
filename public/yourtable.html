@@ -43,10 +43,10 @@
             display: none;
         }
 
-        /* Header section */
+        /* Header section with search */
         .page-header {
             background: var(--bg-secondary);
-            padding: var(--space-xl) var(--space-md);
+            padding: var(--space-lg) var(--space-md);
             text-align: center;
             border-bottom: 1px solid var(--border);
             z-index: 100;
@@ -62,19 +62,11 @@
             letter-spacing: 0.5px;
         }
 
-        .page-header__title {
-            font-family: 'Inspiration', cursive;
-            font-size: 3rem;
-            color: var(--accent-gold);
-            margin: 0 0 var(--space-xs) 0;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        }
-
         .page-header__couple {
             font-family: 'Inspiration', cursive;
-            font-size: 2rem;
+            font-size: 2.5rem;
             color: #EFBF04;
-            margin: 0 0 var(--space-xs) 0;
+            margin: 0 0 var(--space-md) 0;
             font-weight: 400;
             letter-spacing: 0.05em;
         }
@@ -83,8 +75,88 @@
             font-family: var(--font-sans);
             font-size: 0.9rem;
             color: var(--text-secondary);
-            margin: 0;
+            margin: 0 0 var(--space-lg) 0;
             font-weight: 400;
+        }
+
+        /* Search box in header */
+        .header-search {
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: var(--space-md) var(--space-xl);
+            padding-right: 120px;
+            font-size: 1.05rem;
+            border: 2px solid var(--border);
+            border-radius: 50px;
+            font-family: var(--font-sans);
+            transition: all 0.3s ease;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-light);
+            opacity: 0.7;
+        }
+
+        .search-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(156, 175, 136, 0.2);
+            border-color: var(--accent-sage);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: var(--space-xl);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            font-size: 1.25rem;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus ~ .search-icon {
+            color: var(--accent-sage);
+        }
+
+        .search-clear {
+            position: absolute;
+            right: 70px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 1.25rem;
+            font-weight: 300;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .search-clear.visible {
+            opacity: 0.6;
+            pointer-events: auto;
+        }
+
+        .search-clear:hover {
+            opacity: 1;
+            color: var(--text-primary);
         }
 
         .map-container {
@@ -106,18 +178,11 @@
 
         /* Floating search box at the bottom */
         .search-overlay {
-            position: absolute;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            width: 90%;
-            max-width: 600px;
+            display: none;
         }
 
         .search-box {
-            position: relative;
-            filter: drop-shadow(0 8px 30px rgba(0, 0, 0, 0.2));
+            display: none;
         }
 
         .search-input {
@@ -472,32 +537,94 @@
             display: none;
         }
 
+        /* Zoom controls */
+        .zoom-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .zoom-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--bg-primary);
+            border: 2px solid var(--border);
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .zoom-btn:hover {
+            border-color: var(--accent-sage);
+            color: var(--accent-sage);
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .zoom-btn:active {
+            transform: scale(0.95);
+        }
+
         /* iPad and larger tablets */
         @media (min-width: 481px) and (max-width: 1024px) {
-            .search-overlay {
-                bottom: 200px !important;
+            .zoom-controls {
+                bottom: 15px;
+                right: 15px;
+            }
+
+            .zoom-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 1.375rem;
             }
         }
 
         @media (max-width: 768px) {
             .page-header {
-                padding: var(--space-lg) var(--space-sm);
+                padding: var(--space-md) var(--space-sm);
             }
 
             .page-header__welcome {
                 font-size: 0.85rem;
             }
 
-            .page-header__title {
-                font-size: 2.5rem;
-            }
-
             .page-header__couple {
-                font-size: 1.75rem;
+                font-size: 2rem;
+                margin-bottom: var(--space-sm);
             }
 
             .page-header__date {
                 font-size: 0.85rem;
+                margin-bottom: var(--space-md);
+            }
+
+            .header-search {
+                max-width: 100%;
+            }
+
+            .search-input {
+                font-size: 0.95rem;
+                padding: var(--space-sm) var(--space-lg);
+                padding-right: 100px;
+            }
+
+            .search-icon {
+                font-size: 1.125rem;
+            }
+
+            .search-clear {
+                right: 60px;
             }
 
             .map-container {
@@ -510,26 +637,6 @@
 
             .map-svg {
                 transform: scale(1.15) translateY(-100px);
-            }
-
-            .search-overlay {
-                bottom: 250px;
-            }
-
-            .search-input {
-                font-size: 1rem;
-                padding: var(--space-md) var(--space-lg);
-                padding-right: 90px;
-            }
-
-            .search-icon {
-                font-size: 1.25rem;
-                right: var(--space-lg);
-            }
-
-            .search-clear {
-                right: 55px;
-                font-size: 1.125rem;
             }
 
             .info-panel {
@@ -562,6 +669,17 @@
             .info-panel.position-top.active {
                 transform: translateY(0);
             }
+
+            .zoom-controls {
+                bottom: 15px;
+                right: 15px;
+            }
+
+            .zoom-btn {
+                width: 44px;
+                height: 44px;
+                font-size: 1.25rem;
+            }
         }
 
         @media (max-width: 480px) {
@@ -569,66 +687,62 @@
                 font-size: 0.8rem;
             }
 
-            .page-header__title {
-                font-size: 2rem;
-            }
-
             .page-header__couple {
-                font-size: 1.5rem;
+                font-size: 1.75rem;
             }
 
             .page-header__date {
                 font-size: 0.8rem;
             }
 
-            .search-overlay {
-                bottom: 120px;
-            }
-
             .search-input {
                 padding: var(--space-sm) var(--space-md);
-                padding-right: 80px;
-                font-size: 0.95rem;
+                padding-right: 90px;
+                font-size: 0.9rem;
             }
 
             .search-icon {
-                font-size: 1.125rem;
+                font-size: 1rem;
             }
 
             .search-clear {
-                right: 50px;
+                right: 55px;
                 font-size: 1rem;
+            }
+
+            .zoom-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1.125rem;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Header Section -->
+    <!-- Header Section with Search -->
     <header class="page-header">
         <p class="page-header__welcome">Welcome to Our Wedding</p>
         <p class="page-header__couple">Đại & Minh</p>
         <p class="page-header__date">June 26, 2026</p>
+        
+        <!-- Search Box in Header -->
+        <div class="header-search">
+            <input 
+                type="text" 
+                id="searchInput" 
+                class="search-input" 
+                placeholder="Search your name to find your table..."
+                autocomplete="off"
+            >
+            <button id="searchClear" class="search-clear" aria-label="Clear search">×</button>
+            <span class="search-icon">🔍</span>
+        </div>
     </header>
 
     <!-- Full-Screen Map Container -->
     <div class="map-container">
         <div class="venue-map">
-            <!-- Search Box Overlay -->
-            <div class="search-overlay">
-                <div class="search-box">
-                    <input 
-                        type="text" 
-                        id="searchInput" 
-                        class="search-input" 
-                        placeholder="Search your name to find your table..."
-                        autocomplete="off"
-                    >
-                    <button id="searchClear" class="search-clear" aria-label="Clear search">×</button>
-                    <span class="search-icon">🔍</span>
-                </div>
-            </div>
-
-            <svg class="map-svg" viewBox="0 0 1000 800" preserveAspectRatio="xMidYMid meet">
+            <svg class="map-svg" id="mapSvg" viewBox="0 0 1000 800" preserveAspectRatio="xMidYMid meet">
                 <!-- Entrance -->
                 <rect class="entrance" x="450" y="750" width="100" height="40" rx="5"/>
                 <text class="label-text" x="500" y="770">Entrance</text>
@@ -659,9 +773,16 @@
                 <button class="info-panel__close" onclick="closeInfoPanel()">×</button>
                 <h3 class="info-panel__title" id="infoTableNumber"></h3>
                 <div class="info-panel__name" id="infoTableName"></div>
-                <ul class="info-panel__guests" id="infoGuestsList"></ul>
+                <ul class="info-panel__guests" id="infoGuestsList">                </ul>
             </div>
         </div>
+    </div>
+
+    <!-- Zoom Controls -->
+    <div class="zoom-controls">
+        <button class="zoom-btn" id="zoomIn" aria-label="Zoom in">+</button>
+        <button class="zoom-btn" id="zoomReset" aria-label="Reset zoom">⟲</button>
+        <button class="zoom-btn" id="zoomOut" aria-label="Zoom out">−</button>
     </div>
 
     <script>
@@ -975,6 +1096,60 @@
                     closeInfoPanel();
                 }
             });
+
+            // Zoom functionality
+            let currentZoom = 1;
+            const zoomStep = 0.2;
+            const minZoom = 0.5;
+            const maxZoom = 3;
+            const mapSvg = document.getElementById('mapSvg');
+
+            document.getElementById('zoomIn').addEventListener('click', () => {
+                if (currentZoom < maxZoom) {
+                    currentZoom += zoomStep;
+                    mapSvg.style.transform = `scale(${currentZoom})`;
+                }
+            });
+
+            document.getElementById('zoomOut').addEventListener('click', () => {
+                if (currentZoom > minZoom) {
+                    currentZoom -= zoomStep;
+                    mapSvg.style.transform = `scale(${currentZoom})`;
+                }
+            });
+
+            document.getElementById('zoomReset').addEventListener('click', () => {
+                currentZoom = 1;
+                mapSvg.style.transform = 'scale(1)';
+            });
+
+            // Touch/pinch zoom support
+            let initialDistance = 0;
+            let initialZoom = 1;
+
+            mapSvg.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 2) {
+                    e.preventDefault();
+                    initialDistance = getDistance(e.touches[0], e.touches[1]);
+                    initialZoom = currentZoom;
+                }
+            });
+
+            mapSvg.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 2) {
+                    e.preventDefault();
+                    const currentDistance = getDistance(e.touches[0], e.touches[1]);
+                    const scale = currentDistance / initialDistance;
+                    currentZoom = Math.min(Math.max(initialZoom * scale, minZoom), maxZoom);
+                    mapSvg.style.transform = `scale(${currentZoom})`;
+                }
+            });
+
+            function getDistance(touch1, touch2) {
+                const dx = touch1.clientX - touch2.clientX;
+                const dy = touch1.clientY - touch2.clientY;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
         });
     </script>
 </body>
