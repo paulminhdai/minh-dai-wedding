@@ -27,6 +27,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Nunito:wght@300;400;600;700&family=Inspiration&display=swap" rel="stylesheet">
     
+    <!-- Fuse.js for fuzzy search -->
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
+    
     <style>
         /* Full-screen immersive layout */
         body {
@@ -36,6 +39,8 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
+            /* Premium radial gradient background for depth */
+            background: radial-gradient(ellipse at center, #1E293B 0%, #0F172A 100%);
         }
 
         /* Hide navigation */
@@ -43,12 +48,15 @@
             display: none;
         }
 
-        /* Header section with search */
+        /* Header section with search - Glassmorphism */
         .page-header {
-            background: var(--bg-secondary);
+            background: rgba(26, 35, 50, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             padding: var(--space-lg) var(--space-md);
             text-align: center;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.05);
             z-index: 100;
             flex-shrink: 0;
         }
@@ -56,7 +64,7 @@
         .page-header__welcome {
             font-family: var(--font-sans);
             font-size: 0.95rem;
-            color: var(--text-secondary);
+            color: #F5F5F7; /* Off-white for accessibility */
             margin: 0 0 var(--space-xs) 0;
             font-weight: 400;
             letter-spacing: 0.5px;
@@ -65,7 +73,7 @@
         .page-header__couple {
             font-family: 'Inspiration', cursive;
             font-size: 2.5rem;
-            color: #EFBF04;
+            color: #D4AF37; /* Gold reserved for headers */
             margin: 0 0 var(--space-md) 0;
             font-weight: 400;
             letter-spacing: 0.05em;
@@ -74,16 +82,108 @@
         .page-header__date {
             font-family: var(--font-sans);
             font-size: 0.9rem;
-            color: var(--text-secondary);
+            color: #F5F5F7; /* Off-white for accessibility */
             margin: 0 0 var(--space-lg) 0;
             font-weight: 400;
         }
 
-        /* Search box in header */
+        /* Search box in header - Glassmorphism */
         .header-search {
             max-width: 600px;
             margin: 0 auto;
             position: relative;
+        }
+
+        /* Search results dropdown */
+        .search-results {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px solid rgba(212, 175, 55, 0.6);
+            border-radius: 16px;
+            box-shadow: 
+                0 12px 48px rgba(0, 0, 0, 0.6), 
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                inset 0 0 20px rgba(255, 255, 255, 0.05);
+            max-height: 400px;
+            overflow-y: auto;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 200;
+        }
+
+        .search-results.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        .search-results__item {
+            padding: var(--space-md) var(--space-lg);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: transparent;
+            position: relative;
+        }
+
+        .search-results__item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.05) 0%, rgba(212, 175, 55, 0.02) 100%);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+        }
+
+        .search-results__item:last-child {
+            border-bottom: none;
+        }
+
+        .search-results__item:hover {
+            background: rgba(212, 175, 55, 0.15);
+            transform: translateX(4px);
+        }
+
+        .search-results__item:hover::before {
+            opacity: 1;
+        }
+
+        .search-results__table {
+            font-family: var(--font-serif);
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #D4AF37;
+            margin-bottom: var(--space-xs);
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+        }
+
+        .search-results__guests {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .search-results__guest {
+            font-size: 0.9rem;
+            color: #FFFFFF;
+            padding: var(--space-xs) 0;
+            padding-left: var(--space-md);
+        }
+
+        .search-results__guest.matched {
+            color: #EFBF04;
+            font-weight: 600;
         }
 
         .search-input {
@@ -91,23 +191,26 @@
             padding: var(--space-md) var(--space-xl);
             padding-right: 120px;
             font-size: 1.05rem;
-            border: 2px solid var(--border);
+            border: 2px solid rgba(212, 175, 55, 0.3);
             border-radius: 50px;
             font-family: var(--font-sans);
             transition: all 0.3s ease;
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
+            background: rgba(26, 35, 50, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.05);
+            color: #F5F5F7; /* Off-white for accessibility */
         }
 
         .search-input::placeholder {
-            color: var(--text-light);
+            color: rgba(245, 245, 247, 0.6);
             opacity: 0.7;
         }
 
         .search-input:focus {
             outline: none;
-            box-shadow: 0 0 0 4px rgba(156, 175, 136, 0.2);
-            border-color: var(--accent-sage);
+            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.3), inset 0 0 10px rgba(255, 255, 255, 0.05);
+            border-color: #D4AF37;
         }
 
         .search-icon {
@@ -115,14 +218,14 @@
             right: var(--space-xl);
             top: 50%;
             transform: translateY(-50%);
-            color: var(--text-light);
+            color: rgba(245, 245, 247, 0.6);
             font-size: 1.25rem;
             pointer-events: none;
             transition: all 0.3s ease;
         }
 
         .search-input:focus ~ .search-icon {
-            color: var(--accent-sage);
+            color: #D4AF37;
         }
 
         .search-clear {
@@ -131,7 +234,7 @@
             top: 50%;
             transform: translateY(-50%);
             background: transparent;
-            color: var(--text-secondary);
+            color: rgba(245, 245, 247, 0.6);
             border: none;
             border-radius: 50%;
             width: 24px;
@@ -150,13 +253,13 @@
         }
 
         .search-clear.visible {
-            opacity: 0.6;
+            opacity: 0.8;
             pointer-events: auto;
         }
 
         .search-clear:hover {
             opacity: 1;
-            color: var(--text-primary);
+            color: #D4AF37;
         }
 
         .map-container {
@@ -166,117 +269,23 @@
             margin: 0;
             width: 100vw;
             overflow: hidden;
+            perspective: 1000px; /* Enable 3D perspective */
         }
 
         .venue-map {
             position: relative;
             width: 100%;
             height: 100%;
-            background: var(--bg-secondary);
-            overflow: hidden;
-        }
-
-        /* Floating search box at the bottom */
-        .search-overlay {
-            display: none;
-        }
-
-        .search-box {
-            display: none;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: var(--space-lg) var(--space-xl);
-            padding-right: 120px;
-            font-size: 1.25rem;
-            border: none;
-            border-radius: 60px;
-            font-family: var(--font-sans);
-            transition: all 0.3s ease;
-            background-color: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(10px);
-            color: var(--text-primary);
-            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
-        }
-
-        [data-theme="dark"] .search-input {
-            background-color: rgba(44, 62, 80, 0.98);
-        }
-
-        .search-input::placeholder {
-            color: var(--text-light);
-            opacity: 0.7;
-        }
-
-        .search-input:focus {
-            outline: none;
-            box-shadow: 0 12px 50px rgba(0, 0, 0, 0.25), 0 0 0 4px rgba(156, 175, 136, 0.3);
-            transform: translateY(-4px);
-        }
-
-        .search-icon {
-            position: absolute;
-            right: var(--space-xl);
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-light);
-            font-size: 1.5rem;
-            pointer-events: none;
-            transition: all 0.3s ease;
-        }
-
-        .search-input:focus ~ .search-icon {
-            color: var(--accent-sage);
-            transform: translateY(-50%) scale(1.1);
-        }
-
-        .search-clear {
-            position: absolute;
-            right: 70px;
-            top: 50%;
-            transform: translateY(-50%);
             background: transparent;
-            color: var(--text-secondary);
-            border: none;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 1.25rem;
-            font-weight: 300;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.3s ease;
-            padding: 0;
-            line-height: 1;
-        }
-
-        [data-theme="dark"] .search-clear {
-            color: var(--text-light);
-        }
-
-        .search-clear.visible {
-            opacity: 0.6;
-            pointer-events: auto;
-        }
-
-        .search-clear:hover {
-            opacity: 1;
-            color: var(--accent-sage);
-            transform: translateY(-50%) scale(1.2);
-        }
-
-        .search-clear:active {
-            transform: translateY(-50%) scale(0.9);
+            overflow: hidden;
         }
 
         .map-svg {
             width: 100%;
             height: 100%;
+            transform: scale(1);
+            will-change: transform;
+            transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
         }
 
         .stage {
@@ -284,6 +293,7 @@
             opacity: 0.3;
             stroke: var(--accent-gold);
             stroke-width: 3;
+            filter: drop-shadow(0 4px 8px rgba(212, 175, 55, 0.4));
         }
 
         .dance-floor {
@@ -310,38 +320,41 @@
         .table-group {
             cursor: pointer;
             transition: all 0.3s ease;
+            transform-style: preserve-3d;
         }
 
         .table-circle {
-            fill: var(--bg-primary);
-            stroke: var(--border);
+            fill: rgba(30, 41, 59, 0.8);
+            stroke: rgba(212, 175, 55, 0.5);
             stroke-width: 2;
             transition: all 0.3s ease;
+            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
         }
 
         .table-group:hover .table-circle {
-            fill: var(--accent-sage);
-            opacity: 0.3;
-            stroke: var(--accent-sage);
+            fill: rgba(212, 175, 55, 0.2);
+            stroke: #D4AF37;
             stroke-width: 3;
-            transform-origin: center;
+            filter: drop-shadow(0 4px 12px rgba(212, 175, 55, 0.5));
         }
 
         .table-group.highlighted .table-circle {
-            fill: var(--accent-gold);
-            opacity: 0.4;
-            stroke: var(--accent-gold);
+            fill: rgba(212, 175, 55, 0.4);
+            stroke: #D4AF37;
             stroke-width: 4;
-            filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.6));
-            animation: pulse 2s infinite;
+            filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.8));
+            animation: pulse-ring 2s infinite;
         }
 
-        @keyframes pulse {
+        /* Pulsing gold ring animation */
+        @keyframes pulse-ring {
             0%, 100% {
                 opacity: 0.4;
+                stroke-width: 4;
             }
             50% {
-                opacity: 0.7;
+                opacity: 0.8;
+                stroke-width: 6;
             }
         }
 
@@ -349,22 +362,23 @@
             font-family: var(--font-serif);
             font-size: 20px;
             font-weight: 700;
-            fill: var(--text-primary);
+            fill: #D4AF37;
             text-anchor: middle;
             dominant-baseline: middle;
             pointer-events: none;
         }
 
         .table-group.highlighted .table-number {
-            fill: var(--accent-gold);
+            fill: #D4AF37;
             font-size: 24px;
+            filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.8));
         }
 
         .label-text {
             font-family: var(--font-sans);
             font-size: 16px;
             font-weight: 600;
-            fill: var(--text-secondary);
+            fill: #D4AF37; /* Gold for labels */
             text-anchor: middle;
         }
 
@@ -407,12 +421,13 @@
 
         .info-panel {
             position: fixed;
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(10px);
-            border: 2px solid var(--accent-gold);
+            background: rgba(26, 35, 50, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(212, 175, 55, 0.5);
             border-radius: var(--radius);
             padding: var(--space-xl);
-            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3), inset 0 0 10px rgba(255, 255, 255, 0.05);
             max-width: 350px;
             max-height: 70vh;
             overflow-y: auto;
@@ -420,10 +435,7 @@
             transition: all 0.4s ease;
             pointer-events: none;
             z-index: 200;
-        }
-
-        [data-theme="dark"] .info-panel {
-            background: rgba(44, 62, 80, 0.98);
+            will-change: transform, opacity; /* GPU acceleration */
         }
 
         .info-panel.active {
@@ -465,14 +477,14 @@
         .info-panel__title {
             font-family: var(--font-serif);
             font-size: 1.5rem;
-            color: var(--accent-gold);
+            color: #D4AF37; /* Gold for titles */
             margin-bottom: var(--space-sm);
         }
 
         .info-panel__name {
             font-family: var(--font-serif);
             font-size: 1.125rem;
-            color: var(--text-secondary);
+            color: #F5F5F7; /* Off-white for readability */
             margin-bottom: var(--space-md);
         }
 
@@ -486,9 +498,9 @@
 
         .info-panel__guest {
             padding: var(--space-xs) 0;
-            color: var(--text-secondary);
+            color: #F5F5F7; /* Off-white for guest names - accessibility fix */
             font-size: 0.95rem;
-            border-bottom: 1px solid var(--bg-tertiary);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .info-panel__guest:last-child {
@@ -496,20 +508,20 @@
         }
 
         .info-panel__guest.matched {
-            color: var(--accent-gold);
+            color: #D4AF37; /* Gold for matched guests */
             font-weight: 600;
         }
 
         .info-panel__table-link {
             font-weight: 600;
             margin-top: 12px;
-            color: var(--accent-gold);
+            color: #D4AF37;
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
         .info-panel__table-link:hover {
-            color: var(--accent-sage);
+            color: #F5F5F7;
             padding-left: 8px;
         }
 
@@ -520,7 +532,7 @@
             background: none;
             border: none;
             font-size: 1.5rem;
-            color: var(--text-light);
+            color: #F5F5F7;
             cursor: pointer;
             padding: 5px;
             line-height: 1;
@@ -528,7 +540,7 @@
         }
 
         .info-panel__close:hover {
-            color: var(--accent-gold);
+            color: #D4AF37;
             transform: rotate(90deg);
         }
 
@@ -552,24 +564,27 @@
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            background: var(--bg-primary);
-            border: 2px solid var(--border);
-            color: var(--text-primary);
+            background: rgba(26, 35, 50, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(212, 175, 55, 0.5);
+            color: #D4AF37;
             font-size: 1.5rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 0 10px rgba(255, 255, 255, 0.05);
             display: flex;
             align-items: center;
             justify-content: center;
+            will-change: transform; /* GPU acceleration */
         }
 
         .zoom-btn:hover {
-            border-color: var(--accent-sage);
-            color: var(--accent-sage);
+            border-color: #D4AF37;
+            color: #F5F5F7;
             transform: scale(1.1);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 6px 16px rgba(212, 175, 55, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.05);
         }
 
         .zoom-btn:active {
@@ -627,16 +642,30 @@
                 right: 60px;
             }
 
+            /* Search results dropdown on mobile */
+            .search-results {
+                max-height: 300px;
+                font-size: 0.9rem;
+            }
+
+            .search-results__item {
+                padding: var(--space-sm) var(--space-md);
+            }
+
+            .search-results__table {
+                font-size: 0.95rem;
+            }
+
+            .search-results__guest {
+                font-size: 0.85rem;
+            }
+
             .map-container {
                 padding-top: 0;
             }
 
             .venue-map {
                 padding-top: 20px;
-            }
-
-            .map-svg {
-                transform: scale(1.15) translateY(-100px);
             }
 
             .info-panel {
@@ -649,10 +678,16 @@
                 max-height: 60vh;
                 border-radius: var(--radius) var(--radius) 0 0;
                 transform: translateY(100%);
+                /* Disable backdrop-filter on mobile when closed for performance */
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
             }
 
             .info-panel.active {
                 transform: translateY(0);
+                /* Enable blur only when active */
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
             }
 
             .info-panel.position-left,
@@ -736,6 +771,9 @@
             >
             <button id="searchClear" class="search-clear" aria-label="Clear search">×</button>
             <span class="search-icon">🔍</span>
+            
+            <!-- Search Results Dropdown -->
+            <div id="searchResults" class="search-results"></div>
         </div>
     </header>
 
@@ -807,6 +845,8 @@
         // Table Map Functionality
         let tablesData = [];
         let currentHighlightedTable = null;
+        let fuseInstance = null;
+        let currentTransform = { x: 0, y: 0, scale: 1 };
 
         // Table positions arranged around the venue (20 tables)
         const tablePositions = [
@@ -823,9 +863,12 @@
 
         async function loadTables() {
             try {
+                console.log('Loading tables...');
                 const response = await fetch('tables.json');
                 const data = await response.json();
                 tablesData = data.tables;
+                
+                console.log('Loaded', tablesData.length, 'tables from JSON');
                 
                 // Generate 20 tables if we don't have enough data
                 while (tablesData.length < 20) {
@@ -837,15 +880,53 @@
                     });
                 }
                 
+                console.log('Total tables:', tablesData.length);
+                
+                // Initialize Fuse.js for fuzzy search
+                initializeFuzzySearch();
+                
                 renderTables();
             } catch (error) {
                 console.error('Error loading tables:', error);
             }
         }
 
+        function initializeFuzzySearch() {
+            // Check if Fuse is available
+            if (typeof Fuse === 'undefined') {
+                console.warn('Fuse.js not loaded, using simple search');
+                return;
+            }
+
+            // Create searchable data structure
+            const searchableData = [];
+            tablesData.forEach(table => {
+                table.guests.forEach(guest => {
+                    searchableData.push({
+                        guest: guest,
+                        tableNumber: table.tableNumber,
+                        tableName: table.tableName
+                    });
+                });
+            });
+
+            // Configure Fuse.js for fuzzy matching
+            fuseInstance = new Fuse(searchableData, {
+                keys: ['guest'],
+                threshold: 0.3,
+                ignoreLocation: true,
+                minMatchCharLength: 2,
+                shouldSort: true
+            });
+            
+            console.log('Fuse.js initialized with', searchableData.length, 'guests');
+        }
+
         function renderTables() {
             const container = document.getElementById('tablesContainer');
             const svgNS = "http://www.w3.org/2000/svg";
+            
+            console.log('Rendering', tablesData.length, 'tables');
             
             tablesData.forEach((table, index) => {
                 if (index >= tablePositions.length) return;
@@ -879,41 +960,113 @@
                 
                 container.appendChild(group);
             });
+            
+            console.log('Tables rendered successfully');
         }
 
         function searchTables(searchTerm) {
             clearHighlight();
+            hideSearchResults();
             
             if (!searchTerm.trim()) {
                 return;
             }
 
-            // Find all matching tables
-            const foundTables = tablesData.filter(table => 
-                table.guests.some(guest => 
-                    guest.toLowerCase().includes(searchTerm.toLowerCase())
-                )
-            );
+            let foundTables = [];
+
+            // Use Fuse.js if available, otherwise fall back to simple search
+            if (fuseInstance) {
+                const results = fuseInstance.search(searchTerm);
+                
+                if (results.length === 0) {
+                    console.log('No results found for:', searchTerm);
+                    return;
+                }
+
+                // Get unique tables from results
+                const foundTableNumbers = [...new Set(results.map(r => r.item.tableNumber))];
+                foundTables = foundTableNumbers.map(num => 
+                    tablesData.find(t => t.tableNumber === num)
+                );
+            } else {
+                // Fallback: simple search
+                foundTables = tablesData.filter(table => 
+                    table.guests.some(guest => 
+                        guest.toLowerCase().includes(searchTerm.toLowerCase())
+                    )
+                );
+            }
 
             if (foundTables.length === 0) {
+                console.log('No tables found for:', searchTerm);
                 return;
             }
 
-            // If multiple matches found, highlight all and show disambiguation
+            console.log('Found', foundTables.length, 'table(s)');
+
+            // If multiple matches found, show dropdown
             if (foundTables.length > 1) {
                 foundTables.forEach(table => {
                     highlightTable(table.tableNumber);
                 });
-                showMultipleMatches(foundTables, searchTerm);
+                showSearchResults(foundTables, searchTerm);
             } else {
-                // Single match - show path and info as before
+                // Single match - show path and info, then pan and zoom
                 const foundTable = foundTables[0];
                 const tableIndex = tablesData.indexOf(foundTable);
                 const pos = tablePositions[tableIndex];
                 highlightTable(foundTable.tableNumber);
                 drawPath(pos);
+                panAndZoomToTable(pos);
                 showTableInfo(foundTable, pos, searchTerm);
             }
+        }
+
+        function showSearchResults(tables, searchTerm) {
+            const resultsContainer = document.getElementById('searchResults');
+            
+            resultsContainer.innerHTML = tables.map(table => {
+                const matchingGuests = table.guests.filter(guest => 
+                    guest.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+                
+                return `
+                    <div class="search-results__item" onclick="selectTableFromSearch(${table.tableNumber})">
+                        <div class="search-results__table">Table ${table.tableNumber} - ${table.tableName}</div>
+                        <ul class="search-results__guests">
+                            ${matchingGuests.map(guest => 
+                                `<li class="search-results__guest">${guest}</li>`
+                            ).join('')}
+                        </ul>
+                    </div>
+                `;
+            }).join('');
+            
+            resultsContainer.classList.add('active');
+        }
+
+        function hideSearchResults() {
+            const resultsContainer = document.getElementById('searchResults');
+            resultsContainer.classList.remove('active');
+            resultsContainer.innerHTML = '';
+        }
+
+        function selectTableFromSearch(tableNumber) {
+            const table = tablesData.find(t => t.tableNumber === tableNumber);
+            const tableIndex = tablesData.indexOf(table);
+            const pos = tablePositions[tableIndex];
+            
+            clearHighlight();
+            highlightTable(tableNumber);
+            drawPath(pos);
+            panAndZoomToTable(pos);
+            
+            // Get search term for highlighting
+            const searchInput = document.getElementById('searchInput');
+            showTableInfo(table, pos, searchInput.value);
+            
+            // Hide search results
+            hideSearchResults();
         }
 
         function highlightTable(tableNumber) {
@@ -990,68 +1143,80 @@
             panel.classList.remove('position-left', 'position-right', 'position-top');
             
             // Determine position based on table location
-            // pos.x < 500 means left side, >= 500 means right side
             if (pos.x < 400) {
-                // Table on left side - show panel on right
                 panel.classList.add('position-right');
             } else if (pos.x > 600) {
-                // Table on right side - show panel on left
                 panel.classList.add('position-left');
             } else {
-                // Table in middle - show panel at top
                 panel.classList.add('position-top');
             }
             
             panel.classList.add('active');
         }
 
-        function showMultipleMatches(tables, searchTerm) {
-            const panel = document.getElementById('infoPanel');
-            const tableNumber = document.getElementById('infoTableNumber');
-            const tableName = document.getElementById('infoTableName');
-            const guestsList = document.getElementById('infoGuestsList');
+        // Smooth pan and zoom to center on a table
+        function panAndZoomToTable(targetPos) {
+            const mapSvg = document.getElementById('mapSvg');
+            const isMobile = window.innerWidth <= 768;
             
-            tableNumber.textContent = `Multiple Matches Found`;
-            tableName.textContent = `Found ${tables.length} tables with "${searchTerm}"`;
-            
-            // Show all matching guests grouped by table
-            guestsList.innerHTML = tables.map(table => {
-                const matchingGuests = table.guests.filter(guest => 
-                    guest.toLowerCase().includes(searchTerm.toLowerCase())
-                );
+            if (isMobile) {
+                // Mobile: Use viewBox transform for proper centering
+                const targetZoom = 2.0;
                 
-                return `
-                    <li class="info-panel__guest" style="font-weight: 600; margin-top: 12px; color: var(--accent-gold); cursor: pointer;" 
-                        onclick="showSingleTable(${table.tableNumber})">
-                        Table ${table.tableNumber} - ${table.tableName}
-                    </li>
-                    ${matchingGuests.map(guest => 
-                        `<li class="info-panel__guest matched" style="padding-left: 16px;">${guest}</li>`
-                    ).join('')}
-                `;
-            }).join('');
-            
-            panel.classList.add('active');
+                // Get the SVG viewBox dimensions
+                const viewBoxWidth = 1000;
+                const viewBoxHeight = 800;
+                
+                // Calculate how much to shift in viewBox coordinates
+                // We want to move the table to center (500, 400) of viewBox
+                const targetCenterX = viewBoxWidth / 2;
+                const targetCenterY = viewBoxHeight / 2;
+                
+                // Calculate the translation needed (in percentage of viewBox)
+                const translateX = ((targetCenterX - targetPos.x) / viewBoxWidth) * 100;
+                const translateY = ((targetCenterY - targetPos.y) / viewBoxHeight) * 100;
+                
+                currentTransform = { x: translateX, y: translateY, scale: targetZoom };
+                
+                // Apply transform: translate in %, then scale
+                mapSvg.style.transformOrigin = 'center center';
+                mapSvg.style.transform = `translate(${translateX}%, ${translateY}%) scale(${targetZoom})`;
+            } else {
+                // Desktop: Use pixel-based transform
+                const viewBoxWidth = 1000;
+                const viewBoxHeight = 800;
+                const centerX = viewBoxWidth / 2;
+                const centerY = viewBoxHeight / 2;
+                
+                const offsetX = centerX - targetPos.x;
+                const offsetY = centerY - targetPos.y;
+                
+                const targetZoom = 1.5;
+                currentTransform = { x: offsetX, y: offsetY, scale: targetZoom };
+                
+                mapSvg.style.transformOrigin = 'center center';
+                mapSvg.style.transform = `scale(${targetZoom}) translate(${offsetX}px, ${offsetY}px)`;
+            }
         }
 
-        function showSingleTable(tableNumber) {
-            const table = tablesData.find(t => t.tableNumber === tableNumber);
-            const tableIndex = tablesData.indexOf(table);
-            const pos = tablePositions[tableIndex];
+        function resetMapView() {
+            const mapSvg = document.getElementById('mapSvg');
+            currentTransform = { x: 0, y: 0, scale: 1 };
             
-            clearHighlight();
-            highlightTable(tableNumber);
-            drawPath(pos);
-            
-            // Update info panel to show just this table
-            const searchInput = document.getElementById('searchInput');
-            showTableInfo(table, pos, searchInput.value);
+            mapSvg.style.transformOrigin = 'center center';
+            mapSvg.style.transform = 'scale(1)';
         }
 
         function closeInfoPanel() {
             const panel = document.getElementById('infoPanel');
             panel.classList.remove('active');
+            
+            // Reset map view when closing panel
+            resetMapView();
         }
+
+        // Make function available globally for onclick
+        window.selectTableFromSearch = selectTableFromSearch;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
@@ -1083,6 +1248,8 @@
                 searchClear.classList.remove('visible');
                 clearHighlight();
                 closeInfoPanel();
+                hideSearchResults();
+                resetMapView();
                 searchInput.focus();
             });
 
@@ -1092,8 +1259,18 @@
             // Close info panel when clicking outside
             document.addEventListener('click', (e) => {
                 const panel = document.getElementById('infoPanel');
+                const resultsContainer = document.getElementById('searchResults');
+                const searchContainer = document.querySelector('.header-search');
+                
+                // Close info panel if clicking outside
                 if (!panel.contains(e.target) && !e.target.closest('.table-group')) {
                     closeInfoPanel();
+                    resetMapView();
+                }
+                
+                // Close search results if clicking outside search area
+                if (!searchContainer.contains(e.target)) {
+                    hideSearchResults();
                 }
             });
 
@@ -1107,21 +1284,36 @@
             document.getElementById('zoomIn').addEventListener('click', () => {
                 if (currentZoom < maxZoom) {
                     currentZoom += zoomStep;
-                    mapSvg.style.transform = `scale(${currentZoom})`;
+                    currentTransform.scale = currentZoom;
+                    applyTransform();
                 }
             });
 
             document.getElementById('zoomOut').addEventListener('click', () => {
                 if (currentZoom > minZoom) {
                     currentZoom -= zoomStep;
-                    mapSvg.style.transform = `scale(${currentZoom})`;
+                    currentTransform.scale = currentZoom;
+                    applyTransform();
                 }
             });
 
             document.getElementById('zoomReset').addEventListener('click', () => {
                 currentZoom = 1;
-                mapSvg.style.transform = 'scale(1)';
+                resetMapView();
             });
+
+            function applyTransform() {
+                const isMobile = window.innerWidth <= 768;
+                mapSvg.style.transformOrigin = 'center center';
+                
+                if (isMobile && currentTransform.scale !== 1) {
+                    // Mobile with zoom: use percentage-based translation
+                    mapSvg.style.transform = `translate(${currentTransform.x}%, ${currentTransform.y}%) scale(${currentTransform.scale})`;
+                } else {
+                    // Desktop or reset: use pixel-based or simple scale
+                    mapSvg.style.transform = `scale(${currentTransform.scale}) translate(${currentTransform.x}px, ${currentTransform.y}px)`;
+                }
+            }
 
             // Touch/pinch zoom support
             let initialDistance = 0;
@@ -1141,7 +1333,8 @@
                     const currentDistance = getDistance(e.touches[0], e.touches[1]);
                     const scale = currentDistance / initialDistance;
                     currentZoom = Math.min(Math.max(initialZoom * scale, minZoom), maxZoom);
-                    mapSvg.style.transform = `scale(${currentZoom})`;
+                    currentTransform.scale = currentZoom;
+                    applyTransform();
                 }
             });
 
