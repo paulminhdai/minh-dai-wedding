@@ -317,6 +317,21 @@
             opacity: 0.3;
         }
 
+        /* Entrance arrow */
+        .entrance-arrow {
+            fill: rgba(212, 175, 55, 0.55);
+        }
+
+        .label-entrance {
+            font-family: var(--font-sans);
+            font-size: 12px;
+            font-weight: 500;
+            fill: rgba(245, 245, 247, 0.7);
+            text-anchor: middle;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
         .table-group {
             cursor: pointer;
             transition: all 0.3s ease;
@@ -780,21 +795,19 @@
     <!-- Full-Screen Map Container -->
     <div class="map-container">
         <div class="venue-map">
-            <svg class="map-svg" id="mapSvg" viewBox="0 0 1000 800" preserveAspectRatio="xMidYMid meet">
-                <!-- Entrance -->
-                <rect class="entrance" x="450" y="750" width="100" height="40" rx="5"/>
-                <text class="label-text" x="500" y="770">Entrance</text>
+            <svg class="map-svg" id="mapSvg" viewBox="-25 0 1000 900" preserveAspectRatio="xMidYMid meet">
+                <!-- (viewBox geometric center is at x=475, y=450) -->
+                <!-- Main Entrance (arrow pointing IN to venue + label) -->
+                <polygon class="entrance-arrow" points="475,720 440,760 462,760 462,800 488,800 488,760 510,760"/>
+                <text class="label-entrance" x="475" y="835">Main Entrance</text>
 
                 <!-- Stage -->
-                <rect class="stage" x="400" y="50" width="200" height="80" rx="10"/>
-                <text class="label-text" x="500" y="90">Stage</text>
+                <rect class="stage" x="405" y="85" width="140" height="85" rx="6"/>
+                <text class="label-text" x="475" y="135">Stage</text>
 
                 <!-- Dance Floor -->
-                <ellipse class="dance-floor" cx="500" cy="200" rx="120" ry="80"/>
-                <text class="label-text" x="500" y="205">Dance Floor</text>
-
-                <!-- Walkway (vertical middle) -->
-                <line class="walkway" x1="500" y1="300" x2="500" y2="700"/>
+                <rect class="dance-floor" x="365" y="170" width="220" height="210" rx="6"/>
+                <text class="label-text" x="475" y="280">Dance Floor</text>
 
                 <!-- Path line (will be drawn when searching) -->
                 <path id="pathLine" class="path-line" d=""/>
@@ -848,17 +861,36 @@
         let fuseInstance = null;
         let currentTransform = { x: 0, y: 0, scale: 1 };
 
-        // Table positions arranged around the venue (20 tables)
+        // Table positions matching the actual venue floor plan.
+        // Columns are spaced 130 viewBox units apart (horizontal),
+        // rows are spaced 90 viewBox units apart (vertical), centered at x=475.
+        //   Col 1 (far left, staggered): T1, T2
+        //   Col 2 (left of dance floor):  T3, T4, T5, T6, T7
+        //   Col 3 (below dance floor):    T8, T9, T10
+        //   Col 4 (below dance floor):    T11, T12, T13
+        //   Col 5 (right of dance floor): T14, T15, T16, T17, T18
+        //   Col 6 (far right, staggered): T19, T20
         const tablePositions = [
-            // Left side (10 tables)
-            { x: 150, y: 320 }, { x: 150, y: 420 }, { x: 150, y: 520 }, { x: 150, y: 620 },
-            { x: 250, y: 320 }, { x: 250, y: 420 }, { x: 250, y: 520 }, { x: 250, y: 620 },
-            { x: 350, y: 380 }, { x: 350, y: 560 },
-            
-            // Right side (10 tables)
-            { x: 850, y: 320 }, { x: 850, y: 420 }, { x: 850, y: 520 }, { x: 850, y: 620 },
-            { x: 750, y: 320 }, { x: 750, y: 420 }, { x: 750, y: 520 }, { x: 750, y: 620 },
-            { x: 650, y: 380 }, { x: 650, y: 560 }
+            { x: 150, y: 335 }, // T1
+            { x: 150, y: 425 }, // T2
+            { x: 280, y: 200 }, // T3
+            { x: 280, y: 290 }, // T4
+            { x: 280, y: 380 }, // T5
+            { x: 280, y: 470 }, // T6
+            { x: 280, y: 560 }, // T7
+            { x: 410, y: 470 }, // T8
+            { x: 410, y: 560 }, // T9
+            { x: 410, y: 650 }, // T10
+            { x: 540, y: 470 }, // T11
+            { x: 540, y: 560 }, // T12
+            { x: 540, y: 650 }, // T13
+            { x: 670, y: 200 }, // T14
+            { x: 670, y: 290 }, // T15
+            { x: 670, y: 380 }, // T16
+            { x: 670, y: 470 }, // T17
+            { x: 670, y: 560 }, // T18
+            { x: 800, y: 335 }, // T19
+            { x: 800, y: 425 }  // T20
         ];
 
         async function loadTables() {
@@ -941,7 +973,7 @@
                 circle.classList.add('table-circle');
                 circle.setAttribute('cx', pos.x);
                 circle.setAttribute('cy', pos.y);
-                circle.setAttribute('r', 35);
+                circle.setAttribute('r', 32);
                 
                 // Table number
                 const text = document.createElementNS(svgNS, 'text');
@@ -1092,8 +1124,9 @@
         }
 
         function drawPath(targetPos) {
-            const startX = 500;
-            const startY = 730;
+            // Route starts from inside the main entrance notch
+            const startX = 475;
+            const startY = 780;
             const endX = targetPos.x;
             const endY = targetPos.y;
             
@@ -1159,41 +1192,32 @@
             const mapSvg = document.getElementById('mapSvg');
             const isMobile = window.innerWidth <= 768;
             
+            // ViewBox: "-25 0 1000 900" → geometric center at (475, 450)
+            const viewBoxMinX = -25;
+            const viewBoxWidth = 1000;
+            const viewBoxHeight = 900;
+            const centerX = viewBoxMinX + viewBoxWidth / 2;
+            const centerY = viewBoxHeight / 2;
+
             if (isMobile) {
-                // Mobile: Use viewBox transform for proper centering
+                // Mobile: Use percentage-based translation
                 const targetZoom = 2.0;
-                
-                // Get the SVG viewBox dimensions
-                const viewBoxWidth = 1000;
-                const viewBoxHeight = 800;
-                
-                // Calculate how much to shift in viewBox coordinates
-                // We want to move the table to center (500, 400) of viewBox
-                const targetCenterX = viewBoxWidth / 2;
-                const targetCenterY = viewBoxHeight / 2;
-                
-                // Calculate the translation needed (in percentage of viewBox)
-                const translateX = ((targetCenterX - targetPos.x) / viewBoxWidth) * 100;
-                const translateY = ((targetCenterY - targetPos.y) / viewBoxHeight) * 100;
-                
+
+                const translateX = ((centerX - targetPos.x) / viewBoxWidth) * 100;
+                const translateY = ((centerY - targetPos.y) / viewBoxHeight) * 100;
+
                 currentTransform = { x: translateX, y: translateY, scale: targetZoom };
-                
-                // Apply transform: translate in %, then scale
+
                 mapSvg.style.transformOrigin = 'center center';
                 mapSvg.style.transform = `translate(${translateX}%, ${translateY}%) scale(${targetZoom})`;
             } else {
                 // Desktop: Use pixel-based transform
-                const viewBoxWidth = 1000;
-                const viewBoxHeight = 800;
-                const centerX = viewBoxWidth / 2;
-                const centerY = viewBoxHeight / 2;
-                
                 const offsetX = centerX - targetPos.x;
                 const offsetY = centerY - targetPos.y;
-                
+
                 const targetZoom = 1.5;
                 currentTransform = { x: offsetX, y: offsetY, scale: targetZoom };
-                
+
                 mapSvg.style.transformOrigin = 'center center';
                 mapSvg.style.transform = `scale(${targetZoom}) translate(${offsetX}px, ${offsetY}px)`;
             }
@@ -1261,9 +1285,14 @@
                 const panel = document.getElementById('infoPanel');
                 const resultsContainer = document.getElementById('searchResults');
                 const searchContainer = document.querySelector('.header-search');
-                
-                // Close info panel if clicking outside
-                if (!panel.contains(e.target) && !e.target.closest('.table-group')) {
+
+                // Close info panel if clicking outside the panel, outside any table,
+                // and outside the zoom controls (so zoom buttons don't reset the map).
+                if (
+                    !panel.contains(e.target) &&
+                    !e.target.closest('.table-group') &&
+                    !e.target.closest('.zoom-controls')
+                ) {
                     closeInfoPanel();
                     resetMapView();
                 }
