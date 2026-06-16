@@ -533,6 +533,12 @@
             color: #F5F5F7; /* Off-white for guest names - accessibility fix */
             font-size: 0.95rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .info-panel__guest:hover {
+            color: #D4AF37;
         }
 
         .info-panel__guest:last-child {
@@ -1190,10 +1196,19 @@
             tableNumber.textContent = `Table ${table.tableNumber}`;
             tableName.textContent = table.tableName;
             
-            guestsList.innerHTML = table.guests.map(guest => {
+            guestsList.innerHTML = table.guests.map((guest, index) => {
                 const isMatched = searchTerm && guest.toLowerCase().includes(searchTerm.toLowerCase());
-                return `<li class="info-panel__guest ${isMatched ? 'matched' : ''}">${guest}</li>`;
+                return `<li class="info-panel__guest ${isMatched ? 'matched' : ''}" data-guest-index="${index}">${guest}</li>`;
             }).join('');
+
+            // Clicking a guest in the panel triggers the same route guidance as search.
+            guestsList.querySelectorAll('.info-panel__guest').forEach((item) => {
+                item.addEventListener('click', () => {
+                    const guestIndex = Number(item.getAttribute('data-guest-index'));
+                    const guestName = table.guests[guestIndex];
+                    routeToTableFromGuestClick(table, guestName);
+                });
+            });
             
             // Always show panel centered for consistent behavior across tables.
             panel.classList.remove('position-left', 'position-right', 'position-top');
@@ -1205,6 +1220,17 @@
 
             panel.classList.add('active');
             panelBackdrop.classList.add('active');
+        }
+
+        function routeToTableFromGuestClick(table, guestName) {
+            const pos = getTablePosition(table.tableNumber);
+            if (!pos) return;
+
+            clearHighlight();
+            highlightTable(table.tableNumber);
+            drawPath(pos);
+            panAndZoomToTable(pos);
+            showTableInfo(table, pos, guestName);
         }
 
         // Smooth pan and zoom to center on a table
