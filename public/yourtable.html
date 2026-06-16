@@ -453,6 +453,23 @@
             will-change: transform, opacity; /* GPU acceleration */
         }
 
+        .panel-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(7, 12, 24, 0.6);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+            z-index: 150;
+        }
+
+        .panel-backdrop.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
         .info-panel.active {
             opacity: 1;
             pointer-events: auto;
@@ -487,11 +504,6 @@
 
         .info-panel.position-top.active {
             transform: translateX(-50%) translateY(0);
-        }
-
-        .info-panel.position-custom,
-        .info-panel.position-custom.active {
-            transform: none;
         }
 
         .info-panel__title {
@@ -825,6 +837,7 @@
             </svg>
 
             <!-- Info Panel -->
+            <div id="panelBackdrop" class="panel-backdrop" aria-hidden="true"></div>
             <div id="infoPanel" class="info-panel">
                 <button class="info-panel__close" onclick="closeInfoPanel()">×</button>
                 <h3 class="info-panel__title" id="infoTableNumber"></h3>
@@ -1169,6 +1182,7 @@
 
         function showTableInfo(table, pos, searchTerm = '') {
             const panel = document.getElementById('infoPanel');
+            const panelBackdrop = document.getElementById('panelBackdrop');
             const tableNumber = document.getElementById('infoTableNumber');
             const tableName = document.getElementById('infoTableName');
             const guestsList = document.getElementById('infoGuestsList');
@@ -1181,61 +1195,16 @@
                 return `<li class="info-panel__guest ${isMatched ? 'matched' : ''}">${guest}</li>`;
             }).join('');
             
-            // Remove all position classes before recalculating.
-            panel.classList.remove('position-left', 'position-right', 'position-top', 'position-custom');
-
-            // Keep mobile as bottom-sheet behavior.
-            if (window.innerWidth <= 768) {
-                panel.classList.add('position-top');
-                panel.style.left = '';
-                panel.style.top = '';
-                panel.style.right = '';
-                panel.style.bottom = '';
-            } else {
-                positionInfoPanelNearTable(table.tableNumber);
-            }
+            // Always show panel centered for consistent behavior across tables.
+            panel.classList.remove('position-left', 'position-right', 'position-top');
+            panel.classList.add('position-top');
+            panel.style.left = '';
+            panel.style.top = '';
+            panel.style.right = '';
+            panel.style.bottom = '';
 
             panel.classList.add('active');
-
-            // Re-anchor once more after zoom/pan transition starts so position tracks the visual table location.
-            if (window.innerWidth > 768) {
-                setTimeout(() => {
-                    if (panel.classList.contains('active')) {
-                        positionInfoPanelNearTable(table.tableNumber);
-                    }
-                }, 320);
-            }
-        }
-
-        function positionInfoPanelNearTable(tableNumber) {
-            const panel = document.getElementById('infoPanel');
-            const tableGroup = document.querySelector(`[data-table-number="${tableNumber}"]`);
-            if (!panel || !tableGroup) return;
-
-            const tableRect = tableGroup.getBoundingClientRect();
-            const panelWidth = panel.offsetWidth || 350;
-            const panelHeight = panel.offsetHeight || 360;
-            const gap = 18;
-            const viewportMargin = 16;
-
-            // Prefer placing panel to the right of the table, then fallback to left.
-            let left = tableRect.right + gap;
-            if (left + panelWidth > window.innerWidth - viewportMargin) {
-                left = tableRect.left - panelWidth - gap;
-            }
-
-            // Clamp horizontally in viewport.
-            left = Math.max(viewportMargin, Math.min(left, window.innerWidth - panelWidth - viewportMargin));
-
-            // Vertically center around table, then clamp.
-            let top = tableRect.top + (tableRect.height / 2) - (panelHeight / 2);
-            top = Math.max(viewportMargin, Math.min(top, window.innerHeight - panelHeight - viewportMargin));
-
-            panel.style.left = `${left}px`;
-            panel.style.top = `${top}px`;
-            panel.style.right = 'auto';
-            panel.style.bottom = 'auto';
-            panel.classList.add('position-custom');
+            panelBackdrop.classList.add('active');
         }
 
         // Smooth pan and zoom to center on a table
@@ -1284,7 +1253,9 @@
 
         function closeInfoPanel() {
             const panel = document.getElementById('infoPanel');
+            const panelBackdrop = document.getElementById('panelBackdrop');
             panel.classList.remove('active');
+            panelBackdrop.classList.remove('active');
             
             // Reset map view when closing panel
             resetMapView();
@@ -1330,6 +1301,10 @@
 
             // Focus search input on load
             searchInput.focus();
+
+            document.getElementById('panelBackdrop').addEventListener('click', () => {
+                closeInfoPanel();
+            });
 
             // Close info panel when clicking outside
             document.addEventListener('click', (e) => {
