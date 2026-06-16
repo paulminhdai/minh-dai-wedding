@@ -489,6 +489,11 @@
             transform: translateX(-50%) translateY(0);
         }
 
+        .info-panel.position-custom,
+        .info-panel.position-custom.active {
+            transform: none;
+        }
+
         .info-panel__title {
             font-family: var(--font-serif);
             font-size: 1.5rem;
@@ -861,37 +866,39 @@
         let fuseInstance = null;
         let currentTransform = { x: 0, y: 0, scale: 1 };
 
-        // Table positions matching the actual venue floor plan.
-        // Columns are spaced 130 viewBox units apart (horizontal),
-        // rows are spaced 90 viewBox units apart (vertical), centered at x=475.
-        //   Col 1 (far left, staggered): T1, T2
-        //   Col 2 (left of dance floor):  T3, T4, T5, T6, T7
-        //   Col 3 (below dance floor):    T8, T9, T10
-        //   Col 4 (below dance floor):    T11, T12, T13
-        //   Col 5 (right of dance floor): T14, T15, T16, T17, T18
-        //   Col 6 (far right, staggered): T19, T20
-        const tablePositions = [
-            { x: 150, y: 335 }, // T1
-            { x: 150, y: 425 }, // T2
-            { x: 280, y: 200 }, // T3
-            { x: 280, y: 290 }, // T4
-            { x: 280, y: 380 }, // T5
-            { x: 280, y: 470 }, // T6
-            { x: 280, y: 560 }, // T7
-            { x: 410, y: 470 }, // T8
-            { x: 410, y: 560 }, // T9
-            { x: 410, y: 650 }, // T10
-            { x: 540, y: 470 }, // T11
-            { x: 540, y: 560 }, // T12
-            { x: 540, y: 650 }, // T13
-            { x: 670, y: 200 }, // T14
-            { x: 670, y: 290 }, // T15
-            { x: 670, y: 380 }, // T16
-            { x: 670, y: 470 }, // T17
-            { x: 670, y: 560 }, // T18
-            { x: 800, y: 335 }, // T19
-            { x: 800, y: 425 }  // T20
-        ];
+        // Table positions mapped by table number to match the updated floor plan.
+        // This keeps placement stable even if JSON ordering changes.
+        const tablePositionsByNumber = {
+            1: { x: 195, y: 240 },
+            2: { x: 195, y: 330 },
+            3: { x: 195, y: 420 },
+            4: { x: 195, y: 510 },
+            5: { x: 305, y: 170 },
+            6: { x: 305, y: 260 },
+            7: { x: 305, y: 350 },
+            8: { x: 305, y: 440 },
+            9: { x: 305, y: 530 },
+            10: { x: 305, y: 620 },
+            11: { x: 415, y: 420 },
+            12: { x: 415, y: 510 },
+            13: { x: 415, y: 620 },
+            14: { x: 535, y: 420 },
+            15: { x: 535, y: 510 },
+            16: { x: 535, y: 620 },
+            17: { x: 645, y: 170 },
+            18: { x: 645, y: 260 },
+            19: { x: 645, y: 350 },
+            20: { x: 645, y: 440 },
+            21: { x: 645, y: 530 },
+            22: { x: 755, y: 195 },
+            23: { x: 755, y: 285 },
+            24: { x: 755, y: 375 },
+            25: { x: 755, y: 465 }
+        };
+
+        function getTablePosition(tableNumber) {
+            return tablePositionsByNumber[tableNumber] || null;
+        }
 
         async function loadTables() {
             try {
@@ -902,8 +909,8 @@
                 
                 console.log('Loaded', tablesData.length, 'tables from JSON');
                 
-                // Generate 20 tables if we don't have enough data
-                while (tablesData.length < 20) {
+                // Generate up to 25 tables so all map spots render.
+                while (tablesData.length < 25) {
                     const num = tablesData.length + 1;
                     tablesData.push({
                         tableNumber: num,
@@ -957,13 +964,14 @@
         function renderTables() {
             const container = document.getElementById('tablesContainer');
             const svgNS = "http://www.w3.org/2000/svg";
+            container.innerHTML = '';
             
             console.log('Rendering', tablesData.length, 'tables');
             
-            tablesData.forEach((table, index) => {
-                if (index >= tablePositions.length) return;
-                
-                const pos = tablePositions[index];
+            tablesData.forEach((table) => {
+                const pos = getTablePosition(table.tableNumber);
+                if (!pos) return;
+
                 const group = document.createElementNS(svgNS, 'g');
                 group.classList.add('table-group');
                 group.setAttribute('data-table-number', table.tableNumber);
@@ -1045,8 +1053,8 @@
             } else {
                 // Single match - show path and info, then pan and zoom
                 const foundTable = foundTables[0];
-                const tableIndex = tablesData.indexOf(foundTable);
-                const pos = tablePositions[tableIndex];
+                const pos = getTablePosition(foundTable.tableNumber);
+                if (!pos) return;
                 highlightTable(foundTable.tableNumber);
                 drawPath(pos);
                 panAndZoomToTable(pos);
@@ -1085,8 +1093,9 @@
 
         function selectTableFromSearch(tableNumber) {
             const table = tablesData.find(t => t.tableNumber === tableNumber);
-            const tableIndex = tablesData.indexOf(table);
-            const pos = tablePositions[tableIndex];
+            if (!table) return;
+            const pos = getTablePosition(tableNumber);
+            if (!pos) return;
             
             clearHighlight();
             highlightTable(tableNumber);
@@ -1172,19 +1181,61 @@
                 return `<li class="info-panel__guest ${isMatched ? 'matched' : ''}">${guest}</li>`;
             }).join('');
             
-            // Remove all position classes
-            panel.classList.remove('position-left', 'position-right', 'position-top');
-            
-            // Determine position based on table location
-            if (pos.x < 400) {
-                panel.classList.add('position-right');
-            } else if (pos.x > 600) {
-                panel.classList.add('position-left');
-            } else {
+            // Remove all position classes before recalculating.
+            panel.classList.remove('position-left', 'position-right', 'position-top', 'position-custom');
+
+            // Keep mobile as bottom-sheet behavior.
+            if (window.innerWidth <= 768) {
                 panel.classList.add('position-top');
+                panel.style.left = '';
+                panel.style.top = '';
+                panel.style.right = '';
+                panel.style.bottom = '';
+            } else {
+                positionInfoPanelNearTable(table.tableNumber);
             }
-            
+
             panel.classList.add('active');
+
+            // Re-anchor once more after zoom/pan transition starts so position tracks the visual table location.
+            if (window.innerWidth > 768) {
+                setTimeout(() => {
+                    if (panel.classList.contains('active')) {
+                        positionInfoPanelNearTable(table.tableNumber);
+                    }
+                }, 320);
+            }
+        }
+
+        function positionInfoPanelNearTable(tableNumber) {
+            const panel = document.getElementById('infoPanel');
+            const tableGroup = document.querySelector(`[data-table-number="${tableNumber}"]`);
+            if (!panel || !tableGroup) return;
+
+            const tableRect = tableGroup.getBoundingClientRect();
+            const panelWidth = panel.offsetWidth || 350;
+            const panelHeight = panel.offsetHeight || 360;
+            const gap = 18;
+            const viewportMargin = 16;
+
+            // Prefer placing panel to the right of the table, then fallback to left.
+            let left = tableRect.right + gap;
+            if (left + panelWidth > window.innerWidth - viewportMargin) {
+                left = tableRect.left - panelWidth - gap;
+            }
+
+            // Clamp horizontally in viewport.
+            left = Math.max(viewportMargin, Math.min(left, window.innerWidth - panelWidth - viewportMargin));
+
+            // Vertically center around table, then clamp.
+            let top = tableRect.top + (tableRect.height / 2) - (panelHeight / 2);
+            top = Math.max(viewportMargin, Math.min(top, window.innerHeight - panelHeight - viewportMargin));
+
+            panel.style.left = `${left}px`;
+            panel.style.top = `${top}px`;
+            panel.style.right = 'auto';
+            panel.style.bottom = 'auto';
+            panel.classList.add('position-custom');
         }
 
         // Smooth pan and zoom to center on a table
