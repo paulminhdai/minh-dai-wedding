@@ -40,12 +40,13 @@
       "tableNumber": 4,
       "tableName": "VCSA",
       "guests": [
-        "AC Huy Tuyết",
-        "Trinh & Chấn",
-        "Anh Quang & Uyên (Anna)",
-        "Nguyên Đỗ (James)",
-        "Tiến Nguyễn",
-        "Trung & Annie"
+        "Bảo Ngọc & Anh Tú",
+        "Brian Tran",
+        "Duy An & Phương Nhi",
+        "Tường & Henry",
+        "Bae Vee",
+        "Tuấn Duy",
+        "Ẩn Nguyễn"
       ]
     },
     {
@@ -101,6 +102,18 @@
     },
     {
       "tableNumber": 9,
+      "tableName": "Phụ dâu & VCSA",
+      "guests": [
+        "AC Huy Tuyết",
+        "Trinh & Chấn",
+        "Anh Quang & Uyên (Anna)",
+        "Nguyên Đỗ (James)",
+        "Tiến Nguyễn",
+        "Trung & Annie"
+      ]
+    },
+    {
+      "tableNumber": 10,
       "tableName": "Bạn bè San Jose",
       "guests": [
         "Tuyết (Mae) Trần",
@@ -111,19 +124,6 @@
         "Khương & Vy",
         "Khang & Hằng",
         "Minh Nguyễn"
-      ]
-    },
-    {
-      "tableNumber": 10,
-      "tableName": "VCSA",
-      "guests": [
-        "Bảo Ngọc & Anh Tú",
-        "Brian Tran",
-        "Duy An & Phương Nhi",
-        "Tường & Henry",
-        "Bae Vee",
-        "Tuấn Duy",
-        "Ẩn Nguyễn"
       ]
     },
     {
@@ -163,15 +163,13 @@
     },
     {
       "tableNumber": 14,
-      "tableName": "Gia đình chú rể - Thánh Mẫu",
+      "tableName": "Gia đình chú rể",
       "guests": [
-        "Bác Kính Tuý",
-        "Dì Phượng",
-        "Cậu Bảng",
-        "Dì Thanh",
-        "Vợ chồng cậu Khang",
-        "Thu Hồng",
-        "Anh chị Nguyên Huyền"
+        "Ba Phú và cô Yến",
+        "Cô chú Hiền Thể",
+        "Chị Hương",
+        "Chị Duyên",
+        "Anh Nguyên"
       ]
     },
     {
@@ -227,37 +225,39 @@
       "tableNumber": 19,
       "tableName": "Gia đình chú rể",
       "guests": [
-        "Ba Phú và cô Yến",
-        "Cô chú Hiền Thể",
-        "Chị Hương",
-        "Chị Duyên",
-        "Anh Nguyên"
+        "Bà mợ Lý",
+        "Bác Chi (Thuật)",
+        "Cậu mợ Thạc Trâm Anh",
+        "Cậu mợ Vĩnh Hy",
+        "Cậu Hào",
+        "Chú Hải",
+        "Bác Vân",
+        "Chị Hồng (Bảo - DonBosco)"
       ]
     },
     {
       "tableNumber": 20,
-      "tableName": "Thánh Mẫu",
+      "tableName": "Gia đình chú rể - Thánh Mẫu",
       "guests": [
-        "Bác Ngọc (Hoà)",
-        "GĐ bác Hải",
-        "Bác Hoàng (Hoa)",
-        "Cậu Nho",
-        "Bác Chân (Ngọc)",
-        "Cậu Hiệp (Thuỷ)",
-        "Chú Thuyết (Đài)",
-        "Bác Thuật (Chi)"
+        "Bác Kính Tuý",
+        "Dì Phượng",
+        "Cậu Bảng",
+        "Dì Thanh",
+        "Vợ chồng cậu Khang",
+        "Thu Hồng",
+        "Anh chị Nguyên Huyền"
       ]
     },
     {
       "tableNumber": 21,
-      "tableName": "Thánh Mẫu",
+      "tableName": "Người thân cô dâu chú rể",
       "guests": [
-        "Dì Minh (Lợi)",
-        "Dì Châu (Thân)",
-        "Dì Dung (Tuấn)",
-        "Dì Linh",
-        "Bác Ngọc (Chân)",
-        "Cô Đài (Thuyết)"]
+        "GD anh Huy chị Kha",
+        "Anh Việt chị Amy",
+        "Long",
+        "Thầy Tuấn, Ocarm",
+        "Khánh Hà"
+      ]
     },
     {
       "tableNumber": 22,
@@ -283,28 +283,28 @@
     },
     {
       "tableNumber": 24,
-      "tableName": "Gia đình chú rể",
+      "tableName": "Thánh Mẫu",
       "guests": [
-        "Bà mợ Lý",
-        "Bác Chi (Thuật)",
-        "Cậu mợ Thạc Trâm Anh",
-        "Cậu mợ Vĩnh Hy",
-        "Cậu Hào",
-        "Chú Hải",
-        "Bác Vân",
-        "Chị Hồng (Bảo - DonBosco)"
+        "Bác Ngọc (Hoà)",
+        "GĐ bác Hải",
+        "Bác Hoàng (Hoa)",
+        "Cậu Nho",
+        "Bác Chân (Ngọc)",
+        "Cậu Hiệp (Thuỷ)",
+        "Chú Thuyết (Đài)",
+        "Bác Thuật (Chi)"
       ]
     },
     {
       "tableNumber": 25,
-      "tableName": "Người thân cô dâu chú rể",
+      "tableName": "Thánh Mẫu",
       "guests": [
-        "GD anh Huy chị Kha",
-        "Anh Việt chị Amy",
-        "Long",
-        "Thầy Tuấn, Ocarm",
-        "Khánh Hà"
-      ]
+        "Dì Minh (Lợi)",
+        "Dì Châu (Thân)",
+        "Dì Dung (Tuấn)",
+        "Dì Linh",
+        "Bác Ngọc (Chân)",
+        "Cô Đài (Thuyết)"]
     }
   ]
 }
