@@ -43,6 +43,132 @@
             background: radial-gradient(ellipse at center, #1E293B 0%, #0F172A 100%);
         }
 
+        .idle-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(ellipse at center, rgba(20, 32, 56, 0.95) 0%, rgba(10, 16, 30, 0.98) 100%);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
+        }
+
+        .idle-screen.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .idle-screen__content {
+            text-align: center;
+            padding: 36px 24px;
+            max-width: 680px;
+            width: min(92vw, 680px);
+            margin: 0 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .idle-screen__title {
+            font-family: var(--font-sans);
+            font-size: 1.35rem;
+            color: #F5F5F7;
+            margin: 0 0 8px 0;
+            font-weight: 400;
+            letter-spacing: 1px;
+        }
+
+        .idle-screen__couple {
+            font-family: 'Inspiration', cursive;
+            font-size: clamp(3.2rem, 9vw, 4.6rem);
+            color: #D4AF37;
+            margin: 0 0 8px 0;
+            font-weight: 400;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .idle-screen__date {
+            font-family: var(--font-sans);
+            font-size: 1.15rem;
+            color: #F5F5F7;
+            margin: 0;
+            font-weight: 400;
+            letter-spacing: 0.6px;
+        }
+
+        .idle-screen__cta {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: auto;
+            height: auto;
+            padding: 0;
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            font-weight: 600;
+            color: #F5F5F7;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            box-shadow: none;
+            transition: opacity 0.2s ease;
+            animation: touch-pulse 3.2s ease-in-out infinite;
+            letter-spacing: 0.02em;
+            gap: 4px;
+            margin-top: clamp(70px, 15vh, 170px);
+        }
+
+        .idle-screen__cta:hover {
+            opacity: 0.92;
+            animation-play-state: paused;
+        }
+
+        .idle-screen__cta-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            margin-bottom: 4px;
+            opacity: 0.92;
+        }
+
+        .idle-screen__cta-icon svg {
+            width: 100%;
+            height: 100%;
+            stroke: rgba(245, 245, 247, 0.9);
+            stroke-width: 1.55;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .idle-screen__cta-line {
+            display: block;
+            line-height: 1.15;
+            color: rgba(245, 245, 247, 0.9);
+            font-size: 0.92rem;
+        }
+
+        .idle-screen__cta-line--gold {
+            color: #D4AF37;
+            font-size: 1.02rem;
+        }
+
+        @keyframes touch-pulse {
+            0%, 100% {
+                opacity: 0.82;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
         /* Hide navigation */
         .nav {
             display: none;
@@ -792,6 +918,28 @@
     </style>
 </head>
 <body>
+    <div id="idleScreen" class="idle-screen active" aria-live="polite">
+        <div class="idle-screen__content">
+            <h1 class="idle-screen__title">Welcome to Our Wedding</h1>
+            <p class="idle-screen__couple">Đại & Minh</p>
+            <p class="idle-screen__date">June 26, 2026</p>
+            <button id="startFindingBtn" class="idle-screen__cta" type="button" aria-label="Touch here to find your table">
+                <span class="idle-screen__cta-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" role="img" focusable="false">
+                        <path d="M12 2.5v2.2"></path>
+                        <path d="M9.7 3.7 11 5"></path>
+                        <path d="M14.3 3.7 13 5"></path>
+                        <path d="M9.3 13V6.9a1.2 1.2 0 1 1 2.4 0V13"></path>
+                        <path d="M11.7 13v-2.3a1.1 1.1 0 1 1 2.2 0V13"></path>
+                        <path d="M13.9 13v-1.5a1 1 0 1 1 2 0v4.8c0 2.7-1.8 4.7-4.6 4.7h-.5c-2.6 0-4.4-1.8-4.8-4l-.5-2.4a1.1 1.1 0 1 1 2.1-.5l.4 1.6V11.4a1.1 1.1 0 1 1 2.2 0V13"></path>
+                    </svg>
+                </span>
+                <span class="idle-screen__cta-line idle-screen__cta-line--gold">Touch Here</span>
+                <span class="idle-screen__cta-line">to find your table</span>
+            </button>
+        </div>
+    </div>
+
     <!-- Header Section with Search -->
     <header class="page-header">
         <p class="page-header__welcome">Welcome to Our Wedding</p>
@@ -884,6 +1032,8 @@
         let currentHighlightedTable = null;
         let fuseInstance = null;
         let currentTransform = { x: 0, y: 0, scale: 1 };
+        let idleTimeout = null;
+        const IDLE_TIMEOUT_MS = 15000;
 
         // Table positions mapped by table number to match the updated floor plan.
         // This keeps placement stable even if JSON ordering changes.
@@ -1287,6 +1437,40 @@
             resetMapView();
         }
 
+        function clearSearchState() {
+            const searchInput = document.getElementById('searchInput');
+            const searchClear = document.getElementById('searchClear');
+            searchInput.value = '';
+            searchClear.classList.remove('visible');
+            hideSearchResults();
+            clearHighlight();
+        }
+
+        function showIdleScreen() {
+            const idleScreen = document.getElementById('idleScreen');
+            idleScreen.classList.add('active');
+            clearSearchState();
+            closeInfoPanel();
+        }
+
+        function hideIdleScreen() {
+            const idleScreen = document.getElementById('idleScreen');
+            idleScreen.classList.remove('active');
+            const searchInput = document.getElementById('searchInput');
+            searchInput.focus();
+            resetIdleTimer();
+        }
+
+        function resetIdleTimer() {
+            clearTimeout(idleTimeout);
+            const idleScreen = document.getElementById('idleScreen');
+            if (idleScreen.classList.contains('active')) return;
+
+            idleTimeout = setTimeout(() => {
+                showIdleScreen();
+            }, IDLE_TIMEOUT_MS);
+        }
+
         // Make function available globally for onclick
         window.selectTableFromSearch = selectTableFromSearch;
 
@@ -1327,6 +1511,21 @@
 
             // Focus search input on load
             searchInput.focus();
+
+            const idleScreen = document.getElementById('idleScreen');
+            const startFindingBtn = document.getElementById('startFindingBtn');
+            const wakeFromIdle = () => hideIdleScreen();
+
+            idleScreen.addEventListener('click', wakeFromIdle);
+            startFindingBtn.addEventListener('click', wakeFromIdle);
+
+            ['pointerdown', 'touchstart', 'keydown', 'wheel'].forEach((eventName) => {
+                document.addEventListener(eventName, () => {
+                    if (!idleScreen.classList.contains('active')) {
+                        resetIdleTimer();
+                    }
+                }, { passive: true });
+            });
 
             document.getElementById('panelBackdrop').addEventListener('click', () => {
                 closeInfoPanel();
