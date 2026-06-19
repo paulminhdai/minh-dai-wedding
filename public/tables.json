@@ -4,79 +4,79 @@
       "tableNumber": 1,
       "tableName": "Bạn bè",
       "guests": [
-        "Anh Phan chị Quỳnh Anh",
-        "Khang",
-        "Cường Xuân",
-        "Quân Hoài",
-        "Toàn Mẫn"
+        "AC Phan & Quỳnh Anh",
+        "Khang Nguyễn",
+        "Cường & Xuân",
+        "Quân & Hoài",
+        "Toàn & Mẫn",
+        "Lân Hoàng"
       ]
     },
     {
       "tableNumber": 2,
       "tableName": "VCSA",
       "guests": [
+        "Khoa Lê",
         "Phong Như",
         "AC Thông Quỳnh",
         "AC Huân Thy",
         "Lộc Lý",
-        "Khoa Lê",
-        "Phúc Hạ"
+        "Phúc & Hạ"
       ]
     },
     {
       "tableNumber": 3,
       "tableName": "VCSA",
       "guests": [
+        "Cha Kiệt",
+        "AC Khoa Phương",
         "AC Chi Linh",
         "Duy Tống",
-        "Viết Lân",
-        "Sơn Diễm",
-        "Trí Trần",
-        "AC Khoa Phương",
-        "Cha Kiệt"
+        "Sơn & Diễm",
+        "Trí & Hà"
       ]
     },
     {
       "tableNumber": 4,
       "tableName": "VCSA",
       "guests": [
-        "Trung Annie",
-        "Nguyên James",
-        "Trinh Chấn",
-        "AC Tuyết Huy",
-        "Quang Anna",
-        "Tiến Nguyễn"
+        "AC Huy Tuyết",
+        "Trinh & Chấn",
+        "Anh Quang & Uyên (Anna)",
+        "Nguyên Đỗ (James)",
+        "Tiến Nguyễn",
+        "Trung & Annie"
       ]
     },
     {
       "tableNumber": 5,
-      "tableName": "Bạn bè",
+      "tableName": "Gia đình cô dâu & Bạn bè",
       "guests": [
-        "Khoa Giang",
+        "Nhật & Thư",
+        "Khoa & Giang",
         "Luân Kirby Bùi",
-        "Nhật Thư",
         "Oscar",
         "Nhí",
         "AC Đằng Thanh",
-        "Anh Nghiêm Vince Vo"
+        "Anh Nghiêm (Vince Vo)"
       ]
     },
     {
       "tableNumber": 6,
-      "tableName": "Nhà gái",
+      "tableName": "Gia đình cô dâu",
       "guests": [
-        "Cô Oanh chú Phương",
-        "Cậu Khải Anh",
         "Mẹ Chi",
         "Dì Trang",
         "Bác Hợp bác Duyên",
         "Bác Thảo bác Quang",
         "Bác Hương"
+        "Cô chú Oanh Phương",
+        "Cậu Khải Anh"
       ]
     },
     {
       "tableNumber": 7,
-      "tableName": "Nhà gái",
+      "tableName": "Gia đình cô dâu",
       "guests": [
         "Má Diễm",
         "Cô Trâm chú Thái",
@@ -88,15 +88,15 @@
     },
     {
       "tableNumber": 8,
-      "tableName": "Nhà gái",
+      "tableName": "Gia đình cô dâu",
       "guests": [
         "Bác Tùng cô Nhàn",
-        "bác Thắng bác Tuyết",
-        "bác Tài bác Châu",
-        "bác Trang (bác Phước)",
-        "Cô An",
+        "Bác Thắng bác Tuyết",
+        "Bác Tài bác Châu",
+        "Bác Trang (bác Phước)",
         "Bác Thuỷ",
-        "Bác Tuyến"
+        "Bác Tuyến",
+        "Cô An",
       ]
     },
     {
@@ -106,10 +106,10 @@
         "Tuyết (Mae) Trần",
         "Song Nguyễn (La)",
         "Thảo Nguyên Nguyễn (Vang)",
-        "Phúc Nguyễn",
         "Lộc Trần",
-        "Khương Vy",
-        "Khang Hằng",
+        "Phúc Nguyễn",
+        "Khương & Vy",
+        "Khang & Hằng",
         "Minh Nguyễn"
       ]
     },
@@ -117,10 +117,10 @@
       "tableNumber": 10,
       "tableName": "VCSA",
       "guests": [
-        "Bảo Ngọc - Anh Tú",
+        "Bảo Ngọc & Anh Tú",
         "Brian Tran",
-        "Duy An - Phương Nhi",
-        "Tường Henry",
+        "Duy An & Phương Nhi",
+        "Tường & Henry",
         "Bae Vee",
         "Tuấn Duy",
         "Ẩn Nguyễn"
@@ -128,10 +128,10 @@
     },
     {
       "tableNumber": 11,
-      "tableName": "Nhà gái:",
+      "tableName": "Gia đình cô dâu",
       "guests": [
-        "bác Tập bác Lan",
-        "Con bác tập bác Lan",
+        "Bác Tập bác Lan",
+        "Kim & Brian",
         "Cô Liên chú Thành",
         "Chị Vy",
         "Bác Lộc",
@@ -143,44 +143,44 @@
       "tableName": "Gia đình cô Yến",
       "guests": [
         "Ba của Cô Yến",
-        "Hoàng",
-        "Diễm",
-        "Thảo",
         "Cậu mợ Cảnh Kim",
         "Cậu Tây",
-        "Cậu mợ Thắng Thanh"
+        "Cậu mợ Thắng Thanh",
+        "Diễm",
+        "Thảo",
+        "Hoàng",
       ]
     },
     {
       "tableNumber": 13,
-      "tableName": "Cousin nhà trai",
+      "tableName": "Gia đình chú rể",
       "guests": [
         "GĐ anh Thiện chị Hằng",
         "Anh Cody chị Thơ",
         "Lân & Sidney Groff",
-        "Trường Tâm",
+        "Trường & Tâm",
         "Bôn"
       ]
     },
     {
       "tableNumber": 14,
-      "tableName": "Nhà trai - Thánh Mẫu",
+      "tableName": "Gia đình chú rể - Thánh Mẫu",
       "guests": [
         "Bác Kính Tuý",
-        "Chị Phượng",
-        "Anh Bảng",
-        "Chị Thanh",
-        "Anh chị Khang",
+        "Dì Phượng",
+        "Cậu Bảng",
+        "Dì Thanh",
+        "Vợ chồng cậu Khang",
         "Thu Hồng",
         "Anh chị Nguyên Huyền"
       ]
     },
     {
       "tableNumber": 15,
-      "tableName": "Cousin nhà trai",
+      "tableName": "Gia đình chú rể & HOPE",
       "guests": [
         "GĐ Anh Triều chị Mai",
-        "Trí Hằng",
+        "Trí & Hằng",
         "Duy Liêm",
         "anh Thạch",
         "Christine",
@@ -189,7 +189,7 @@
     },
     {
       "tableNumber": 16,
-      "tableName": "Cousin nhà trai",
+      "tableName": "Gia đình chú rể",
       "guests": [
         "GĐ Dượng Tuấn dì Út",
         "Katelyn Le",
@@ -201,50 +201,51 @@
     },
     {
       "tableNumber": 17,
-      "tableName": "Nhà trai",
+      "tableName": "Gia đình chú rể",
       "guests": [
         "Dì Yến",
         "Soeur Trang MTGKT",
-        "Anh chị Hoàng Trinh",
-        "GD cô Uyên chú Biên",
+        "Cô chú Hoàng Trinh",
+        "Cô chú Uyên Biên",
+        "Mai Ngô (Jennie)",
         "Hân Ngân"
       ]
     },
     {
       "tableNumber": 18,
-      "tableName": "Nhà trai",
+      "tableName": "Gia đình chú rể",
       "guests": [
         "Ông Ngoại Kỷ",
-        "Cậu mợ Đức",
-        "Anh chị Khang Dần",
+        "Ông bà cậu mợ Đức",
+        "Ông bà Khang Dần",
         "Thầy Hạnh",
-        "Anh chị Liêm Sự",
-        "Chị Trân",
-        "Anh Dũng"
+        "Ông bà Liêm Sự",
+        "Bác Trân",
+        "Bác Dũng"
       ]
     },
     {
       "tableNumber": 19,
-      "tableName": "Nhà trai",
+      "tableName": "Gia đình chú rể",
       "guests": [
+        "Ba Phú và cô Yến",
         "Cô chú Hiền Thể",
         "Chị Hương",
         "Chị Duyên",
-        "Anh Nguyên",
-        "Ba Phú và cô Yến"
+        "Anh Nguyên"
       ]
     },
     {
       "tableNumber": 20,
       "tableName": "Thánh Mẫu",
       "guests": [
-        "Anh Ngọc (Hoà)",
-        "AD anh Hải",
-        "Anh Hoàng (Hoa)",
-        "Anh Nho",
-        "Anh Chân (Ngọc)",
-        "Anh Hiệp (Thuỷ)",
-        "Anh Thuyết (Đài)",
+        "Bác Ngọc (Hoà)",
+        "GĐ bác Hải",
+        "Bác Hoàng (Hoa)",
+        "Cậu Nho",
+        "Bác Chân (Ngọc)",
+        "Cậu Hiệp (Thuỷ)",
+        "Chú Thuyết (Đài)",
         "Bác Thuật (Chi)"
       ]
     },
@@ -252,12 +253,12 @@
       "tableNumber": 21,
       "tableName": "Thánh Mẫu",
       "guests": [
-        "Chị Đài (Thuyết)",
-        "Chị Minh (Lợi)",
-        "Chị Châu (Thân)",
-        "Chị Dung (Tuấn)",
-        "Chị Linh",
-        "Chị Ngọc (Chân)"
+        "Dì Minh (Lợi)",
+        "Dì Châu (Thân)",
+        "Dì Dung (Tuấn)",
+        "Dì Linh",
+        "Bác Ngọc (Chân)",
+        "Cô Đài (Thuyết)",
       ]
     },
     {
@@ -284,10 +285,10 @@
     },
     {
       "tableNumber": 24,
-      "tableName": "Nhà trai",
+      "tableName": "Gia đình chú rể",
       "guests": [
-        "Bác Chi (Thuật)",
         "Bà mợ Lý",
+        "Bác Chi (Thuật)",
         "Cậu mợ Thạc Trâm Anh",
         "Cậu mợ Vĩnh Hy",
         "Cậu Hào",
@@ -298,7 +299,7 @@
     },
     {
       "tableNumber": 25,
-      "tableName": "Counsin - bạn bè",
+      "tableName": "Người thân cô dâu chú rể",
       "guests": [
         "GD anh Huy chị Kha",
         "Anh Việt chị Amy",

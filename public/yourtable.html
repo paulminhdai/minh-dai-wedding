@@ -1451,13 +1451,17 @@
             idleScreen.classList.add('active');
             clearSearchState();
             closeInfoPanel();
+
+            // Close software keyboard on tablets/phones when returning to idle.
+            const activeElement = document.activeElement;
+            if (activeElement && typeof activeElement.blur === 'function') {
+                activeElement.blur();
+            }
         }
 
         function hideIdleScreen() {
             const idleScreen = document.getElementById('idleScreen');
             idleScreen.classList.remove('active');
-            const searchInput = document.getElementById('searchInput');
-            searchInput.focus();
             resetIdleTimer();
         }
 
@@ -1509,7 +1513,7 @@
                 searchInput.focus();
             });
 
-            // Focus search input on load
+            // Keep initial autofocus on page load only.
             searchInput.focus();
 
             const idleScreen = document.getElementById('idleScreen');
