@@ -30,6 +30,8 @@ const {
     validateGuestSearch,
     validateGuestNameParam
 } = require('./middleware/validation');
+const photoRoutes = require('./routes/photos');
+const settingsRoutes = require('./routes/settings');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -54,12 +56,14 @@ app.use(helmet({
             defaultSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
-            imgSrc: ["'self'", "data:", "https:"],
+            // Includes drive.google.com / lh*.googleusercontent.com for the
+            // disposable-camera gallery (guest photos hosted on Google Drive).
+            imgSrc: ["'self'", "data:", "blob:", "https:"],
+            mediaSrc: ["'self'", "blob:"],
             scriptSrc: ["'self'", "'unsafe-inline'", "https://www.googletagmanager.com"],
             scriptSrcAttr: ["'unsafe-inline'"], // Allow inline event handlers (onclick, etc.)
             connectSrc: ["'self'", "https://www.google-analytics.com"],
-            frameSrc: ["'self'", "https://www.google.com"],
-            mediaSrc: ["'self'"]
+            frameSrc: ["'self'", "https://www.google.com"]
         }
     },
     hsts: {
@@ -272,6 +276,31 @@ app.get('/findyourtable', (req, res) => {
 app.get('/yourtable', (req, res) => {
     res.sendFile(path.join(PUBLIC_DIR, 'yourtable.html'));
 });
+
+// Disposable-camera pages
+app.get('/camera', (req, res) => {
+    res.sendFile(path.join(PUBLIC_DIR, 'camera.html'));
+});
+app.get('/gallery', (req, res) => {
+    res.sendFile(path.join(PUBLIC_DIR, 'gallery.html'));
+});
+
+// Serve locally-stored uploads (only used when GOOGLE_DRIVE_FOLDER_ID isn't
+// configured; in production photos live on Google Drive).
+app.use('/uploads', express.static(path.join(__dirname, 'data', 'uploads'), {
+    maxAge: '7d',
+    setHeaders: (res) => {
+        res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+    }
+}));
+
+// Photo upload + gallery routes (multipart, has its own size limits)
+app.use('/api/photos', photoRoutes.publicRouter);
+app.use('/api/admin', photoRoutes.adminRouter);
+
+// Site-wide settings (camera popup toggle, gallery reveal date)
+app.use('/api/settings', settingsRoutes.publicRouter);
+app.use('/api/admin/settings', settingsRoutes.adminRouter);
 
 // ============================================
 // AUTHENTICATION ROUTES
