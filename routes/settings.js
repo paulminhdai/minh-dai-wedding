@@ -44,6 +44,10 @@ const router = express.Router();
 router.get('/', settingsLimiter, async (req, res) => {
     try {
         const settings = await settingsService.getSettings();
+        // RSVP_OPEN is an env-controlled toggle. Default = true (RSVPs open).
+        // Set RSVP_OPEN=false to flip the home page into "find your table"
+        // mode (hero CTA changes + RSVP form submit disabled).
+        const rsvpOpen = process.env.RSVP_OPEN !== 'false';
         res.set('Cache-Control', 'public, max-age=30');
         res.json({
             cameraPopup: {
@@ -55,6 +59,9 @@ router.get('/', settingsLimiter, async (req, res) => {
             gallery: {
                 revealAt: settings.gallery_reveal_at,
                 revealed: Date.now() >= new Date(settings.gallery_reveal_at).getTime()
+            },
+            rsvp: {
+                open: rsvpOpen
             }
         });
     } catch (e) {

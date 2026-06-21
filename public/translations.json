@@ -17,6 +17,7 @@
         "justMarried": "Just married! 💕"
       },
       "rsvpNow": "RSVP Now",
+      "findTable": "Find Your Table",
       "scrollToExplore": "Scroll to explore"
     },
     "story": {
@@ -96,6 +97,7 @@
         },
         "submit": "Submit RSVP",
         "submitting": "Submitting...",
+        "submitClosed": "RSVPs are closed",
         "required": "*"
       },
       "validation": {
@@ -168,6 +170,7 @@
         "justMarried": "Chúng mình đã là vợ chồng rồi! 💕"
       },
       "rsvpNow": "Phúc Đáp Ngay",
+      "findTable": "Tìm Bàn Tiệc",
       "scrollToExplore": "Vuốt lên"
     },
     "story": {
@@ -247,6 +250,7 @@
         },
         "submit": "Gửi Xác Nhận",
         "submitting": "Đang gửi...",
+        "submitClosed": "Đã đóng phúc đáp",
         "required": "*"
       },
       "validation": {

@@ -481,6 +481,52 @@
         }
     };
 
+    // RSVP Mode (env-controlled). When the server reports rsvp.open === false
+    // the home page flips into "Find Your Table" mode: the hero CTA points to
+    // /yourtable and the RSVP form's submit button is disabled.
+    const RSVPMode = {
+        open: true,
+
+        async init() {
+            try {
+                const res = await fetch('/api/settings', { credentials: 'same-origin' });
+                if (!res.ok) return;
+                const settings = await res.json();
+                // Default to open if the field is missing (older server build).
+                this.open = !settings.rsvp || settings.rsvp.open !== false;
+            } catch (_) {
+                // Network/API error — leave RSVPs open so we don't lock guests
+                // out of submitting just because /api/settings hiccupped.
+                return;
+            }
+
+            if (!this.open) this.applyClosed();
+        },
+
+        applyClosed() {
+            const heroCta = document.querySelector('.hero__cta');
+            if (heroCta) {
+                heroCta.setAttribute('data-i18n', 'hero.findTable');
+                heroCta.setAttribute('href', '/yourtable');
+            }
+
+            const submitBtn = document.querySelector('#rsvpForm .form__submit');
+            if (submitBtn) {
+                submitBtn.setAttribute('data-i18n', 'rsvp.form.submitClosed');
+                submitBtn.disabled = true;
+                submitBtn.setAttribute('aria-disabled', 'true');
+            }
+
+            // Re-render translations so the new keys pick up the user's
+            // currently selected language.
+            if (i18n && typeof i18n.translatePage === 'function') {
+                i18n.translatePage();
+            }
+
+            document.documentElement.setAttribute('data-rsvp', 'closed');
+        }
+    };
+
     // RSVP Form Management
     const RSVPForm = {
         init() {
@@ -890,6 +936,11 @@
 
         async handleSubmit(e) {
             e.preventDefault();
+
+            // Bail out if RSVPs are closed (server-controlled flag). Guards
+            // against any future state where the disabled attribute could be
+            // bypassed in DevTools or stripped by an extension.
+            if (!RSVPMode.open) return;
 
             // Rate limiting check
             const now = Date.now();
@@ -2214,7 +2265,12 @@
 
         // Initialize i18n first (load translations)
         await i18n.init();
-        
+
+        // Resolve RSVP mode (open vs closed) before form wiring so the submit
+        // button's disabled state is set as early as possible. We don't await
+        // it — the network round-trip shouldn't block the rest of init.
+        RSVPMode.init();
+
         // Initialize core components
         ThemeManager.init();
         MusicManager.init();
