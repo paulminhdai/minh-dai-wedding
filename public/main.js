@@ -445,12 +445,18 @@
         },
 
         updateCountdown() {
-            const now = new Date().getTime();
+            const now = new Date();
             const weddingTime = CONFIG.weddingDate.getTime();
-            const difference = weddingTime - now;
+            const difference = weddingTime - now.getTime();
 
             if (difference > 0) {
-                const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+                // Count whole calendar days between today (local midnight) and the wedding date,
+                // so the value matches what a guest would count on a calendar regardless of time of day.
+                const MS_PER_DAY = 1000 * 60 * 60 * 24;
+                const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                const wedding = CONFIG.weddingDate;
+                const startOfWedding = new Date(wedding.getFullYear(), wedding.getMonth(), wedding.getDate()).getTime();
+                const days = Math.round((startOfWedding - startOfToday) / MS_PER_DAY);
                 
                 if (days === 0) {
                     this.countdownEl.textContent = i18n.getTranslation('hero.countdown.today') || "Today is the day! 🎉";
