@@ -13,6 +13,7 @@ const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 
 const settingsService = require('../lib/settingsService');
+const photoService = require('../lib/photoService');
 const { verifyToken } = require('../middleware/auth');
 const { adminLimiter } = require('../middleware/security');
 const { DatabaseUtils } = require('../database/supabase-config');
@@ -55,6 +56,12 @@ router.get('/', settingsLimiter, async (req, res) => {
                 title: settings.camera_popup_title,
                 body: settings.camera_popup_body,
                 cta: settings.camera_popup_cta
+            },
+            camera: {
+                // Active Kodak film emulation, or null if disabled. The
+                // camera page uses this to mirror the look in the live
+                // viewfinder via a CSS filter approximation.
+                film: photoService.getActiveFilmName()
             },
             gallery: {
                 revealAt: settings.gallery_reveal_at,

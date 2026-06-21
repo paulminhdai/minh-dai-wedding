@@ -121,6 +121,7 @@
             aspect-ratio: 4 / 3;
             overflow: hidden;
             box-shadow: inset 0 0 0 6px #2c3e50, inset 0 0 0 8px #1a252f;
+            touch-action: pan-y;
         }
         .viewfinder video,
         .viewfinder img,
@@ -144,6 +145,7 @@
             font-size: 0.85rem;
             padding: 20px;
             gap: 8px;
+            pointer-events: none;
         }
         .viewfinder__overlay {
             position: absolute;
@@ -172,6 +174,41 @@
         }
         .viewfinder__crosshair::after {
             left: 50%; top: -10px; bottom: -10px; width: 1px;
+        }
+
+        /* Film swipe indicator — brief overlay shown on viewfinder when
+           swiping left/right to cycle through films */
+        .viewfinder__film-toast {
+            position: absolute;
+            bottom: 36px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.75);
+            color: var(--gold);
+            font-family: 'Special Elite', monospace;
+            font-size: 0.85rem;
+            letter-spacing: 0.12em;
+            padding: 6px 16px;
+            border-radius: 20px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            z-index: 10;
+            white-space: nowrap;
+        }
+        .viewfinder__film-toast.show { opacity: 1; }
+        .viewfinder__swipe-hint {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.75);
+            font-family: 'Special Elite', monospace;
+            letter-spacing: 0.08em;
+            pointer-events: none;
+            z-index: 5;
+            transition: opacity 0.5s ease;
         }
 
         /* Counter strip (shots remaining) */
@@ -235,6 +272,54 @@
             cursor: not-allowed;
             color: rgba(26, 37, 47, 0.7);
         }
+
+        /* Film roll picker — segmented control styled to match a film canister
+           list. Each chip is its own button so VoiceOver announces it correctly
+           and we can use aria-pressed to communicate selection state. */
+        .film-picker {
+            margin-top: 12px;
+            border: 1px dashed rgba(26, 37, 47, 0.25);
+            border-radius: 12px;
+            padding: 10px 10px 12px;
+            background: rgba(26, 37, 47, 0.03);
+        }
+        .film-picker__label {
+            font-size: 0.7rem;
+            opacity: 0.6;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        .film-picker__row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+        .film-chip {
+            border: 1px solid rgba(26, 37, 47, 0.18);
+            background: rgba(26, 37, 47, 0.04);
+            color: var(--neptune-navy);
+            border-radius: 10px;
+            padding: 8px 4px;
+            font-family: 'Special Elite', monospace;
+            font-size: 0.72rem;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            line-height: 1.15;
+            transition: all 0.15s ease;
+            min-height: 48px;
+        }
+        .film-chip__name { display: block; font-weight: 700; }
+        .film-chip__iso  { display: block; font-size: 0.62rem; opacity: 0.65; margin-top: 2px; letter-spacing: 0.08em; }
+        .film-chip:hover { background: rgba(26, 37, 47, 0.10); }
+        .film-chip[aria-pressed="true"] {
+            background: var(--gold);
+            border-color: var(--gold);
+            color: var(--neptune-navy);
+            box-shadow: 0 2px 6px rgba(212, 175, 55, 0.35);
+        }
+        .film-chip[aria-pressed="true"] .film-chip__iso { opacity: 0.75; }
 
         .shutter {
             width: 88px; height: 88px;
@@ -420,11 +505,33 @@
         <div class="camera__shell">
             <div class="camera__brand">
                 <span>Đ &amp; M · 2026</span>
-                <strong>· KODACOLOR ·</strong>
-                <span>ISO 400</span>
+                <strong id="filmLabel">· KODACOLOR ·</strong>
+                <span id="filmIso">ISO 400</span>
             </div>
 
-            <div class="viewfinder">
+            <div class="film-picker" role="radiogroup" aria-label="Choose your film roll" id="filmPicker">
+                <div class="film-picker__label">LOAD YOUR FILM ROLL</div>
+                <div class="film-picker__row">
+                    <button type="button" class="film-chip" data-film="off"    aria-pressed="false">
+                        <span class="film-chip__name">OFF</span>
+                        <span class="film-chip__iso">RAW</span>
+                    </button>
+                    <button type="button" class="film-chip" data-film="gold"   aria-pressed="false">
+                        <span class="film-chip__name">GOLD</span>
+                        <span class="film-chip__iso">200</span>
+                    </button>
+                    <button type="button" class="film-chip" data-film="portra" aria-pressed="false">
+                        <span class="film-chip__name">PORTRA</span>
+                        <span class="film-chip__iso">400</span>
+                    </button>
+                    <button type="button" class="film-chip" data-film="ektar"  aria-pressed="false">
+                        <span class="film-chip__name">EKTAR</span>
+                        <span class="film-chip__iso">100</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="viewfinder" id="viewfinder">
                 <video id="preview" autoplay muted playsinline style="display:none;"></video>
                 <img id="captured" alt="" style="display:none;">
                 <canvas id="canvas" style="display:none;"></canvas>
@@ -435,6 +542,8 @@
                 </div>
                 <div class="viewfinder__overlay"></div>
                 <div class="viewfinder__crosshair"></div>
+                <div class="viewfinder__film-toast" id="filmToast"></div>
+                <div class="viewfinder__swipe-hint" id="swipeHint">← swipe to change film →</div>
             </div>
 
             <div class="roll">
@@ -458,7 +567,7 @@
             <input type="file" id="filePicker" accept="image/*" capture="environment" style="display:none;">
 
             <div class="controls" style="margin-top:10px;grid-template-columns:1fr 1fr">
-                <button class="ctrl-btn" id="uploadFileBtn" type="button">📁 UPLOAD<br>FROM PHONE</button>
+                <button class="ctrl-btn" id="uploadFileBtn" type="button">CHOOSE PHOTO</button>
                 <button class="ctrl-btn" id="retakeBtn" type="button" disabled>↺ RETAKE</button>
             </div>
         </div>
@@ -530,8 +639,29 @@
             flash: document.getElementById('flash'),
             toast: document.getElementById('toast'),
             rollFull: document.getElementById('rollFull'),
-            rollFullMsg: document.getElementById('rollFullMsg')
+            rollFullMsg: document.getElementById('rollFullMsg'),
+            filmLabel: document.getElementById('filmLabel'),
+            filmIso: document.getElementById('filmIso'),
+            filmPicker: document.getElementById('filmPicker'),
+            viewfinder: document.getElementById('viewfinder'),
+            filmToast: document.getElementById('filmToast'),
+            swipeHint: document.getElementById('swipeHint')
         };
+
+        // CSS filter approximations of the server-side Kodak looks. These are
+        // *only* applied to the live <video> and post-capture <img> previews
+        // so guests see the look while composing — the captured blob bytes
+        // stay raw and the server applies the canonical (more accurate)
+        // sharp pipeline on upload using whatever film the guest picked.
+        const FILM_PREVIEWS = {
+            off:    { css: '',                                                                              label: '· KODACOLOR ·',     iso: 'ISO 400' },
+            gold:   { css: 'saturate(1.15) brightness(1.03) contrast(1.05) sepia(0.18)',                    label: '· KODAK GOLD ·',    iso: 'ISO 200' },
+            portra: { css: 'saturate(0.95) brightness(1.04) contrast(0.96) sepia(0.08) hue-rotate(-3deg)',  label: '· KODAK PORTRA ·',  iso: 'ISO 400' },
+            ektar:  { css: 'saturate(1.30) brightness(1.00) contrast(1.10)',                                label: '· KODAK EKTAR ·',   iso: 'ISO 100' }
+        };
+        // Currently selected film. Source of truth for live preview, brand
+        // strip, and the `film` field included with every upload.
+        let activeFilm = 'off';
 
         const STORAGE_KEY = 'wedding.camera.v1';
 
@@ -792,6 +922,7 @@
                 fd.append('display_name', name);
                 if (els.caption.value.trim()) fd.append('caption', els.caption.value.trim());
                 if (state.deviceId) fd.append('device_id', state.deviceId);
+                fd.append('film', activeFilm);
 
                 const headers = state.deviceId ? { 'X-Device-Id': state.deviceId } : {};
                 const res = await fetch('/api/photos', {
@@ -834,6 +965,128 @@
         }
 
         // ─── Wire up ──────────────────────────────
+        function setActiveFilm(film, opts = {}) {
+            const cfg = FILM_PREVIEWS[film] || FILM_PREVIEWS.off;
+            const name = FILM_PREVIEWS[film] ? film : 'off';
+            activeFilm = name;
+            els.preview.style.filter = cfg.css;
+            els.captured.style.filter = cfg.css;
+            if (els.filmLabel) els.filmLabel.textContent = cfg.label;
+            if (els.filmIso)   els.filmIso.textContent   = cfg.iso;
+            if (els.filmPicker) {
+                els.filmPicker.querySelectorAll('.film-chip').forEach(chip => {
+                    chip.setAttribute('aria-pressed', chip.dataset.film === name ? 'true' : 'false');
+                });
+            }
+            if (opts.persist !== false) saveLocal({ film: name });
+        }
+
+        function setupFilmPicker() {
+            if (!els.filmPicker) return;
+            els.filmPicker.addEventListener('click', e => {
+                const chip = e.target.closest('.film-chip');
+                if (!chip) return;
+                setActiveFilm(chip.dataset.film);
+            });
+        }
+
+        // Ordered film list for swipe cycling.
+        const FILM_ORDER = ['off', 'gold', 'portra', 'ektar'];
+
+        function setupViewfinderSwipe() {
+            const target = els.viewfinder;
+            if (!target) return;
+
+            let startX = 0;
+            let startY = 0;
+            let swiped = false;
+
+            function handleSwipe(dx, dy) {
+                if (swiped) return;
+                if (Math.abs(dx) < 30) return;
+                if (Math.abs(dy) > Math.abs(dx) * 1.5) return;
+
+                swiped = true;
+                const currentIdx = FILM_ORDER.indexOf(activeFilm);
+                let nextIdx;
+                if (dx < 0) {
+                    nextIdx = (currentIdx + 1) % FILM_ORDER.length;
+                } else {
+                    nextIdx = (currentIdx - 1 + FILM_ORDER.length) % FILM_ORDER.length;
+                }
+                setActiveFilm(FILM_ORDER[nextIdx]);
+                showFilmToast(FILM_ORDER[nextIdx]);
+            }
+
+            // Touch (mobile)
+            target.addEventListener('touchstart', e => {
+                if (e.touches.length !== 1) return;
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+                swiped = false;
+            }, { passive: true });
+
+            target.addEventListener('touchend', e => {
+                const endX = e.changedTouches[0].clientX;
+                const endY = e.changedTouches[0].clientY;
+                handleSwipe(endX - startX, endY - startY);
+            }, { passive: true });
+
+            // Mouse drag (desktop / localhost testing)
+            let mouseDown = false;
+            target.addEventListener('mousedown', e => {
+                mouseDown = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                swiped = false;
+                e.preventDefault();
+            });
+            target.addEventListener('mouseup', e => {
+                if (!mouseDown) return;
+                mouseDown = false;
+                handleSwipe(e.clientX - startX, e.clientY - startY);
+            });
+            target.addEventListener('mouseleave', () => { mouseDown = false; });
+
+            // Hide the swipe hint after 5 seconds or after first swipe.
+            setTimeout(() => {
+                if (els.swipeHint) els.swipeHint.style.opacity = '0';
+            }, 5000);
+        }
+
+        let filmToastTimer = null;
+        function showFilmToast(film) {
+            const cfg = FILM_PREVIEWS[film] || FILM_PREVIEWS.off;
+            if (!els.filmToast) return;
+            els.filmToast.textContent = cfg.label.replace(/·/g, '').trim() || 'RAW';
+            els.filmToast.classList.add('show');
+            if (els.swipeHint) els.swipeHint.style.opacity = '0';
+            clearTimeout(filmToastTimer);
+            filmToastTimer = setTimeout(() => {
+                els.filmToast.classList.remove('show');
+            }, 1200);
+            // Haptic feedback if available
+            if (navigator.vibrate) navigator.vibrate(15);
+        }
+
+        async function resolveDefaultFilm() {
+            // Saved choice wins for returning guests — they "loaded" their
+            // roll already.
+            const local = loadLocal();
+            if (local.film && FILM_PREVIEWS[local.film]) return local.film;
+            // First-time visitor: fall back to the couple's house default
+            // exposed via /api/settings (set with CAMERA_FILM env var).
+            try {
+                const res = await fetch('/api/settings', { credentials: 'same-origin' });
+                if (!res.ok) return 'off';
+                const settings = await res.json();
+                const film = settings && settings.camera && settings.camera.film;
+                return (film && FILM_PREVIEWS[film]) ? film : 'off';
+            } catch (_) {
+                return 'off';
+            }
+        }
+
         function init() {
             const local = loadLocal();
             if (local.displayName) els.displayName.value = local.displayName;
@@ -841,6 +1094,12 @@
 
             renderRoll();
             fetchRollStatus();
+            setupFilmPicker();
+            setupViewfinderSwipe();
+            // Resolve initial film: localStorage > server default > 'off'.
+            // Don't persist on this initial pass — only persist when the
+            // guest actively picks a chip.
+            resolveDefaultFilm().then(name => setActiveFilm(name, { persist: false }));
 
             els.openCameraBtn.addEventListener('click', openCamera);
             els.flipBtn.addEventListener('click', flipLens);

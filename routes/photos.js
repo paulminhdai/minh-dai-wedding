@@ -147,7 +147,13 @@ router.post('/',
         body('caption')
             .optional({ checkFalsy: true })
             .trim()
-            .isLength({ max: 280 }).withMessage('Caption must be under 280 characters')
+            .isLength({ max: 280 }).withMessage('Caption must be under 280 characters'),
+        body('film')
+            .optional({ checkFalsy: true })
+            .trim()
+            .toLowerCase()
+            .isIn(['off', 'none', ...photoService.SUPPORTED_FILMS])
+            .withMessage(`Film must be one of: off, ${photoService.SUPPORTED_FILMS.join(', ')}`)
     ],
     handleValidation,
     async (req, res) => {
@@ -167,7 +173,8 @@ router.post('/',
                 displayName: req.body.display_name,
                 caption: req.body.caption,
                 ipAddress,
-                userAgent
+                userAgent,
+                film: req.body.film
             });
 
             await DatabaseUtils.logAdminAction(
