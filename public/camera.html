@@ -295,6 +295,27 @@
         }
         .field textarea { resize: vertical; min-height: 60px; max-height: 140px; }
 
+        /* Locked photographer name (after the first upload, name is fixed
+           server-side - we mirror that here so guests see why the field is
+           inactive). */
+        .field.is-locked input[type="text"] {
+            background: rgba(212,175,55,0.08);
+            border-color: rgba(212,175,55,0.3);
+            color: var(--gold);
+            font-weight: 700;
+            cursor: default;
+        }
+        .field.is-locked input[type="text"]:focus {
+            border-color: rgba(212,175,55,0.6);
+        }
+        .field__hint {
+            display: block;
+            margin-top: 6px;
+            font-size: 0.72rem;
+            opacity: 0.55;
+            line-height: 1.4;
+        }
+
         /* Toast & overlay */
         .toast {
             position: fixed;
@@ -445,9 +466,12 @@
         <form class="form-card" id="photoForm" autocomplete="off">
             <h2>Your shot</h2>
 
-            <div class="field">
+            <div class="field" id="displayNameField">
                 <label for="displayName">Photographer name</label>
                 <input type="text" id="displayName" name="display_name" required maxlength="100" placeholder="e.g. John Doe">
+                <span class="field__hint" id="displayNameHint" hidden>
+                    Locked to your first submission. All your photos are credited to this name.
+                </span>
             </div>
 
             <div class="field">
@@ -576,6 +600,27 @@
             els.shutterBtn.disabled = !enabled;
         }
 
+        // Lock the photographer-name input once the device has uploaded any
+        // photos. The server enforces this too (see findOrCreatePhotographer
+        // in lib/photoService.js); this is the matching client-side UX so
+        // guests aren't tricked into thinking they can rename themselves.
+        function applyNameLock(rollData) {
+            const field = document.getElementById('displayNameField');
+            const hint = document.getElementById('displayNameHint');
+            if (!field || !hint) return;
+            const hasUploads = (rollData && rollData.count > 0) ||
+                               (state.count && state.count > 0);
+            if (hasUploads && els.displayName.value) {
+                field.classList.add('is-locked');
+                els.displayName.readOnly = true;
+                hint.hidden = false;
+            } else {
+                field.classList.remove('is-locked');
+                els.displayName.readOnly = false;
+                hint.hidden = true;
+            }
+        }
+
         async function fetchRollStatus() {
             try {
                 const headers = { 'X-Device-Id': state.deviceId || '' };
@@ -589,9 +634,12 @@
                 state.limit = data.limit;
                 state.count = data.count;
                 state.remaining = data.remaining;
-                if (data.displayName && !els.displayName.value) {
+                // Server's name is the source of truth - it always wins over any
+                // stale localStorage value the page might have prefilled.
+                if (data.displayName) {
                     els.displayName.value = data.displayName;
                 }
+                applyNameLock(data);
                 saveLocal({ deviceId: data.deviceId, displayName: data.displayName });
                 if (data.blocked) {
                     showToast('This device has been blocked. Please contact the couple.', 'error');
@@ -769,6 +817,10 @@
                 state.remaining = data.roll.remaining;
                 state.count = data.roll.count;
                 renderRoll();
+                // First successful upload locks the photographer name. Call
+                // before the toast so the field is already disabled by the
+                // time the user looks at the form again.
+                applyNameLock({ count: state.count });
                 showToast(`Saved! ${state.remaining} shot${state.remaining === 1 ? '' : 's'} left on your roll.`, 'success');
                 els.caption.value = '';
                 resetForNextShot();

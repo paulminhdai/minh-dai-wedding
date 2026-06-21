@@ -99,6 +99,77 @@
             display: none;
         }
 
+        /* ─── Dashboard tabs ─────────────────────────── */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 24px;
+            background: var(--soft-white);
+            padding: 6px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(44, 62, 80, 0.08);
+            position: sticky;
+            top: 12px;
+            z-index: 10;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 12px 18px;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #5a6c7d;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .tab-btn:hover {
+            color: var(--neptune-navy);
+            background: rgba(127, 179, 211, 0.12);
+        }
+        .tab-btn.is-active {
+            background: var(--neptune-navy);
+            color: var(--soft-white);
+            box-shadow: 0 4px 12px rgba(44, 62, 80, 0.25);
+        }
+        .tab-btn .tab-btn__icon {
+            font-size: 1.1rem;
+        }
+        .tab-btn .tab-btn__count {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.18);
+            padding: 1px 8px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            min-width: 24px;
+        }
+        .tab-btn:not(.is-active) .tab-btn__count {
+            background: rgba(127, 179, 211, 0.2);
+            color: var(--neptune-navy);
+        }
+        .tab-panel {
+            display: none;
+        }
+        .tab-panel.is-active {
+            display: block;
+            animation: tabFade 0.18s ease-out;
+        }
+        @keyframes tabFade {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 600px) {
+            .tab-btn { padding: 10px 8px; font-size: 0.85rem; }
+            .tab-btn .tab-btn__icon { font-size: 1rem; }
+        }
+
         .form-group {
             margin-bottom: 20px;
         }
@@ -510,25 +581,44 @@
 
         <div class="dashboard" id="dashboard">
             <button class="logout-btn" onclick="logout()">Logout</button>
-            
-            <div class="stats" id="stats">
-                <div class="stat-card">
-                    <div class="stat-number" id="totalRsvps">0</div>
-                    <div class="stat-label">Total RSVPs</div>
+
+            <nav class="tabs" role="tablist" aria-label="Admin sections">
+                <button type="button" class="tab-btn is-active" role="tab"
+                        data-tab="guests" aria-selected="true"
+                        aria-controls="tabPanelGuests" id="tabBtnGuests">
+                    <span class="tab-btn__icon" aria-hidden="true">🎟️</span>
+                    <span>Guests &amp; RSVPs</span>
+                    <span class="tab-btn__count" id="tabCountGuests">0</span>
+                </button>
+                <button type="button" class="tab-btn" role="tab"
+                        data-tab="camera" aria-selected="false"
+                        aria-controls="tabPanelCamera" id="tabBtnCamera">
+                    <span class="tab-btn__icon" aria-hidden="true">📷</span>
+                    <span>Camera &amp; Photos</span>
+                    <span class="tab-btn__count" id="tabCountCamera">0</span>
+                </button>
+            </nav>
+
+            <section class="tab-panel is-active" id="tabPanelGuests"
+                     role="tabpanel" aria-labelledby="tabBtnGuests" data-tab="guests">
+                <div class="stats" id="stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalRsvps">0</div>
+                        <div class="stat-label">Total RSVPs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="attending">0</div>
+                        <div class="stat-label">Attending</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="notAttending">0</div>
+                        <div class="stat-label">Not Attending</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalGuests">0</div>
+                        <div class="stat-label">Total Guests</div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="attending">0</div>
-                    <div class="stat-label">Attending</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="notAttending">0</div>
-                    <div class="stat-label">Not Attending</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="totalGuests">0</div>
-                    <div class="stat-label">Total Guests</div>
-                </div>
-            </div>
 
             <div class="rsvp-list">
                 <div class="rsvp-header">
@@ -560,6 +650,18 @@
                 </div>
             </div>
 
+            <div class="rsvp-list">
+                <div class="rsvp-header">
+                    Admin Activity Log
+                </div>
+                <div id="adminLogsContent" style="padding: 20px;">
+                    <div class="loading">Loading admin logs...</div>
+                </div>
+            </div>
+            </section>
+
+            <section class="tab-panel" id="tabPanelCamera"
+                     role="tabpanel" aria-labelledby="tabBtnCamera" data-tab="camera" hidden>
             <div class="rsvp-list">
                 <div class="rsvp-header">
                     📷 Camera Settings
@@ -636,15 +738,7 @@
                     </div>
                 </div>
             </div>
-
-            <div class="rsvp-list">
-                <div class="rsvp-header">
-                    Admin Activity Log
-                </div>
-                <div id="adminLogsContent" style="padding: 20px;">
-                    <div class="loading">Loading admin logs...</div>
-                </div>
-            </div>
+            </section>
         </div>
 
         <button class="refresh-btn" onclick="loadRsvpData()" title="Refresh Data" style="display: none;" id="refreshBtn">
@@ -888,6 +982,7 @@
             document.getElementById('totalRsvps').textContent = totalRsvps;
             document.getElementById('attending').textContent = attending;
             document.getElementById('notAttending').textContent = notAttending;
+            updateTabCounts({ rsvpCount: totalRsvps });
             document.getElementById('totalGuests').textContent = totalGuests;
 
             // Display RSVP table
@@ -1535,6 +1630,7 @@
             const hidden = photos.filter(p => p.is_hidden);
             document.getElementById('totalPhotos').textContent = visible.length;
             document.getElementById('hiddenPhotos').textContent = hidden.length;
+            updateTabCounts({ photoCount: visible.length });
             const status = document.getElementById('cameraStatus');
             const reveal = new Date(photosData.revealAt);
             if (photosData.revealed) {
@@ -1660,6 +1756,76 @@
                 addGuest();
             }
         });
+
+        // ============================================
+        // Dashboard tabs
+        // Lets the admin switch between Guests/RSVPs and Camera/Photos
+        // without scrolling. Active tab is persisted in localStorage and
+        // reflected in the URL hash so a refresh / direct link keeps state.
+        // ============================================
+        const TABS_STORAGE_KEY = 'wedding.admin.activeTab';
+
+        function setActiveTab(tab) {
+            const valid = ['guests', 'camera'];
+            if (!valid.includes(tab)) tab = 'guests';
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                const isActive = btn.dataset.tab === tab;
+                btn.classList.toggle('is-active', isActive);
+                btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            });
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                const isActive = panel.dataset.tab === tab;
+                panel.classList.toggle('is-active', isActive);
+                if (isActive) {
+                    panel.removeAttribute('hidden');
+                } else {
+                    panel.setAttribute('hidden', '');
+                }
+            });
+
+            try { localStorage.setItem(TABS_STORAGE_KEY, tab); } catch (_) {}
+            // Reflect in URL hash for shareable / refresh-stable deep links
+            // without polluting browser history.
+            if (window.location.hash !== '#' + tab) {
+                history.replaceState(null, '', '#' + tab);
+            }
+        }
+
+        function initialActiveTab() {
+            const fromHash = (window.location.hash || '').replace(/^#/, '');
+            if (fromHash === 'guests' || fromHash === 'camera') return fromHash;
+            try {
+                const stored = localStorage.getItem(TABS_STORAGE_KEY);
+                if (stored === 'guests' || stored === 'camera') return stored;
+            } catch (_) {}
+            return 'guests';
+        }
+
+        // Wire up tab clicks once the DOM is parsed.
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => setActiveTab(btn.dataset.tab));
+            });
+            window.addEventListener('hashchange', () => {
+                const tab = (window.location.hash || '').replace(/^#/, '');
+                if (tab === 'guests' || tab === 'camera') setActiveTab(tab);
+            });
+            setActiveTab(initialActiveTab());
+        });
+
+        // Keep the small badges on the tab buttons in sync with the live data.
+        // Called from existing renderers after each fetch.
+        function updateTabCounts({ rsvpCount, photoCount } = {}) {
+            if (typeof rsvpCount === 'number') {
+                const el = document.getElementById('tabCountGuests');
+                if (el) el.textContent = rsvpCount;
+            }
+            if (typeof photoCount === 'number') {
+                const el = document.getElementById('tabCountCamera');
+                if (el) el.textContent = photoCount;
+            }
+        }
 
         // Check if already authenticated on page load
         checkAuth();

@@ -418,9 +418,17 @@
 
     <style>
         .camera-popup[hidden] { display: none !important; }
+        /* Anchor explicitly to the viewport (avoid `inset: 0` which can be
+           miscomputed on iOS Safari when an ancestor creates a containing
+           block). Using dvh keeps the popup centered even as Safari's
+           address bar shows/hides. */
         .camera-popup {
             position: fixed;
-            inset: 0;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
             z-index: 9999;
             display: flex;
             align-items: center;
@@ -432,22 +440,27 @@
         .camera-popup.is-open { opacity: 1; }
         .camera-popup__backdrop {
             position: absolute;
-            inset: 0;
-            background: rgba(26, 37, 47, 0.7);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 18, 28, 0.78);
             backdrop-filter: blur(6px);
             -webkit-backdrop-filter: blur(6px);
         }
+        /* Card is always light-themed regardless of site theme so it stays
+           legible on the dark, blurred backdrop on every device. */
         .camera-popup__card {
             position: relative;
             max-width: 440px;
             width: 100%;
-            background: var(--bg-primary, #ffffff);
-            color: var(--text-primary, #2c3e50);
+            background: #ffffff;
+            color: #2c3e50;
             border-radius: 16px;
             padding: 36px 28px 28px;
             text-align: center;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
-            border: 1px solid rgba(212, 175, 55, 0.3);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(212, 175, 55, 0.5);
+            border: 1px solid rgba(212, 175, 55, 0.6);
             transform: translateY(16px) scale(0.97);
             transition: transform 0.35s cubic-bezier(.2,.8,.2,1);
             overflow: hidden;
@@ -478,13 +491,13 @@
             font-family: var(--font-serif, 'Playfair Display', serif);
             font-size: 1.6rem;
             margin: 0 0 12px;
-            color: var(--text-primary, #2c3e50);
+            color: #2c3e50;
             line-height: 1.25;
         }
         .camera-popup__body {
             font-size: 0.95rem;
             line-height: 1.55;
-            color: var(--text-secondary, #5a6c7d);
+            color: #5a6c7d;
             margin: 0 0 22px;
         }
         .camera-popup__actions {
@@ -511,13 +524,13 @@
         .camera-popup__skip {
             background: none;
             border: none;
-            color: var(--text-light, #8e9aaf);
+            color: #8e9aaf;
             font: inherit;
             font-size: 0.85rem;
             cursor: pointer;
             padding: 8px;
         }
-        .camera-popup__skip:hover { color: var(--text-secondary, #5a6c7d); }
+        .camera-popup__skip:hover { color: #5a6c7d; }
         .camera-popup__close {
             position: absolute;
             top: 10px;
@@ -526,25 +539,14 @@
             border: none;
             font-size: 1.6rem;
             line-height: 1;
-            color: var(--text-light, #8e9aaf);
+            color: #8e9aaf;
             cursor: pointer;
             padding: 6px 10px;
             border-radius: 6px;
         }
         .camera-popup__close:hover {
-            color: var(--text-primary, #2c3e50);
+            color: #2c3e50;
             background: rgba(0,0,0,0.04);
-        }
-
-        [data-theme="dark"] .camera-popup__card {
-            background: #2c3e50;
-            color: #f1f3f5;
-        }
-        [data-theme="dark"] .camera-popup__title { color: #f1f3f5; }
-        [data-theme="dark"] .camera-popup__body { color: #c8d0db; }
-        [data-theme="dark"] .camera-popup__cta {
-            background: #d4af37;
-            color: #1a252f;
         }
 
         @media (max-width: 480px) {
@@ -585,8 +587,22 @@
             // Slight delay so it doesn't fight with the initial paint or
             // landing animations.
             setTimeout(() => {
+                // Scroll back to the top first so any iOS quirks around
+                // position:fixed (or transformed ancestors creating their own
+                // containing block) can't park the popup off-screen.
+                try { window.scrollTo({ top: 0, behavior: 'instant' }); }
+                catch (_) { window.scrollTo(0, 0); }
                 popup.hidden = false;
-                requestAnimationFrame(() => popup.classList.add('is-open'));
+                requestAnimationFrame(() => {
+                    popup.classList.add('is-open');
+                    // Belt-and-suspenders: if the popup still ends up off-screen
+                    // due to an unexpected containing block, this brings the
+                    // card into view.
+                    const card = popup.querySelector('.camera-popup__card');
+                    if (card && typeof card.scrollIntoView === 'function') {
+                        card.scrollIntoView({ block: 'center', inline: 'center' });
+                    }
+                });
                 document.body.style.overflow = 'hidden';
             }, 800);
 
