@@ -554,21 +554,11 @@
     </style>
 
     <script>
-    // Disposable Camera popup. Loads /api/settings, shows the popup once per
-    // browser when enabled. Dismissal is keyed on the popup's content hash so
-    // updating the title or body re-shows the popup for returning guests.
+    // Disposable Camera popup. Loads /api/settings and shows the popup on
+    // every home-page load when enabled, so guests are reminded to contribute
+    // photos no matter how many times they visit.
     (function() {
         'use strict';
-        const STORAGE_KEY = 'wedding.cameraPopup.dismissedHash';
-
-        function hash(str) {
-            let h = 0;
-            for (let i = 0; i < str.length; i++) {
-                h = ((h << 5) - h) + str.charCodeAt(i);
-                h |= 0;
-            }
-            return String(h);
-        }
 
         async function init() {
             // Don't disrupt the experience if the API is unreachable
@@ -592,11 +582,6 @@
             bodyEl.textContent = popupCfg.body || bodyEl.textContent;
             ctaEl.textContent = popupCfg.cta || ctaEl.textContent;
 
-            const contentHash = hash([popupCfg.title, popupCfg.body, popupCfg.cta].join('|'));
-            let dismissed = '';
-            try { dismissed = localStorage.getItem(STORAGE_KEY) || ''; } catch (_) {}
-            if (dismissed === contentHash) return;
-
             // Slight delay so it doesn't fight with the initial paint or
             // landing animations.
             setTimeout(() => {
@@ -609,15 +594,10 @@
                 popup.classList.remove('is-open');
                 document.body.style.overflow = '';
                 setTimeout(() => { popup.hidden = true; }, 300);
-                try { localStorage.setItem(STORAGE_KEY, contentHash); } catch (_) {}
             }
 
             popup.addEventListener('click', (e) => {
                 if (e.target.closest('[data-popup-close]')) close();
-            });
-            // CTA also dismisses (clicking through is implicit acceptance)
-            ctaEl.addEventListener('click', () => {
-                try { localStorage.setItem(STORAGE_KEY, contentHash); } catch (_) {}
             });
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && !popup.hidden) close();

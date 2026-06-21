@@ -62,9 +62,17 @@
         .topbar a:hover { opacity: 1; }
         .topbar__title {
             font-family: 'Playfair Display', serif;
-            font-size: 1.05rem;
+            font-style: italic;
+            font-size: 1rem;
             color: var(--gold);
-            letter-spacing: 0.1em;
+            letter-spacing: 0.02em;
+            text-align: center;
+            flex: 1;
+            padding: 0 12px;
+            line-height: 1.25;
+        }
+        @media (max-width: 480px) {
+            .topbar__title { font-size: 0.85rem; }
         }
 
         /* ─── Camera body (the "disposable" device) ──── */
@@ -204,20 +212,29 @@
             margin-top: 18px;
         }
         .ctrl-btn {
-            border: none;
-            background: rgba(255,255,255,0.06);
-            color: var(--cream);
+            border: 1px solid rgba(26, 37, 47, 0.18);
+            background: rgba(26, 37, 47, 0.06);
+            color: var(--neptune-navy);
             border-radius: 12px;
             padding: 14px 12px;
             font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
             font-family: 'Special Elite', monospace;
             cursor: pointer;
             transition: all 0.2s ease;
             min-height: 56px;
             line-height: 1.2;
         }
-        .ctrl-btn:hover, .ctrl-btn:active { background: rgba(255,255,255,0.12); }
-        .ctrl-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+        .ctrl-btn:hover, .ctrl-btn:active {
+            background: rgba(26, 37, 47, 0.14);
+            border-color: rgba(26, 37, 47, 0.3);
+        }
+        .ctrl-btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            color: rgba(26, 37, 47, 0.7);
+        }
 
         .shutter {
             width: 88px; height: 88px;
@@ -374,7 +391,7 @@
 <body>
     <div class="topbar">
         <a href="/">← Back</a>
-        <div class="topbar__title">DISPOSABLE CAMERA</div>
+        <div class="topbar__title">Capture our wedding through your lens</div>
         <a href="/gallery">Gallery →</a>
     </div>
 
@@ -430,7 +447,7 @@
 
             <div class="field">
                 <label for="displayName">Photographer name</label>
-                <input type="text" id="displayName" name="display_name" required maxlength="100" placeholder="e.g. Linda Pham">
+                <input type="text" id="displayName" name="display_name" required maxlength="100" placeholder="e.g. John Doe">
             </div>
 
             <div class="field">
