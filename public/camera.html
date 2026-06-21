@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#1a252f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Disposable Camera · Đại & Minh</title>
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Nunito:wght@300;400;600;700&family=Special+Elite&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neptune-navy: #1a252f;
+            --primary: #2c3e50;
+            --dusty-blue: #7fb3d3;
+            --sage: #9caf88;
+            --gold: #d4af37;
+            --cream: #f8f6f3;
+            --soft-white: #fefefe;
+            --film-red: #c0392b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+            overscroll-behavior-y: contain;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background:
+                radial-gradient(circle at 20% 0%, #2c3e50 0%, transparent 50%),
+                radial-gradient(circle at 80% 100%, #455566 0%, transparent 50%),
+                #1a252f;
+            color: var(--cream);
+            min-height: 100vh;
+            min-height: 100dvh;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 500; }
+
+        /* ─── Header ─────────────────────────────────── */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(212,175,55,0.2);
+        }
+        .topbar a {
+            color: var(--cream);
+            text-decoration: none;
+            font-size: 0.85rem;
+            opacity: 0.7;
+        }
+        .topbar a:hover { opacity: 1; }
+        .topbar__title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.05rem;
+            color: var(--gold);
+            letter-spacing: 0.1em;
+        }
+
+        /* ─── Camera body (the "disposable" device) ──── */
+        .camera {
+            max-width: 460px;
+            margin: 24px auto;
+            padding: 0 16px;
+        }
+
+        .camera__shell {
+            background: linear-gradient(160deg, #fefefe 0%, #ece6dc 100%);
+            border-radius: 16px;
+            padding: 18px 18px 22px;
+            color: #2c3e50;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.7);
+            position: relative;
+            overflow: hidden;
+        }
+        .camera__shell::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                repeating-linear-gradient(45deg, rgba(0,0,0,0.015) 0 2px, transparent 2px 4px);
+            pointer-events: none;
+        }
+
+        .camera__brand {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            font-family: 'Special Elite', monospace;
+            font-size: 0.78rem;
+            color: #5a6c7d;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 10px;
+        }
+        .camera__brand strong { color: var(--film-red); letter-spacing: 0.2em; }
+
+        /* Viewfinder */
+        .viewfinder {
+            position: relative;
+            background: #0a0a0a;
+            border-radius: 8px;
+            aspect-ratio: 4 / 3;
+            overflow: hidden;
+            box-shadow: inset 0 0 0 6px #2c3e50, inset 0 0 0 8px #1a252f;
+        }
+        .viewfinder video,
+        .viewfinder img,
+        .viewfinder canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .viewfinder__placeholder {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #7f8c8d;
+            font-family: 'Special Elite', monospace;
+            font-size: 0.85rem;
+            padding: 20px;
+            gap: 8px;
+        }
+        .viewfinder__overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.45) 100%);
+        }
+        .viewfinder__crosshair {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 30px; height: 30px;
+            transform: translate(-50%, -50%);
+            border: 1px solid rgba(212,175,55,0.6);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .viewfinder__crosshair::before,
+        .viewfinder__crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(212,175,55,0.6);
+        }
+        .viewfinder__crosshair::before {
+            top: 50%; left: -10px; right: -10px; height: 1px;
+        }
+        .viewfinder__crosshair::after {
+            left: 50%; top: -10px; bottom: -10px; width: 1px;
+        }
+
+        /* Counter strip (shots remaining) */
+        .roll {
+            margin-top: 14px;
+            padding: 12px 14px;
+            background: #1a252f;
+            border-radius: 8px;
+            color: var(--cream);
+            font-family: 'Special Elite', monospace;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        .roll__label { font-size: 0.7rem; opacity: 0.6; letter-spacing: 0.15em; text-transform: uppercase; }
+        .roll__count { font-size: 1.4rem; color: var(--gold); }
+        .roll__bar {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(24, 1fr);
+            gap: 2px;
+            margin: 0 8px;
+        }
+        .roll__bar span {
+            height: 8px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 1px;
+        }
+        .roll__bar span.used { background: var(--gold); }
+
+        /* Controls */
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 16px;
+            align-items: center;
+            margin-top: 18px;
+        }
+        .ctrl-btn {
+            border: none;
+            background: rgba(255,255,255,0.06);
+            color: var(--cream);
+            border-radius: 12px;
+            padding: 14px 12px;
+            font-size: 0.85rem;
+            font-family: 'Special Elite', monospace;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 56px;
+            line-height: 1.2;
+        }
+        .ctrl-btn:hover, .ctrl-btn:active { background: rgba(255,255,255,0.12); }
+        .ctrl-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        .shutter {
+            width: 88px; height: 88px;
+            border-radius: 50%;
+            border: 4px solid #c0392b;
+            background: radial-gradient(circle at 35% 30%, #f1f3f5, #d5d8dc 70%, #95a5a6);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.6), inset 0 -4px 8px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: transform 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #c0392b;
+            font-size: 0.65rem;
+            font-family: 'Special Elite', monospace;
+            letter-spacing: 0.15em;
+        }
+        .shutter:active { transform: scale(0.94); box-shadow: 0 3px 8px rgba(0,0,0,0.5); }
+        .shutter:disabled { background: #95a5a6; cursor: not-allowed; }
+
+        /* Form area below the camera */
+        .form-card {
+            margin-top: 18px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(212,175,55,0.15);
+            border-radius: 12px;
+            padding: 16px;
+        }
+        .form-card h2 {
+            font-size: 1rem;
+            color: var(--gold);
+            margin-bottom: 8px;
+        }
+        .field { margin-top: 12px; }
+        .field label {
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            opacity: 0.6;
+            margin-bottom: 6px;
+        }
+        .field input[type="text"],
+        .field input[type="file"],
+        .field textarea {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: var(--cream);
+            font: inherit;
+            font-size: 0.95rem;
+        }
+        .field input:focus, .field textarea:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+        .field textarea { resize: vertical; min-height: 60px; max-height: 140px; }
+
+        /* Toast & overlay */
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: max(24px, env(safe-area-inset-bottom));
+            transform: translateX(-50%) translateY(20px);
+            background: var(--neptune-navy);
+            color: var(--cream);
+            padding: 12px 18px;
+            border-radius: 999px;
+            border: 1px solid rgba(212,175,55,0.4);
+            font-size: 0.9rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            max-width: 92vw;
+            text-align: center;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .toast--error { border-color: var(--film-red); }
+        .toast--success { border-color: var(--sage); }
+
+        /* Flash effect when shutter fires */
+        .flash {
+            position: fixed;
+            inset: 0;
+            background: white;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 999;
+            transition: opacity 0.15s ease;
+        }
+        .flash.fire { opacity: 1; transition: opacity 0.05s ease; }
+
+        /* Roll-full overlay */
+        .roll-full {
+            position: fixed;
+            inset: 0;
+            background: rgba(26, 37, 47, 0.92);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1100;
+            padding: 24px;
+        }
+        .roll-full.show { display: flex; }
+        .roll-full__card {
+            text-align: center;
+            max-width: 380px;
+        }
+        .roll-full h2 {
+            color: var(--gold);
+            font-size: 1.6rem;
+            margin-bottom: 12px;
+        }
+        .roll-full p { opacity: 0.85; margin-bottom: 20px; line-height: 1.5; }
+        .roll-full a {
+            display: inline-block;
+            padding: 12px 28px;
+            background: var(--gold);
+            color: var(--neptune-navy);
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 4px;
+        }
+        .roll-full a.secondary {
+            background: transparent;
+            color: var(--cream);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .small-print {
+            text-align: center;
+            font-size: 0.75rem;
+            opacity: 0.5;
+            padding: 24px 16px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 380px) {
+            .roll__bar { display: none; }
+            .controls { gap: 10px; }
+            .ctrl-btn { padding: 12px 8px; font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <a href="/">← Back</a>
+        <div class="topbar__title">DISPOSABLE CAMERA</div>
+        <a href="/gallery">Gallery →</a>
+    </div>
+
+    <main class="camera">
+        <div class="camera__shell">
+            <div class="camera__brand">
+                <span>Đ &amp; M · 2026</span>
+                <strong>· KODACOLOR ·</strong>
+                <span>ISO 400</span>
+            </div>
+
+            <div class="viewfinder">
+                <video id="preview" autoplay muted playsinline style="display:none;"></video>
+                <img id="captured" alt="" style="display:none;">
+                <canvas id="canvas" style="display:none;"></canvas>
+                <div class="viewfinder__placeholder" id="placeholder">
+                    <span>📷</span>
+                    <span>Tap "OPEN CAMERA" to begin</span>
+                    <span style="opacity:0.6">or use UPLOAD to pick a photo</span>
+                </div>
+                <div class="viewfinder__overlay"></div>
+                <div class="viewfinder__crosshair"></div>
+            </div>
+
+            <div class="roll">
+                <div>
+                    <div class="roll__label">Shots</div>
+                    <div class="roll__count"><span id="rollCount">24</span></div>
+                </div>
+                <div class="roll__bar" id="rollBar" aria-hidden="true"></div>
+                <div style="text-align:right">
+                    <div class="roll__label">Of</div>
+                    <div class="roll__count" id="rollLimit">24</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="ctrl-btn" id="openCameraBtn" type="button">OPEN<br>CAMERA</button>
+                <button class="shutter" id="shutterBtn" type="button" disabled>SHUTTER</button>
+                <button class="ctrl-btn" id="flipBtn" type="button" disabled>FLIP<br>LENS</button>
+            </div>
+
+            <input type="file" id="filePicker" accept="image/*" capture="environment" style="display:none;">
+
+            <div class="controls" style="margin-top:10px;grid-template-columns:1fr 1fr">
+                <button class="ctrl-btn" id="uploadFileBtn" type="button">📁 UPLOAD<br>FROM PHONE</button>
+                <button class="ctrl-btn" id="retakeBtn" type="button" disabled>↺ RETAKE</button>
+            </div>
+        </div>
+
+        <form class="form-card" id="photoForm" autocomplete="off">
+            <h2>Your shot</h2>
+
+            <div class="field">
+                <label for="displayName">Photographer name</label>
+                <input type="text" id="displayName" name="display_name" required maxlength="100" placeholder="e.g. Linda Pham">
+            </div>
+
+            <div class="field">
+                <label for="caption">Caption (optional)</label>
+                <textarea id="caption" name="caption" maxlength="280" placeholder="A note about this moment..."></textarea>
+            </div>
+
+            <div class="field">
+                <button class="ctrl-btn" id="submitBtn" type="submit" style="width:100%;background:var(--gold);color:var(--neptune-navy);font-weight:700;" disabled>
+                    ADD TO ROLL
+                </button>
+            </div>
+        </form>
+
+        <p class="small-print">
+            Photos appear in the shared gallery after the wedding.<br>
+            Each guest gets <strong id="limitFootnote">24</strong> shots — choose your moments well 🎞
+        </p>
+    </main>
+
+    <div class="flash" id="flash"></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <div class="roll-full" id="rollFull">
+        <div class="roll-full__card">
+            <h2>🎞 That's a wrap!</h2>
+            <p id="rollFullMsg">You've used all 24 shots from your roll. Thanks for sharing your view of the night!</p>
+            <a href="/gallery">See the gallery</a>
+            <a href="/" class="secondary">Back home</a>
+        </div>
+    </div>
+
+    <script>
+    (() => {
+        'use strict';
+
+        const els = {
+            preview: document.getElementById('preview'),
+            captured: document.getElementById('captured'),
+            canvas: document.getElementById('canvas'),
+            placeholder: document.getElementById('placeholder'),
+            openCameraBtn: document.getElementById('openCameraBtn'),
+            shutterBtn: document.getElementById('shutterBtn'),
+            flipBtn: document.getElementById('flipBtn'),
+            uploadFileBtn: document.getElementById('uploadFileBtn'),
+            filePicker: document.getElementById('filePicker'),
+            retakeBtn: document.getElementById('retakeBtn'),
+            submitBtn: document.getElementById('submitBtn'),
+            displayName: document.getElementById('displayName'),
+            caption: document.getElementById('caption'),
+            form: document.getElementById('photoForm'),
+            rollCount: document.getElementById('rollCount'),
+            rollLimit: document.getElementById('rollLimit'),
+            rollBar: document.getElementById('rollBar'),
+            limitFootnote: document.getElementById('limitFootnote'),
+            flash: document.getElementById('flash'),
+            toast: document.getElementById('toast'),
+            rollFull: document.getElementById('rollFull'),
+            rollFullMsg: document.getElementById('rollFullMsg')
+        };
+
+        const STORAGE_KEY = 'wedding.camera.v1';
+
+        const state = {
+            stream: null,
+            facingMode: 'environment',
+            capturedBlob: null,
+            limit: 24,
+            count: 0,
+            remaining: 24,
+            deviceId: null
+        };
+
+        function loadLocal() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return {};
+                return JSON.parse(raw);
+            } catch { return {}; }
+        }
+
+        function saveLocal(patch) {
+            const prev = loadLocal();
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...prev, ...patch }));
+            } catch (_) { /* localStorage may be disabled in private browsing */ }
+        }
+
+        function showToast(msg, kind = '') {
+            els.toast.textContent = msg;
+            els.toast.className = 'toast show' + (kind ? ' toast--' + kind : '');
+            clearTimeout(showToast._t);
+            showToast._t = setTimeout(() => {
+                els.toast.classList.remove('show');
+            }, 3200);
+        }
+
+        function flashFire() {
+            els.flash.classList.add('fire');
+            setTimeout(() => els.flash.classList.remove('fire'), 120);
+            // Soft vibrate, ignored on devices without support
+            if (navigator.vibrate) try { navigator.vibrate(20); } catch (_) {}
+        }
+
+        function renderRoll() {
+            els.rollCount.textContent = state.remaining;
+            els.rollLimit.textContent = state.limit;
+            els.limitFootnote.textContent = state.limit;
+
+            // Build the dotted "shots used" film strip
+            const segments = state.limit;
+            els.rollBar.innerHTML = '';
+            for (let i = 0; i < segments; i++) {
+                const span = document.createElement('span');
+                if (i < state.count) span.className = 'used';
+                els.rollBar.appendChild(span);
+            }
+
+            if (state.remaining <= 0) {
+                els.rollFull.classList.add('show');
+                els.rollFullMsg.textContent = `You've used all ${state.limit} shots from your roll. Thanks for sharing your view of the night!`;
+            }
+        }
+
+        function setShutterEnabled(enabled) {
+            els.shutterBtn.disabled = !enabled;
+        }
+
+        async function fetchRollStatus() {
+            try {
+                const headers = { 'X-Device-Id': state.deviceId || '' };
+                const res = await fetch('/api/photos/roll-status', {
+                    credentials: 'include',
+                    headers
+                });
+                if (!res.ok) throw new Error('roll-status ' + res.status);
+                const data = await res.json();
+                state.deviceId = data.deviceId;
+                state.limit = data.limit;
+                state.count = data.count;
+                state.remaining = data.remaining;
+                if (data.displayName && !els.displayName.value) {
+                    els.displayName.value = data.displayName;
+                }
+                saveLocal({ deviceId: data.deviceId, displayName: data.displayName });
+                if (data.blocked) {
+                    showToast('This device has been blocked. Please contact the couple.', 'error');
+                    setShutterEnabled(false);
+                }
+                renderRoll();
+            } catch (e) {
+                console.error(e);
+                showToast('Could not load your roll status. Check your connection.', 'error');
+            }
+        }
+
+        // ─── Camera ────────────────────────────────
+        async function openCamera() {
+            try {
+                if (state.stream) {
+                    state.stream.getTracks().forEach(t => t.stop());
+                }
+                const constraints = {
+                    audio: false,
+                    video: {
+                        facingMode: { ideal: state.facingMode },
+                        width: { ideal: 1920 },
+                        height: { ideal: 1440 }
+                    }
+                };
+                state.stream = await navigator.mediaDevices.getUserMedia(constraints);
+                els.preview.srcObject = state.stream;
+                els.preview.style.display = 'block';
+                els.captured.style.display = 'none';
+                els.placeholder.style.display = 'none';
+                setShutterEnabled(true);
+                els.flipBtn.disabled = false;
+                els.retakeBtn.disabled = true;
+                els.submitBtn.disabled = true;
+                state.capturedBlob = null;
+            } catch (e) {
+                console.error('Camera error', e);
+                if (e.name === 'NotAllowedError') {
+                    showToast('Camera access denied. Use UPLOAD instead.', 'error');
+                } else if (e.name === 'NotFoundError') {
+                    showToast('No camera detected. Use UPLOAD instead.', 'error');
+                } else {
+                    showToast('Camera unavailable. Use UPLOAD instead.', 'error');
+                }
+            }
+        }
+
+        async function flipLens() {
+            state.facingMode = state.facingMode === 'environment' ? 'user' : 'environment';
+            if (state.stream) await openCamera();
+        }
+
+        function captureFromVideo() {
+            const video = els.preview;
+            const canvas = els.canvas;
+            const w = video.videoWidth || 1280;
+            const h = video.videoHeight || 960;
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            // If user is using front camera, flip horizontally so the saved
+            // image matches what they see in the viewfinder.
+            if (state.facingMode === 'user') {
+                ctx.translate(w, 0);
+                ctx.scale(-1, 1);
+            }
+            ctx.drawImage(video, 0, 0, w, h);
+            return new Promise(resolve => {
+                canvas.toBlob(b => resolve(b), 'image/jpeg', 0.92);
+            });
+        }
+
+        function showCaptured(blob) {
+            state.capturedBlob = blob;
+            const url = URL.createObjectURL(blob);
+            els.captured.src = url;
+            els.captured.style.display = 'block';
+            els.preview.style.display = 'none';
+            els.placeholder.style.display = 'none';
+            els.retakeBtn.disabled = false;
+            els.submitBtn.disabled = false;
+            setShutterEnabled(false);
+        }
+
+        async function takeShot() {
+            if (state.remaining <= 0) {
+                els.rollFull.classList.add('show');
+                return;
+            }
+            flashFire();
+            const blob = await captureFromVideo();
+            if (!blob) {
+                showToast('Could not capture the photo.', 'error');
+                return;
+            }
+            showCaptured(blob);
+        }
+
+        function resetForNextShot() {
+            state.capturedBlob = null;
+            els.captured.src = '';
+            els.captured.style.display = 'none';
+            els.retakeBtn.disabled = true;
+            els.submitBtn.disabled = true;
+            if (state.stream) {
+                els.preview.style.display = 'block';
+                setShutterEnabled(true);
+            } else {
+                els.placeholder.style.display = 'flex';
+            }
+        }
+
+        // ─── File picker fallback (also supports phone camera via capture attr) ──
+        function handleFilePick(e) {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                showToast('That file is not an image.', 'error');
+                return;
+            }
+            if (file.size > 15 * 1024 * 1024) {
+                showToast('Photo too large (max 15MB).', 'error');
+                return;
+            }
+            showCaptured(file);
+            e.target.value = '';
+        }
+
+        // ─── Submit upload ─────────────────────────
+        async function submitPhoto(ev) {
+            ev.preventDefault();
+            if (!state.capturedBlob) {
+                showToast('Take or upload a photo first.', 'error');
+                return;
+            }
+            const name = els.displayName.value.trim();
+            if (name.length < 1) {
+                showToast('Please enter your name first.', 'error');
+                els.displayName.focus();
+                return;
+            }
+            saveLocal({ displayName: name });
+
+            els.submitBtn.disabled = true;
+            els.submitBtn.textContent = 'DEVELOPING...';
+            try {
+                const fd = new FormData();
+                fd.append('photo', state.capturedBlob, 'shot.jpg');
+                fd.append('display_name', name);
+                if (els.caption.value.trim()) fd.append('caption', els.caption.value.trim());
+                if (state.deviceId) fd.append('device_id', state.deviceId);
+
+                const headers = state.deviceId ? { 'X-Device-Id': state.deviceId } : {};
+                const res = await fetch('/api/photos', {
+                    method: 'POST',
+                    body: fd,
+                    credentials: 'include',
+                    headers
+                });
+
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    if (data.code === 'ROLL_FULL') {
+                        state.remaining = 0;
+                        state.count = data.count || state.limit;
+                        renderRoll();
+                        showToast("Your roll's full!", 'error');
+                    } else {
+                        showToast(data.error || 'Upload failed. Please try again.', 'error');
+                    }
+                    return;
+                }
+
+                state.remaining = data.roll.remaining;
+                state.count = data.roll.count;
+                renderRoll();
+                showToast(`Saved! ${state.remaining} shot${state.remaining === 1 ? '' : 's'} left on your roll.`, 'success');
+                els.caption.value = '';
+                resetForNextShot();
+            } catch (e) {
+                console.error(e);
+                showToast('Upload failed. Check your connection.', 'error');
+            } finally {
+                els.submitBtn.textContent = 'ADD TO ROLL';
+                els.submitBtn.disabled = !state.capturedBlob;
+            }
+        }
+
+        // ─── Wire up ──────────────────────────────
+        function init() {
+            const local = loadLocal();
+            if (local.displayName) els.displayName.value = local.displayName;
+            if (local.deviceId) state.deviceId = local.deviceId;
+
+            renderRoll();
+            fetchRollStatus();
+
+            els.openCameraBtn.addEventListener('click', openCamera);
+            els.flipBtn.addEventListener('click', flipLens);
+            els.shutterBtn.addEventListener('click', takeShot);
+            els.retakeBtn.addEventListener('click', resetForNextShot);
+            els.uploadFileBtn.addEventListener('click', () => els.filePicker.click());
+            els.filePicker.addEventListener('change', handleFilePick);
+            els.form.addEventListener('submit', submitPhoto);
+
+            // Persist name as the user types so the next session is seamless
+            els.displayName.addEventListener('change', () => {
+                saveLocal({ displayName: els.displayName.value.trim() });
+            });
+
+            // Stop the stream when the user leaves the page
+            window.addEventListener('pagehide', () => {
+                if (state.stream) {
+                    state.stream.getTracks().forEach(t => t.stop());
+                    state.stream = null;
+                }
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+    </script>
+</body>
+</html>

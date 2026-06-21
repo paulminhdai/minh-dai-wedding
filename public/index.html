@@ -392,6 +392,246 @@
         </div>
     </footer>
 
+    <!-- Disposable Camera "what's new" popup. Hidden by default, shown by JS
+         on first visit when admin has enabled it. -->
+    <div class="camera-popup" id="cameraPopup" role="dialog" aria-modal="true"
+         aria-labelledby="cameraPopupTitle" aria-describedby="cameraPopupBody"
+         hidden>
+        <div class="camera-popup__backdrop" data-popup-close="1"></div>
+        <div class="camera-popup__card">
+            <button class="camera-popup__close" type="button"
+                    data-popup-close="1" aria-label="Close">×</button>
+            <div class="camera-popup__icon" aria-hidden="true">🎞</div>
+            <div class="camera-popup__eyebrow">New for our day</div>
+            <h2 class="camera-popup__title" id="cameraPopupTitle">📷 Be our photographer</h2>
+            <p class="camera-popup__body" id="cameraPopupBody">
+                Help us capture every angle of our day! Each guest gets a 24-shot
+                disposable camera roll. Snap candid moments throughout the wedding —
+                every photo will be revealed in a shared gallery the day after.
+            </p>
+            <div class="camera-popup__actions">
+                <a href="/camera" class="camera-popup__cta" id="cameraPopupCta">Pick up your camera</a>
+                <button type="button" class="camera-popup__skip" data-popup-close="1">Maybe later</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .camera-popup[hidden] { display: none !important; }
+        .camera-popup {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .camera-popup.is-open { opacity: 1; }
+        .camera-popup__backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(26, 37, 47, 0.7);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+        .camera-popup__card {
+            position: relative;
+            max-width: 440px;
+            width: 100%;
+            background: var(--bg-primary, #ffffff);
+            color: var(--text-primary, #2c3e50);
+            border-radius: 16px;
+            padding: 36px 28px 28px;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            transform: translateY(16px) scale(0.97);
+            transition: transform 0.35s cubic-bezier(.2,.8,.2,1);
+            overflow: hidden;
+        }
+        .camera-popup.is-open .camera-popup__card {
+            transform: translateY(0) scale(1);
+        }
+        .camera-popup__card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #d4af37, #a8c0d4, #d4af37);
+        }
+        .camera-popup__icon {
+            font-size: 2.2rem;
+            margin-bottom: 4px;
+        }
+        .camera-popup__eyebrow {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.25em;
+            color: #d4af37;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .camera-popup__title {
+            font-family: var(--font-serif, 'Playfair Display', serif);
+            font-size: 1.6rem;
+            margin: 0 0 12px;
+            color: var(--text-primary, #2c3e50);
+            line-height: 1.25;
+        }
+        .camera-popup__body {
+            font-size: 0.95rem;
+            line-height: 1.55;
+            color: var(--text-secondary, #5a6c7d);
+            margin: 0 0 22px;
+        }
+        .camera-popup__actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .camera-popup__cta {
+            display: inline-block;
+            background: #2c3e50;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 13px 24px;
+            border-radius: 999px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            box-shadow: 0 6px 18px rgba(44, 62, 80, 0.25);
+        }
+        .camera-popup__cta:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 22px rgba(44, 62, 80, 0.35);
+        }
+        .camera-popup__skip {
+            background: none;
+            border: none;
+            color: var(--text-light, #8e9aaf);
+            font: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 8px;
+        }
+        .camera-popup__skip:hover { color: var(--text-secondary, #5a6c7d); }
+        .camera-popup__close {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            background: none;
+            border: none;
+            font-size: 1.6rem;
+            line-height: 1;
+            color: var(--text-light, #8e9aaf);
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 6px;
+        }
+        .camera-popup__close:hover {
+            color: var(--text-primary, #2c3e50);
+            background: rgba(0,0,0,0.04);
+        }
+
+        [data-theme="dark"] .camera-popup__card {
+            background: #2c3e50;
+            color: #f1f3f5;
+        }
+        [data-theme="dark"] .camera-popup__title { color: #f1f3f5; }
+        [data-theme="dark"] .camera-popup__body { color: #c8d0db; }
+        [data-theme="dark"] .camera-popup__cta {
+            background: #d4af37;
+            color: #1a252f;
+        }
+
+        @media (max-width: 480px) {
+            .camera-popup__card { padding: 32px 22px 22px; }
+            .camera-popup__title { font-size: 1.35rem; }
+        }
+    </style>
+
+    <script>
+    // Disposable Camera popup. Loads /api/settings, shows the popup once per
+    // browser when enabled. Dismissal is keyed on the popup's content hash so
+    // updating the title or body re-shows the popup for returning guests.
+    (function() {
+        'use strict';
+        const STORAGE_KEY = 'wedding.cameraPopup.dismissedHash';
+
+        function hash(str) {
+            let h = 0;
+            for (let i = 0; i < str.length; i++) {
+                h = ((h << 5) - h) + str.charCodeAt(i);
+                h |= 0;
+            }
+            return String(h);
+        }
+
+        async function init() {
+            // Don't disrupt the experience if the API is unreachable
+            let settings;
+            try {
+                const res = await fetch('/api/settings', { credentials: 'same-origin' });
+                if (!res.ok) return;
+                settings = await res.json();
+            } catch (_) { return; }
+
+            const popupCfg = settings && settings.cameraPopup;
+            if (!popupCfg || !popupCfg.enabled) return;
+
+            const popup = document.getElementById('cameraPopup');
+            const titleEl = document.getElementById('cameraPopupTitle');
+            const bodyEl = document.getElementById('cameraPopupBody');
+            const ctaEl = document.getElementById('cameraPopupCta');
+            if (!popup) return;
+
+            titleEl.textContent = popupCfg.title || titleEl.textContent;
+            bodyEl.textContent = popupCfg.body || bodyEl.textContent;
+            ctaEl.textContent = popupCfg.cta || ctaEl.textContent;
+
+            const contentHash = hash([popupCfg.title, popupCfg.body, popupCfg.cta].join('|'));
+            let dismissed = '';
+            try { dismissed = localStorage.getItem(STORAGE_KEY) || ''; } catch (_) {}
+            if (dismissed === contentHash) return;
+
+            // Slight delay so it doesn't fight with the initial paint or
+            // landing animations.
+            setTimeout(() => {
+                popup.hidden = false;
+                requestAnimationFrame(() => popup.classList.add('is-open'));
+                document.body.style.overflow = 'hidden';
+            }, 800);
+
+            function close() {
+                popup.classList.remove('is-open');
+                document.body.style.overflow = '';
+                setTimeout(() => { popup.hidden = true; }, 300);
+                try { localStorage.setItem(STORAGE_KEY, contentHash); } catch (_) {}
+            }
+
+            popup.addEventListener('click', (e) => {
+                if (e.target.closest('[data-popup-close]')) close();
+            });
+            // CTA also dismisses (clicking through is implicit acceptance)
+            ctaEl.addEventListener('click', () => {
+                try { localStorage.setItem(STORAGE_KEY, contentHash); } catch (_) {}
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !popup.hidden) close();
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+    </script>
+
     <script src="main.js" defer></script>
 </body>
 </html>
