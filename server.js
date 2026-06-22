@@ -32,6 +32,7 @@ const {
 } = require('./middleware/validation');
 const photoRoutes = require('./routes/photos');
 const settingsRoutes = require('./routes/settings');
+const betsRoutes = require('./routes/bets');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -284,6 +285,9 @@ app.get('/camera', (req, res) => {
 app.get('/gallery', (req, res) => {
     res.sendFile(path.join(PUBLIC_DIR, 'gallery.html'));
 });
+app.get('/bets', (req, res) => {
+    res.sendFile(path.join(PUBLIC_DIR, 'bets.html'));
+});
 
 // Serve locally-stored uploads (only used when GOOGLE_DRIVE_FOLDER_ID isn't
 // configured; in production photos live on Google Drive).
@@ -301,6 +305,10 @@ app.use('/api/admin', photoRoutes.adminRouter);
 // Site-wide settings (camera popup toggle, gallery reveal date)
 app.use('/api/settings', settingsRoutes.publicRouter);
 app.use('/api/admin/settings', settingsRoutes.adminRouter);
+
+// Wedding "Place Your Bets" Game
+app.use('/api/bets', betsRoutes.publicRouter);
+app.use('/api/admin/bets', betsRoutes.adminRouter);
 
 // ============================================
 // AUTHENTICATION ROUTES

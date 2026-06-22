@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#1a252f">
+    <title>Place Your Bets · Đại & Minh</title>
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Nunito:wght@300;400;600;700&family=Special+Elite&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neptune-navy: #1a252f;
+            --primary: #2c3e50;
+            --dusty-blue: #7fb3d3;
+            --sage: #9caf88;
+            --gold: #d4af37;
+            --cream: #f8f6f3;
+            --soft-white: #fefefe;
+            --film-red: #c0392b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background:
+                radial-gradient(circle at 20% 0%, #2c3e50 0%, transparent 50%),
+                radial-gradient(circle at 80% 100%, #455566 0%, transparent 50%),
+                #1a252f;
+            color: var(--cream);
+            min-height: 100vh;
+            min-height: 100dvh;
+            padding: 20px;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 0 20px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(212,175,55,0.2);
+        }
+        .topbar a {
+            color: var(--cream);
+            text-decoration: none;
+            font-size: 0.85rem;
+            opacity: 0.7;
+        }
+        .topbar__title {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 1.1rem;
+            color: var(--gold);
+            text-align: center;
+            flex: 1;
+        }
+
+        /* ─── Betting Slip UI ────────────────────────── */
+        .slip {
+            max-width: 460px;
+            margin: 0 auto;
+            background: #fdfbf7;
+            color: var(--neptune-navy);
+            border-radius: 4px;
+            padding: 30px 24px;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* Perforated edge effect */
+        .slip::before, .slip::after {
+            content: '';
+            position: absolute;
+            left: 0; right: 0;
+            height: 10px;
+            background-size: 20px 20px;
+            background-repeat: repeat-x;
+        }
+        .slip::before {
+            top: -5px;
+            background-image: radial-gradient(circle at 10px 0px, transparent 8px, #fdfbf7 8.5px);
+        }
+        .slip::after {
+            bottom: -5px;
+            background-image: radial-gradient(circle at 10px 10px, transparent 8px, #fdfbf7 8.5px);
+        }
+
+        .slip__header {
+            text-align: center;
+            border-bottom: 2px solid var(--neptune-navy);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        .slip__title {
+            font-family: 'Special Elite', monospace;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 4px;
+        }
+        .slip__subtitle {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            opacity: 0.7;
+        }
+
+        .form-group { margin-bottom: 24px; }
+        .form-label {
+            display: block;
+            font-family: 'Special Elite', monospace;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            border-left: 4px solid var(--gold);
+            padding-left: 10px;
+        }
+
+        .input-text {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 1rem;
+            background: white;
+        }
+        .input-text:focus { outline: none; border-color: var(--gold); }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .option-btn {
+            background: white;
+            border: 2px solid #eee;
+            padding: 12px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .option-btn:hover { border-color: #ccc; }
+        .option-btn.selected {
+            background: var(--neptune-navy);
+            color: white;
+            border-color: var(--neptune-navy);
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: var(--gold);
+            color: var(--neptune-navy);
+            border: none;
+            padding: 16px;
+            font-family: 'Special Elite', monospace;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 4px 0 #b38f28;
+            transition: all 0.1s;
+        }
+        .submit-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #b38f28; }
+        .submit-btn:disabled { background: #ccc; box-shadow: 0 4px 0 #999; cursor: not-allowed; }
+
+        .success-state {
+            display: none;
+            text-align: center;
+            padding: 40px 0;
+        }
+        .success-state h2 { color: var(--neptune-navy); margin-bottom: 15px; }
+        .success-state p { margin-bottom: 25px; opacity: 0.8; }
+
+        .toast {
+            position: fixed;
+            bottom: 30px; left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            z-index: 2000;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <a href="/">← Back</a>
+        <div class="topbar__title">Đ & M · 2026</div>
+        <div style="width:50px"></div>
+    </div>
+
+    <main class="slip" id="bettingSlip">
+        <div id="formState">
+            <div class="slip__header">
+                <h1 class="slip__title">Place Your Bets</h1>
+                <p class="slip__subtitle">Official Wedding Prediction Game</p>
+            </div>
+
+            <form id="betsForm">
+                <div class="form-group">
+                    <label class="form-label">Your Name</label>
+                    <input type="text" id="guestName" class="input-text" required placeholder="Enter your full name">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Who will cry first?</label>
+                    <div class="options-grid" data-key="first_tear">
+                        <button type="button" class="option-btn" data-value="bride">Đại (Bride)</button>
+                        <button type="button" class="option-btn" data-value="groom">Minh (Groom)</button>
+                        <button type="button" class="option-btn" data-value="both">Both at once</button>
+                        <button type="button" class="option-btn" data-value="neither">Neither</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Longest speech length?</label>
+                    <div class="options-grid" data-key="speech_length">
+                        <button type="button" class="option-btn" data-value="under_5">Under 5 mins</button>
+                        <button type="button" class="option-btn" data-value="5_to_10">5 - 10 mins</button>
+                        <button type="button" class="option-btn" data-value="over_10">Over 10 mins</button>
+                        <button type="button" class="option-btn" data-value="no_speeches">No speeches!</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Will there be a "dip" during the first dance?</label>
+                    <div class="options-grid" data-key="dance_dip">
+                        <button type="button" class="option-btn" data-value="yes">Yes, definitely</button>
+                        <button type="button" class="option-btn" data-value="no">No way</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">SUBMIT BETS</button>
+            </form>
+        </div>
+
+        <div id="successState" class="success-state">
+            <div style="font-size: 4rem; margin-bottom: 20px;">🎟</div>
+            <h2>Bets Placed!</h2>
+            <p>Your predictions have been locked in. Good luck!</p>
+            <a href="/" class="option-btn" style="display:inline-block; text-decoration:none; background:var(--gold); border:none; color:var(--neptune-navy); font-weight:700;">Back to Home</a>
+        </div>
+    </main>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        const state = {
+            predictions: {},
+            hasBet: false
+        };
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.display = 'block';
+            setTimeout(() => { t.style.display = 'none'; }, 3000);
+        }
+
+        async function checkStatus() {
+            try {
+                const res = await fetch('/api/bets/status');
+                const data = await res.json();
+                if (data.hasBet) {
+                    document.getElementById('formState').style.display = 'none';
+                    document.getElementById('successState').style.display = 'block';
+                    state.hasBet = true;
+                }
+                if (data.bet && data.bet.guestName) {
+                    document.getElementById('guestName').value = data.bet.guestName;
+                }
+            } catch (e) {
+                console.error('Status check failed', e);
+            }
+        }
+
+        document.querySelectorAll('.options-grid').forEach(grid => {
+            const key = grid.dataset.key;
+            grid.addEventListener('click', e => {
+                const btn = e.target.closest('.option-btn');
+                if (!btn) return;
+                
+                grid.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                state.predictions[key] = btn.dataset.value;
+            });
+        });
+
+        document.getElementById('betsForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            
+            const name = document.getElementById('guestName').value.trim();
+            if (!name) return showToast('Please enter your name');
+            
+            const keys = ['first_tear', 'speech_length', 'dance_dip'];
+            for (const k of keys) {
+                if (!state.predictions[k]) return showToast('Please answer all questions!');
+            }
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = 'LOCKING IN...';
+
+            try {
+                const res = await fetch('/api/bets', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        guest_name: name,
+                        predictions: state.predictions
+                    })
+                });
+
+                if (res.ok) {
+                    document.getElementById('formState').style.display = 'none';
+                    document.getElementById('successState').style.display = 'block';
+                } else {
+                    const data = await res.json();
+                    showToast(data.error || 'Failed to save bets');
+                    btn.disabled = false;
+                    btn.textContent = 'SUBMIT BETS';
+                }
+            } catch (e) {
+                showToast('Network error. Try again.');
+                btn.disabled = false;
+                btn.textContent = 'SUBMIT BETS';
+            }
+        });
+
+        checkStatus();
+    </script>
+</body>
+</html>

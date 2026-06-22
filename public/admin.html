@@ -597,6 +597,13 @@
                     <span>Camera &amp; Photos</span>
                     <span class="tab-btn__count" id="tabCountCamera">0</span>
                 </button>
+                <button type="button" class="tab-btn" role="tab"
+                        data-tab="bets" aria-selected="false"
+                        aria-controls="tabPanelBets" id="tabBtnBets">
+                    <span class="tab-btn__icon" aria-hidden="true">🎟️</span>
+                    <span>Bets &amp; Games</span>
+                    <span class="tab-btn__count" id="tabCountBets">0</span>
+                </button>
             </nav>
 
             <section class="tab-panel is-active" id="tabPanelGuests"
@@ -739,6 +746,24 @@
                 </div>
             </div>
             </section>
+
+            <section class="tab-panel" id="tabPanelBets"
+                     role="tabpanel" aria-labelledby="tabBtnBets" data-tab="bets" hidden>
+                <div class="rsvp-list">
+                    <div class="rsvp-header">
+                        🎟️ Prediction Game: Place Your Bets
+                    </div>
+                    <div style="padding: 20px;">
+                        <div class="stats" style="margin-bottom: 16px;">
+                            <div class="stat-card"><div class="stat-number" id="totalBets">0</div><div class="stat-label">Total Bets</div></div>
+                        </div>
+                        <div id="betsNotification" class="notification" style="display:none;"></div>
+                        <div id="betsContent">
+                            <div class="loading">Loading bets...</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
 
         <button class="refresh-btn" onclick="loadRsvpData()" title="Refresh Data" style="display: none;" id="refreshBtn">
@@ -755,7 +780,8 @@
             adminEndpoint: '/api/admin/rsvps',
             deleteEndpoint: '/api/admin/rsvp',
             guestsEndpoint: '/api/admin/guests',
-            logsEndpoint: '/api/admin/logs'
+            logsEndpoint: '/api/admin/logs',
+            betsEndpoint: '/api/admin/bets'
         };
 
         // Store token in memory (not localStorage for better security)
@@ -889,6 +915,7 @@
                     await loadGuestList();
                     await loadCameraSettings();
                     await loadPhotoModeration();
+                    await loadBetsData();
                     await loadAdminLogs();
                     
                     console.log('✅ Login successful');
@@ -932,6 +959,7 @@
                     await loadGuestList();
                     await loadCameraSettings();
                     await loadPhotoModeration();
+                    await loadBetsData();
                     await loadAdminLogs();
                 }
             } catch (error) {
@@ -952,6 +980,8 @@
                 if (response.ok) {
                     const data = await response.json();
                     displayRsvpData(data);
+                    // Also refresh bets when refreshing RSVP data
+                    loadBetsData();
                 } else {
                     console.error('Failed to refresh data');
                 }
@@ -1743,6 +1773,89 @@
             }
         }
 
+        // ============================================
+        // Prediction Game moderation
+        // ============================================
+        async function loadBetsData() {
+            const contentDiv = document.getElementById('betsContent');
+            try {
+                const res = await authenticatedFetch(CONFIG.betsEndpoint);
+                if (res.status === 401) return logout();
+                if (!res.ok) {
+                    contentDiv.innerHTML = '<div class="error">Failed to load bets.</div>';
+                    return;
+                }
+                const data = await res.json();
+                displayBetsData(data.bets || []);
+            } catch (e) {
+                console.error('Bets load error:', e);
+                contentDiv.innerHTML = '<div class="error">Connection error loading bets.</div>';
+            }
+        }
+
+        function displayBetsData(bets) {
+            const contentDiv = document.getElementById('betsContent');
+            document.getElementById('totalBets').textContent = bets.length;
+            updateTabCounts({ betCount: bets.length });
+
+            if (bets.length === 0) {
+                contentDiv.innerHTML = '<div class="loading">No bets placed yet.</div>';
+                return;
+            }
+
+            const html = `
+                <table class="rsvp-table">
+                    <thead>
+                        <tr>
+                            <th>Guest Name</th>
+                            <th>Predictions</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${bets.map(bet => `
+                            <tr id="bet-${bet.id}">
+                                <td><strong>${escapeHtml(bet.guest_name)}</strong></td>
+                                <td style="font-size:0.85rem;">
+                                    ${Object.entries(bet.predictions).map(([k, v]) => `
+                                        <div style="margin-bottom:4px;">
+                                            <span style="color:#7f8c8d;text-transform:uppercase;font-size:0.75rem;">${k.replace(/_/g, ' ')}:</span>
+                                            <span style="font-weight:600;">${v}</span>
+                                        </div>
+                                    `).join('')}
+                                </td>
+                                <td>${formatDate(bet.created_at)}</td>
+                                <td>
+                                    <button class="delete-btn" onclick="deleteBet('${bet.id}', '${escapeHtml(bet.guest_name)}')">
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            contentDiv.innerHTML = html;
+        }
+
+        async function deleteBet(betId, guestName) {
+            if (!confirm(`Delete bets for "${guestName}"?`)) return;
+            try {
+                const res = await authenticatedFetch(`${CONFIG.betsEndpoint}/${betId}`, { method: 'DELETE' });
+                if (res.status === 401) return logout();
+                if (res.ok) {
+                    loadBetsData();
+                } else {
+                    const err = await res.json();
+                    alert(err.error || 'Failed to delete bet');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Connection error');
+            }
+        }
+
         // Handle Enter key in password field
         document.getElementById('password').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -1766,7 +1879,7 @@
         const TABS_STORAGE_KEY = 'wedding.admin.activeTab';
 
         function setActiveTab(tab) {
-            const valid = ['guests', 'camera'];
+            const valid = ['guests', 'camera', 'bets'];
             if (!valid.includes(tab)) tab = 'guests';
 
             document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -1794,10 +1907,10 @@
 
         function initialActiveTab() {
             const fromHash = (window.location.hash || '').replace(/^#/, '');
-            if (fromHash === 'guests' || fromHash === 'camera') return fromHash;
+            if (fromHash === 'guests' || fromHash === 'camera' || fromHash === 'bets') return fromHash;
             try {
                 const stored = localStorage.getItem(TABS_STORAGE_KEY);
-                if (stored === 'guests' || stored === 'camera') return stored;
+                if (stored === 'guests' || stored === 'camera' || stored === 'bets') return stored;
             } catch (_) {}
             return 'guests';
         }
@@ -1816,7 +1929,7 @@
 
         // Keep the small badges on the tab buttons in sync with the live data.
         // Called from existing renderers after each fetch.
-        function updateTabCounts({ rsvpCount, photoCount } = {}) {
+        function updateTabCounts({ rsvpCount, photoCount, betCount } = {}) {
             if (typeof rsvpCount === 'number') {
                 const el = document.getElementById('tabCountGuests');
                 if (el) el.textContent = rsvpCount;
@@ -1824,6 +1937,10 @@
             if (typeof photoCount === 'number') {
                 const el = document.getElementById('tabCountCamera');
                 if (el) el.textContent = photoCount;
+            }
+            if (typeof betCount === 'number') {
+                const el = document.getElementById('tabCountBets');
+                if (el) el.textContent = betCount;
             }
         }
 
