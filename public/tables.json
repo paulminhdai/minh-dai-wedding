@@ -165,11 +165,14 @@
       "tableNumber": 14,
       "tableName": "Gia đình chú rể",
       "guests": [
-        "Ba Phú và cô Yến",
-        "Cô chú Hiền Thể",
-        "Chị Hương",
-        "Chị Duyên",
-        "Anh Nguyên"
+        "Bà mợ Lý",
+        "Bác Chi (Thuật)",
+        "Cậu mợ Thạc Trâm Anh",
+        "Cậu mợ Vĩnh Hy",
+        "Cậu Hào",
+        "Chú Hải",
+        "Bác Vân",
+        "Chị Hồng (Bảo - DonBosco)"
       ]
     },
     {
@@ -212,6 +215,17 @@
       "tableNumber": 18,
       "tableName": "Gia đình chú rể",
       "guests": [
+        "Ba Phú và cô Yến",
+        "Cô chú Hiền Thể",
+        "Chị Hương",
+        "Chị Duyên",
+        "Anh Nguyên"
+      ]
+    },
+    {
+      "tableNumber": 19,
+      "tableName": "Gia đình chú rể",
+      "guests": [
         "Ông Ngoại Kỷ",
         "Ông bà cậu mợ Đức",
         "Ông bà Khang Dần",
@@ -219,20 +233,6 @@
         "Ông bà Liêm Sự",
         "Bác Trân",
         "Bác Dũng"
-      ]
-    },
-    {
-      "tableNumber": 19,
-      "tableName": "Gia đình chú rể",
-      "guests": [
-        "Bà mợ Lý",
-        "Bác Chi (Thuật)",
-        "Cậu mợ Thạc Trâm Anh",
-        "Cậu mợ Vĩnh Hy",
-        "Cậu Hào",
-        "Chú Hải",
-        "Bác Vân",
-        "Chị Hồng (Bảo - DonBosco)"
       ]
     },
     {
@@ -267,14 +267,14 @@
         "Anh chị Đức Anh",
         "Anh chị Hương Thuỷ",
         "Anh chị Huy Nga",
-        "Anh chị Khiêm Hương"
+        "Anh chị Kiên Khanh"
       ]
     },
     {
       "tableNumber": 23,
       "tableName": "Thăng tiến hôn nhân",
       "guests": [
-        "Anh chị Kiên Khanh",
+        "Anh Khiêm (Hương)",
         "Anh chị Thắng Trâm",
         "Anh chị Bình Liên",
         "Anh chị Đôn Hà",
