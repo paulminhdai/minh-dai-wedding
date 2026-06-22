@@ -218,32 +218,9 @@
                     <input type="text" id="guestName" class="input-text" required placeholder="Enter your full name">
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Who will cry first?</label>
-                    <div class="options-grid" data-key="first_tear">
-                        <button type="button" class="option-btn" data-value="bride">Đại (Bride)</button>
-                        <button type="button" class="option-btn" data-value="groom">Minh (Groom)</button>
-                        <button type="button" class="option-btn" data-value="both">Both at once</button>
-                        <button type="button" class="option-btn" data-value="neither">Neither</button>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Longest speech length?</label>
-                    <div class="options-grid" data-key="speech_length">
-                        <button type="button" class="option-btn" data-value="under_5">Under 5 mins</button>
-                        <button type="button" class="option-btn" data-value="5_to_10">5 - 10 mins</button>
-                        <button type="button" class="option-btn" data-value="over_10">Over 10 mins</button>
-                        <button type="button" class="option-btn" data-value="no_speeches">No speeches!</button>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Will there be a "dip" during the first dance?</label>
-                    <div class="options-grid" data-key="dance_dip">
-                        <button type="button" class="option-btn" data-value="yes">Yes, definitely</button>
-                        <button type="button" class="option-btn" data-value="no">No way</button>
-                    </div>
+                <div id="dynamicQuestions">
+                    <!-- Questions loaded from API -->
+                    <div class="loading" style="text-align:center; padding:20px; opacity:0.5;">Loading questions...</div>
                 </div>
 
                 <button type="submit" class="submit-btn" id="submitBtn">SUBMIT BETS</button>
@@ -262,6 +239,7 @@
 
     <script>
         const state = {
+            questions: [],
             predictions: {},
             hasBet: false
         };
@@ -273,8 +251,15 @@
             setTimeout(() => { t.style.display = 'none'; }, 3000);
         }
 
-        async function checkStatus() {
+        async function init() {
             try {
+                // 1. Fetch settings (questions)
+                const settingsRes = await fetch('/api/settings');
+                const settings = await settingsRes.json();
+                state.questions = settings.game?.questions || [];
+                renderQuestions();
+
+                // 2. Check status
                 const res = await fetch('/api/bets/status');
                 const data = await res.json();
                 if (data.hasBet) {
@@ -286,21 +271,49 @@
                     document.getElementById('guestName').value = data.bet.guestName;
                 }
             } catch (e) {
-                console.error('Status check failed', e);
+                console.error('Initialization failed', e);
             }
         }
 
-        document.querySelectorAll('.options-grid').forEach(grid => {
-            const key = grid.dataset.key;
-            grid.addEventListener('click', e => {
-                const btn = e.target.closest('.option-btn');
-                if (!btn) return;
-                
-                grid.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
-                btn.classList.add('selected');
-                state.predictions[key] = btn.dataset.value;
+        function renderQuestions() {
+            const container = document.getElementById('dynamicQuestions');
+            if (!state.questions.length) {
+                container.innerHTML = '<p style="text-align:center; padding:20px; opacity:0.5;">No questions available yet.</p>';
+                return;
+            }
+
+            container.innerHTML = state.questions.map(q => `
+                <div class="form-group">
+                    <label class="form-label">${escapeHtml(q.label)}</label>
+                    <div class="options-grid" data-key="${q.id}">
+                        ${q.options.map(opt => `
+                            <button type="button" class="option-btn" data-value="${escapeHtml(opt.value)}">
+                                ${escapeHtml(opt.label)}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            // Wire up clicks
+            container.querySelectorAll('.options-grid').forEach(grid => {
+                const key = grid.dataset.key;
+                grid.addEventListener('click', e => {
+                    const btn = e.target.closest('.option-btn');
+                    if (!btn) return;
+                    
+                    grid.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    state.predictions[key] = btn.dataset.value;
+                });
             });
-        });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
 
         document.getElementById('betsForm').addEventListener('submit', async e => {
             e.preventDefault();
@@ -308,9 +321,8 @@
             const name = document.getElementById('guestName').value.trim();
             if (!name) return showToast('Please enter your name');
             
-            const keys = ['first_tear', 'speech_length', 'dance_dip'];
-            for (const k of keys) {
-                if (!state.predictions[k]) return showToast('Please answer all questions!');
+            for (const q of state.questions) {
+                if (!state.predictions[q.id]) return showToast('Please answer all questions!');
             }
 
             const btn = document.getElementById('submitBtn');
@@ -343,7 +355,7 @@
             }
         });
 
-        checkStatus();
+        init();
     </script>
 </body>
 </html>

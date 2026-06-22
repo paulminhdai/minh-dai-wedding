@@ -758,6 +758,34 @@
                             <div class="stat-card"><div class="stat-number" id="totalBets">0</div><div class="stat-label">Total Bets</div></div>
                         </div>
                         <div id="betsNotification" class="notification" style="display:none;"></div>
+                        
+                        <!-- Official Results Section -->
+                        <div style="background:var(--cream); border-radius:10px; padding:20px; margin-bottom:24px; border:1px solid var(--dusty-blue-light);">
+                            <h3 style="font-size:1rem; color:var(--neptune-navy); margin-bottom:15px; display:flex; align-items:center; gap:8px;">
+                                🏆 Set Official Results
+                            </h3>
+                            <div id="officialResultsForm" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:15px; margin-bottom:15px;">
+                                <!-- Dynamically filled -->
+                            </div>
+                            <button type="button" class="btn" onclick="saveGameResults()" id="saveResultsBtn" style="width:100%; font-size:0.9rem; padding:10px;">
+                                Update Results & Calculate Winners
+                            </button>
+                        </div>
+
+                        <!-- Question Management Section -->
+                        <div style="background:var(--soft-white); border-radius:10px; padding:20px; margin-bottom:24px; border:1px solid #eee;">
+                            <h3 style="font-size:1rem; color:var(--neptune-navy); margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
+                                <span>📝 Manage Questions</span>
+                                <button type="button" class="btn-tiny" onclick="addQuestionRow()">+ Add Question</button>
+                            </h3>
+                            <div id="questionsList" style="display:flex; flex-direction:column; gap:15px; margin-bottom:15px;">
+                                <!-- Dynamically filled -->
+                            </div>
+                            <button type="button" class="btn" onclick="saveGameQuestions()" id="saveQuestionsBtn" style="width:100%; font-size:0.9rem; padding:10px; background:var(--neptune-navy); color:white;">
+                                Save All Questions
+                            </button>
+                        </div>
+
                         <div id="betsContent">
                             <div class="loading">Loading bets...</div>
                         </div>
@@ -1776,20 +1804,166 @@
         // ============================================
         // Prediction Game moderation
         // ============================================
+        let officialResults = {};
+        let gameQuestions = [];
+
         async function loadBetsData() {
             const contentDiv = document.getElementById('betsContent');
             try {
-                const res = await authenticatedFetch(CONFIG.betsEndpoint);
-                if (res.status === 401) return logout();
-                if (!res.ok) {
+                const [betsRes, settingsRes] = await Promise.all([
+                    authenticatedFetch(CONFIG.betsEndpoint),
+                    authenticatedFetch(SETTINGS_CONFIG.getEndpoint)
+                ]);
+
+                if (betsRes.status === 401) return logout();
+                if (!betsRes.ok) {
                     contentDiv.innerHTML = '<div class="error">Failed to load bets.</div>';
                     return;
                 }
-                const data = await res.json();
-                displayBetsData(data.bets || []);
+
+                const betsData = await betsRes.json();
+                const settingsData = await settingsRes.json();
+                
+                officialResults = settingsData.settings.game_results || {};
+                gameQuestions = settingsData.settings.game_questions || [];
+                
+                renderResultsForm();
+                renderQuestionsManager();
+                displayBetsData(betsData.bets || []);
             } catch (e) {
                 console.error('Bets load error:', e);
                 contentDiv.innerHTML = '<div class="error">Connection error loading bets.</div>';
+            }
+        }
+
+        function renderResultsForm() {
+            const form = document.getElementById('officialResultsForm');
+            if (!form) return;
+            
+            form.innerHTML = gameQuestions.map(q => `
+                <div>
+                    <label style="display:block; font-size:0.75rem; color:#5a6c7d; margin-bottom:5px; text-transform:uppercase;">${escapeHtml(q.label)}</label>
+                    <select id="result_${q.id}" class="input-text" style="padding:8px;">
+                        <option value="">- Select -</option>
+                        ${q.options.map(opt => `
+                            <option value="${escapeHtml(opt.value)}" ${officialResults[q.id] === opt.value ? 'selected' : ''}>
+                                ${escapeHtml(opt.label)}
+                            </option>
+                        `).join('')}
+                    </select>
+                </div>
+            `).join('');
+        }
+
+        function renderQuestionsManager() {
+            const list = document.getElementById('questionsList');
+            if (!list) return;
+            
+            list.innerHTML = gameQuestions.map((q, idx) => `
+                <div style="border:1px solid #eee; border-radius:8px; padding:15px; position:relative;">
+                    <button type="button" onclick="removeQuestionRow(${idx})" style="position:absolute; top:10px; right:10px; border:none; background:none; cursor:pointer; color:#e74c3c;">✕</button>
+                    <div style="margin-bottom:10px;">
+                        <label style="display:block; font-size:0.7rem; color:#95a5a6; text-transform:uppercase; margin-bottom:4px;">Question Label</label>
+                        <input type="text" class="input-text q-label" value="${escapeHtml(q.label)}" style="padding:8px; font-size:0.9rem;">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:0.7rem; color:#95a5a6; text-transform:uppercase; margin-bottom:4px;">Options (value:label, one per line)</label>
+                        <textarea class="input-text q-options" style="padding:8px; font-size:0.85rem; min-height:60px; font-family:monospace;">${q.options.map(opt => `${opt.value}:${opt.label}`).join('\n')}</textarea>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addQuestionRow() {
+            gameQuestions.push({
+                id: 'q_' + Date.now(),
+                label: 'New Question',
+                options: [{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }]
+            });
+            renderQuestionsManager();
+        }
+
+        function removeQuestionRow(idx) {
+            gameQuestions.splice(idx, 1);
+            renderQuestionsManager();
+        }
+
+        async function saveGameQuestions() {
+            const btn = document.getElementById('saveQuestionsBtn');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            const rows = document.querySelectorAll('#questionsList > div');
+            const newQuestions = Array.from(rows).map((row, idx) => {
+                const label = row.querySelector('.q-label').value.trim();
+                const optionsRaw = row.querySelector('.q-options').value.trim();
+                const options = optionsRaw.split('\n').map(line => {
+                    const [val, ...labParts] = line.split(':');
+                    return {
+                        value: val ? val.trim() : '',
+                        label: labParts.length > 0 ? labParts.join(':').trim() : val.trim()
+                    };
+                }).filter(opt => opt.value);
+
+                return {
+                    id: gameQuestions[idx]?.id || 'q_' + Date.now() + idx,
+                    label,
+                    options
+                };
+            });
+
+            try {
+                const res = await authenticatedFetch(SETTINGS_CONFIG.patchEndpoint, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ game_questions: newQuestions })
+                });
+                
+                if (res.ok) {
+                    gameQuestions = newQuestions;
+                    renderResultsForm();
+                    alert('Questions saved successfully!');
+                } else {
+                    alert('Failed to save questions');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Connection error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Save All Questions';
+            }
+        }
+
+        async function saveGameResults() {
+            const btn = document.getElementById('saveResultsBtn');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            const results = {};
+            gameQuestions.forEach(q => {
+                const el = document.getElementById('result_' + q.id);
+                if (el) results[q.id] = el.value;
+            });
+
+            try {
+                const res = await authenticatedFetch(SETTINGS_CONFIG.patchEndpoint, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ game_results: results })
+                });
+                
+                if (res.ok) {
+                    officialResults = results;
+                    loadBetsData(); // Refresh list to show scores
+                    alert('Results updated! Winners have been calculated.');
+                } else {
+                    alert('Failed to save results');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Connection error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Update Results & Calculate Winners';
             }
         }
 
@@ -1803,36 +1977,88 @@
                 return;
             }
 
+            // Calculate scores
+            const scoredBets = bets.map(bet => {
+                let score = 0;
+                const details = [];
+                
+                gameQuestions.forEach(q => {
+                    const result = officialResults[q.id];
+                    if (!result) return;
+                    const guess = bet.predictions[q.id];
+                    if (guess === result) {
+                        score += 1;
+                        details.push({ key: q.id, label: q.label, guess, correct: true });
+                    } else {
+                        details.push({ key: q.id, label: q.label, guess, correct: false });
+                    }
+                });
+                
+                return { ...bet, score, details };
+            });
+
+            // Sort by score (descending)
+            scoredBets.sort((a, b) => b.score - a.score);
+
+            const hasResults = Object.values(officialResults).some(v => !!v);
+            const maxScore = gameQuestions.length;
+
             const html = `
                 <table class="rsvp-table">
                     <thead>
                         <tr>
                             <th>Guest Name</th>
                             <th>Predictions</th>
+                            ${hasResults ? '<th>Score</th>' : ''}
                             <th>Date</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${bets.map(bet => `
-                            <tr id="bet-${bet.id}">
-                                <td><strong>${escapeHtml(bet.guest_name)}</strong></td>
-                                <td style="font-size:0.85rem;">
-                                    ${Object.entries(bet.predictions).map(([k, v]) => `
-                                        <div style="margin-bottom:4px;">
-                                            <span style="color:#7f8c8d;text-transform:uppercase;font-size:0.75rem;">${k.replace(/_/g, ' ')}:</span>
-                                            <span style="font-weight:600;">${v}</span>
-                                        </div>
-                                    `).join('')}
+                        ${scoredBets.map(bet => {
+                            const isPerfect = hasResults && bet.score === maxScore && maxScore > 0;
+                            return `
+                            <tr id="bet-${bet.id}" ${isPerfect ? 'style="background:rgba(212,175,55,0.1);"' : ''}>
+                                <td>
+                                    <strong>${escapeHtml(bet.guest_name)}</strong>
+                                    ${isPerfect ? '<br><span style="color:var(--brass-gold); font-size:0.7rem; font-weight:bold;">🏆 PERFECT SCORE</span>' : ''}
                                 </td>
+                                <td style="font-size:0.85rem;">
+                                    ${gameQuestions.map(q => {
+                                        const guess = bet.predictions[q.id];
+                                        const result = officialResults[q.id];
+                                        const isCorrect = hasResults && result && result === guess;
+                                        const isWrong = hasResults && result && result !== guess;
+                                        
+                                        // Find option label
+                                        const opt = q.options.find(o => o.value === guess);
+                                        const guessLabel = opt ? opt.label : guess;
+
+                                        return `
+                                            <div style="margin-bottom:4px; ${isCorrect ? 'color:var(--sage-green);' : isWrong ? 'color:#e74c3c; opacity:0.7;' : ''}">
+                                                <span style="text-transform:uppercase; font-size:0.7rem; opacity:0.6;">${escapeHtml(q.label)}:</span>
+                                                <span style="font-weight:600;">${escapeHtml(guessLabel || 'No guess')}</span>
+                                                ${isCorrect ? ' ✓' : isWrong ? ' ✗' : ''}
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </td>
+                                ${hasResults ? `
+                                    <td style="text-align:center;">
+                                        <div style="font-size:1.4rem; font-weight:bold; color:${bet.score > 0 ? 'var(--neptune-navy)' : '#ccc'}">
+                                            ${bet.score}
+                                        </div>
+                                        <div style="font-size:0.6rem; color:#95a5a6;">/${maxScore} PTS</div>
+                                    </td>
+                                ` : ''}
                                 <td>${formatDate(bet.created_at)}</td>
                                 <td>
                                     <button class="delete-btn" onclick="deleteBet('${bet.id}', '${escapeHtml(bet.guest_name)}')">
                                         Delete
                                     </button>
                                 </td>
-                            </tr>
-                        `).join('')}
+                            </tr>`;
+                        }).join('')}
                     </tbody>
                 </table>
             `;

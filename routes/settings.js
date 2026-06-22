@@ -67,6 +67,9 @@ router.get('/', settingsLimiter, async (req, res) => {
                 revealAt: settings.gallery_reveal_at,
                 revealed: Date.now() >= new Date(settings.gallery_reveal_at).getTime()
             },
+            game: {
+                questions: settings.game_questions || []
+            },
             rsvp: {
                 open: rsvpOpen
             }
@@ -101,7 +104,9 @@ adminRouter.patch('/',
         body('camera_popup_body').optional().isString().isLength({ max: 1000 }),
         body('camera_popup_cta').optional().isString().isLength({ max: 60 }),
         body('gallery_reveal_at').optional().isISO8601()
-            .withMessage('gallery_reveal_at must be a valid ISO 8601 datetime')
+            .withMessage('gallery_reveal_at must be a valid ISO 8601 datetime'),
+        body('game_results').optional().isObject(),
+        body('game_questions').optional().isArray()
     ],
     handleValidation,
     async (req, res) => {
