@@ -1324,21 +1324,21 @@
             canvas.style.display = 'none';
             els.photoboothPreview.querySelector('.myroll-preview__actions').style.display = 'none';
             
-            // Template: 338x1024. Scale up 3x for quality.
-            const scale = 3;
-            const templateW = 338 * scale;
-            const templateH = 1024 * scale;
+            // Template dimensions set after loading below (596x1797 RGBA PNG)
             
+            // True RGBA PNG: 596x1797 — use native dimensions, no hacks needed
+            const templateW = 596;
+            const templateH = 1797;
+
             canvas.width = templateW;
             canvas.height = templateH;
             
-            // Fill background with template's cream color so gaps aren't transparent/blue
-            ctx.fillStyle = '#faf8f5';
+            // Cream background so any sub-pixel gaps match the template border color
+            ctx.fillStyle = '#f5f0e8';
             ctx.fillRect(0, 0, templateW, templateH);
             
-            // Step 1: Load template image
+            // Step 1: Load template (has real alpha transparency on the 4 frame areas)
             const template = new Image();
-            template.crossOrigin = 'anonymous';
             template.src = '/images/photobooth-template.png';
             
             await new Promise(resolve => {
@@ -1346,33 +1346,13 @@
                 template.onerror = resolve;
             });
             
-            // Step 2: Draw template to a temp canvas, make black pixels transparent
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = templateW;
-            tempCanvas.height = templateH;
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCtx.drawImage(template, 0, 0, templateW, templateH);
-            
-            const imageData = tempCtx.getImageData(0, 0, templateW, templateH);
-            const data = imageData.data;
-            for (let i = 0; i < data.length; i += 4) {
-                const r = data[i], g = data[i+1], b = data[i+2];
-                // If pixel is near-black, make it transparent
-                // Increased threshold slightly to catch compression artifacts
-                if (r < 45 && g < 45 && b < 45) {
-                    data[i+3] = 0; // Set alpha to 0
-                }
-            }
-            tempCtx.putImageData(imageData, 0, 0);
-            
-            // Step 3: Draw photos on main canvas (they go behind the template)
-            // Frame positions for the 4 slots (measured as fractions)
-            // We make these slightly LARGER than the holes so they bleed under the borders
+            // Step 2: Measure frame positions from the transparent holes in the template.
+            // Measured from the 596x1797 PNG: 4 slots, roughly equal height, centered.
             const frames = [
-                { x: 0.02, y: 0.01, w: 0.96, h: 0.205 },
-                { x: 0.02, y: 0.22, w: 0.96, h: 0.205 },
-                { x: 0.02, y: 0.43, w: 0.96, h: 0.205 },
-                { x: 0.02, y: 0.64, w: 0.96, h: 0.205 }
+                { x: 0.04, y: 0.022, w: 0.92, h: 0.195 },
+                { x: 0.04, y: 0.237, w: 0.92, h: 0.195 },
+                { x: 0.04, y: 0.452, w: 0.92, h: 0.195 },
+                { x: 0.04, y: 0.667, w: 0.92, h: 0.195 }
             ];
             
             for (let i = 0; i < PHOTOBOOTH_SLOTS; i++) {
@@ -1410,8 +1390,8 @@
                 });
             }
             
-            // Step 4: Draw the processed template ON TOP (black areas are now transparent)
-            ctx.drawImage(tempCanvas, 0, 0);
+            // Step 4: Draw the real PNG template ON TOP — transparent areas reveal photos
+            ctx.drawImage(template, 0, 0, templateW, templateH);
 
             // Hide loading, reveal canvas and actions
             loading.style.display = 'none';
