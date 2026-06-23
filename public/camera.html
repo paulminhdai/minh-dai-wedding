@@ -1332,6 +1332,10 @@
             canvas.width = templateW;
             canvas.height = templateH;
             
+            // Fill background with template's cream color so gaps aren't transparent/blue
+            ctx.fillStyle = '#faf8f5';
+            ctx.fillRect(0, 0, templateW, templateH);
+            
             // Step 1: Load template image
             const template = new Image();
             template.crossOrigin = 'anonymous';
@@ -1354,19 +1358,21 @@
             for (let i = 0; i < data.length; i += 4) {
                 const r = data[i], g = data[i+1], b = data[i+2];
                 // If pixel is near-black, make it transparent
-                if (r < 30 && g < 30 && b < 30) {
+                // Increased threshold slightly to catch compression artifacts
+                if (r < 45 && g < 45 && b < 45) {
                     data[i+3] = 0; // Set alpha to 0
                 }
             }
             tempCtx.putImageData(imageData, 0, 0);
             
-            // Step 3: Draw photos on main canvas (they go behind)
-            // Frame positions for the 4 black slots (measured as fractions)
+            // Step 3: Draw photos on main canvas (they go behind the template)
+            // Frame positions for the 4 slots (measured as fractions)
+            // We make these slightly LARGER than the holes so they bleed under the borders
             const frames = [
-                { x: 0.03, y: 0.015, w: 0.94, h: 0.195 },
-                { x: 0.03, y: 0.225, w: 0.94, h: 0.195 },
-                { x: 0.03, y: 0.435, w: 0.94, h: 0.195 },
-                { x: 0.03, y: 0.645, w: 0.94, h: 0.195 }
+                { x: 0.02, y: 0.01, w: 0.96, h: 0.205 },
+                { x: 0.02, y: 0.22, w: 0.96, h: 0.205 },
+                { x: 0.02, y: 0.43, w: 0.96, h: 0.205 },
+                { x: 0.02, y: 0.64, w: 0.96, h: 0.205 }
             ];
             
             for (let i = 0; i < PHOTOBOOTH_SLOTS; i++) {
