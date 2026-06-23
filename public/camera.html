@@ -8,6 +8,16 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Disposable Camera · Đại & Minh</title>
     <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0SP0595MB5"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-0SP0595MB5');
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Nunito:wght@300;400;600;700&family=Special+Elite&display=swap" rel="stylesheet">
@@ -273,53 +283,111 @@
             color: rgba(26, 37, 47, 0.7);
         }
 
-        /* Film roll picker — segmented control styled to match a film canister
-           list. Each chip is its own button so VoiceOver announces it correctly
-           and we can use aria-pressed to communicate selection state. */
+        /* Film roll picker — horizontal swipe selector */
         .film-picker {
-            margin-top: 12px;
-            border: 1px dashed rgba(26, 37, 47, 0.25);
+            margin-top: 16px;
+            position: relative;
+            height: 72px;
+            overflow: hidden;
+            background: var(--neptune-navy);
             border-radius: 12px;
-            padding: 10px 10px 12px;
-            background: rgba(26, 37, 47, 0.03);
+        }
+        .film-picker::before,
+        .film-picker::after {
+            content: '';
+            position: absolute;
+            top: 0; bottom: 0;
+            width: 40px;
+            z-index: 2;
+            pointer-events: none;
+        }
+        .film-picker::before {
+            left: 0;
+            background: linear-gradient(to right, var(--neptune-navy), transparent);
+        }
+        .film-picker::after {
+            right: 0;
+            background: linear-gradient(to left, var(--neptune-navy), transparent);
         }
         .film-picker__label {
-            font-size: 0.7rem;
+            position: absolute;
+            top: 8px;
+            left: 0;
+            right: 0;
+            font-size: 0.6rem;
             opacity: 0.6;
-            letter-spacing: 0.18em;
+            letter-spacing: 0.15em;
             text-transform: uppercase;
             text-align: center;
-            margin-bottom: 8px;
+            z-index: 2;
+            pointer-events: none;
+            color: var(--cream);
         }
-        .film-picker__row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 6px;
+        .film-picker__track {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            padding: 0 calc(50% - 50px);
+            scroll-snap-type: x mandatory;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            scroll-behavior: smooth;
+            padding-top: 10px;
         }
+        .film-picker__track::-webkit-scrollbar { display: none; }
+
         .film-chip {
-            border: 1px solid rgba(26, 37, 47, 0.18);
-            background: rgba(26, 37, 47, 0.04);
-            color: var(--neptune-navy);
-            border-radius: 10px;
-            padding: 8px 4px;
-            font-family: 'Special Elite', monospace;
-            font-size: 0.72rem;
-            letter-spacing: 0.05em;
+            flex: 0 0 100px;
+            height: 48px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            scroll-snap-align: center;
             cursor: pointer;
-            line-height: 1.15;
-            transition: all 0.15s ease;
-            min-height: 48px;
+            transition: all 0.3s ease;
+            opacity: 0.4;
+            transform: scale(0.85);
+            border: none;
+            background: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-family: 'Special Elite', monospace;
+            padding: 0;
         }
-        .film-chip__name { display: block; font-weight: 700; }
-        .film-chip__iso  { display: block; font-size: 0.62rem; opacity: 0.65; margin-top: 2px; letter-spacing: 0.08em; }
-        .film-chip:hover { background: rgba(26, 37, 47, 0.10); }
-        .film-chip[aria-pressed="true"] {
+        .film-chip__name { 
+            display: block; 
+            font-weight: 700; 
+            font-size: 1.1rem;
+            letter-spacing: 0.08em;
+        }
+        .film-chip__iso { 
+            display: block; 
+            font-size: 0.65rem; 
+            opacity: 0.7; 
+            margin-top: 2px;
+            letter-spacing: 0.05em;
+        }
+        
+        .film-chip.is-active {
+            opacity: 1;
+            transform: scale(1.15);
+            color: var(--gold);
+        }
+
+        .film-picker__indicator {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
             background: var(--gold);
-            border-color: var(--gold);
-            color: var(--neptune-navy);
-            box-shadow: 0 2px 6px rgba(212, 175, 55, 0.35);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--gold);
+            pointer-events: none;
+            z-index: 2;
         }
-        .film-chip[aria-pressed="true"] .film-chip__iso { opacity: 0.75; }
 
         .shutter {
             width: 88px; height: 88px;
@@ -492,6 +560,167 @@
             .controls { gap: 10px; }
             .ctrl-btn { padding: 12px 8px; font-size: 0.8rem; }
         }
+
+        /* ─── My Roll / Photobooth Modal ─── */
+        .myroll-modal {
+            max-width: 540px;
+            width: 92vw;
+            max-height: 88vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--neptune-navy);
+            border: 1px solid rgba(212,175,55,0.3);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        }
+        .myroll-modal__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(212,175,55,0.2);
+        }
+        .myroll-modal__title {
+            font-family: 'Special Elite', monospace;
+            font-size: 1.3rem;
+            color: var(--gold);
+            margin: 0 0 4px 0;
+        }
+        .myroll-modal__hint {
+            font-size: 0.82rem;
+            color: var(--cream);
+            opacity: 0.8;
+            margin: 0;
+        }
+        .myroll-modal__close {
+            background: none;
+            border: none;
+            color: var(--cream);
+            font-size: 1.8rem;
+            cursor: pointer;
+            padding: 0 4px;
+            line-height: 1;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        .myroll-modal__close:hover { opacity: 1; }
+
+        .myroll-grid {
+            flex: 1;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            padding: 2px;
+            align-content: start;
+        }
+        .myroll-grid__item {
+            aspect-ratio: 1;
+            border-radius: 6px;
+            cursor: pointer;
+            position: relative;
+            border: 3px solid transparent;
+            transition: border-color 0.2s, transform 0.15s;
+            overflow: hidden;
+            background: #0e1a22;
+        }
+        .myroll-grid__item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .myroll-grid__item:hover {
+            transform: scale(1.03);
+        }
+        .myroll-grid__item.selected {
+            border-color: var(--gold);
+            box-shadow: 0 0 12px rgba(212,175,55,0.4);
+        }
+        .myroll-grid__item .badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: var(--gold);
+            color: var(--neptune-navy);
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.75rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        }
+
+        .myroll-preview {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            overflow-y: auto;
+            padding-top: 10px;
+        }
+
+        .myroll-loading {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            padding: 40px 20px;
+            color: var(--gold);
+            font-family: 'Special Elite', monospace;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+        }
+        .myroll-loading__spinner {
+            width: 44px;
+            height: 44px;
+            border: 3px solid rgba(212, 175, 55, 0.2);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .myroll-preview__canvas {
+            max-width: 85%;
+            max-height: 60vh;
+            height: auto;
+            border: 6px solid white;
+            border-radius: 4px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        .myroll-preview__actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+            width: 100%;
+            max-width: 320px;
+        }
+        .myroll-btn {
+            flex: 1;
+            padding: 12px 10px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+        .myroll-btn--primary {
+            background: var(--gold);
+            color: var(--neptune-navy);
+            border: none;
+        }
+        .myroll-btn--secondary {
+            background: transparent;
+            color: var(--cream);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
     </style>
 </head>
 <body>
@@ -509,26 +738,27 @@
                 <span id="filmIso">ISO 400</span>
             </div>
 
-            <div class="film-picker" role="radiogroup" aria-label="Choose your film roll" id="filmPicker">
-                <div class="film-picker__label">LOAD YOUR FILM ROLL</div>
-                <div class="film-picker__row">
-                    <button type="button" class="film-chip" data-film="off"    aria-pressed="false">
+            <div class="film-picker" id="filmPicker">
+                <div class="film-picker__label">SELECT FILM ROLL</div>
+                <div class="film-picker__track" id="filmTrack">
+                    <button type="button" class="film-chip" data-film="off">
                         <span class="film-chip__name">OFF</span>
                         <span class="film-chip__iso">RAW</span>
                     </button>
-                    <button type="button" class="film-chip" data-film="gold"   aria-pressed="false">
+                    <button type="button" class="film-chip" data-film="gold">
                         <span class="film-chip__name">GOLD</span>
                         <span class="film-chip__iso">200</span>
                     </button>
-                    <button type="button" class="film-chip" data-film="portra" aria-pressed="false">
+                    <button type="button" class="film-chip" data-film="portra">
                         <span class="film-chip__name">PORTRA</span>
                         <span class="film-chip__iso">400</span>
                     </button>
-                    <button type="button" class="film-chip" data-film="ektar"  aria-pressed="false">
+                    <button type="button" class="film-chip" data-film="ektar">
                         <span class="film-chip__name">EKTAR</span>
                         <span class="film-chip__iso">100</span>
                     </button>
                 </div>
+                <div class="film-picker__indicator"></div>
             </div>
 
             <div class="viewfinder" id="viewfinder">
@@ -556,6 +786,12 @@
                     <div class="roll__label">Of</div>
                     <div class="roll__count" id="rollLimit">24</div>
                 </div>
+            </div>
+
+            <div id="myRollLink" style="margin-top: 12px; text-align: center; display: none;">
+                <button type="button" class="btn-tiny" id="viewMyRollBtn" style="background:var(--neptune-navy); color:var(--gold); border-color:var(--gold); padding:8px 16px; width:100%; border-radius:8px; font-family:'Special Elite', monospace; letter-spacing:0.05em;">
+                    🎞 VIEW MY ROLL & CREATE PHOTOBOOTH
+                </button>
             </div>
 
             <div class="controls">
@@ -613,6 +849,37 @@
         </div>
     </div>
 
+    <!-- My Roll / Photobooth Modal -->
+    <div class="roll-full" id="myRollModal" style="background: rgba(26, 37, 47, 0.98);">
+        <div class="myroll-modal">
+            <div class="myroll-modal__header">
+                <div>
+                    <h2 class="myroll-modal__title">🎞 My Film Roll</h2>
+                    <p id="selectionHint" class="myroll-modal__hint">
+                        <span id="selCount">0</span>/4 selected — pick 4 to create your strip!
+                    </p>
+                </div>
+                <button type="button" id="closeMyRollBtn" class="myroll-modal__close">×</button>
+            </div>
+            
+            <div id="myRollGrid" class="myroll-grid">
+                <!-- Photos loaded here -->
+            </div>
+            
+            <div id="photoboothPreview" class="myroll-preview">
+                <div id="boothLoading" class="myroll-loading">
+                    <div class="myroll-loading__spinner"></div>
+                    <p>Creating your strip…</p>
+                </div>
+                <canvas id="boothCanvas" class="myroll-preview__canvas"></canvas>
+                <div class="myroll-preview__actions">
+                    <button type="button" id="downloadBoothBtn" class="ctrl-btn myroll-btn myroll-btn--primary">📲 SAVE & SHARE</button>
+                    <button type="button" id="resetBoothBtn" class="ctrl-btn myroll-btn myroll-btn--secondary">↺ PICK AGAIN</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
     (() => {
         'use strict';
@@ -643,9 +910,21 @@
             filmLabel: document.getElementById('filmLabel'),
             filmIso: document.getElementById('filmIso'),
             filmPicker: document.getElementById('filmPicker'),
+            filmTrack: document.getElementById('filmTrack'),
             viewfinder: document.getElementById('viewfinder'),
             filmToast: document.getElementById('filmToast'),
-            swipeHint: document.getElementById('swipeHint')
+            swipeHint: document.getElementById('swipeHint'),
+            myRollLink: document.getElementById('myRollLink'),
+            viewMyRollBtn: document.getElementById('viewMyRollBtn'),
+            myRollModal: document.getElementById('myRollModal'),
+            closeMyRollBtn: document.getElementById('closeMyRollBtn'),
+            myRollGrid: document.getElementById('myRollGrid'),
+            boothCanvas: document.getElementById('boothCanvas'),
+            photoboothPreview: document.getElementById('photoboothPreview'),
+            downloadBoothBtn: document.getElementById('downloadBoothBtn'),
+            resetBoothBtn: document.getElementById('resetBoothBtn'),
+            selectionHint: document.getElementById('selectionHint'),
+            selCount: document.getElementById('selCount')
         };
 
         // CSS filter approximations of the server-side Kodak looks. These are
@@ -718,6 +997,10 @@
                 const span = document.createElement('span');
                 if (i < state.count) span.className = 'used';
                 els.rollBar.appendChild(span);
+            }
+
+            if (state.count > 0) {
+                els.myRollLink.style.display = 'block';
             }
 
             if (state.remaining <= 0) {
@@ -964,6 +1247,221 @@
             }
         }
 
+        // Photobooth state
+        let selectedPhotos = [];
+
+        async function loadMyRoll() {
+            try {
+                els.myRollGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--gold); font-family: \'Special Elite\', monospace;">Loading your photos...</div>';
+                const res = await fetch('/api/photos/my-roll');
+                const data = await res.json();
+                
+                if (!data.success || !data.photos || data.photos.length === 0) {
+                    els.myRollGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--gold); font-family: \'Special Elite\', monospace;">No photos found yet.<br>Take some shots first!</div>';
+                    return;
+                }
+
+                els.myRollGrid.innerHTML = '';
+                data.photos.forEach(photo => {
+                    const div = document.createElement('div');
+                    div.className = 'myroll-grid__item';
+                    div.innerHTML = `<img src="${photo.thumbnail_url}" alt="" loading="lazy">`;
+                    div.onclick = () => togglePhotoSelection(photo, div);
+                    els.myRollGrid.appendChild(div);
+                });
+            } catch (err) {
+                console.error('Error loading roll:', err);
+                els.myRollGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #ff6b6b;">Failed to load photos.</div>';
+            }
+        }
+
+        function togglePhotoSelection(photo, el) {
+            const index = selectedPhotos.findIndex(p => p.id === photo.id);
+            if (index > -1) {
+                selectedPhotos.splice(index, 1);
+                el.classList.remove('selected');
+                const badge = el.querySelector('.badge');
+                if (badge) badge.remove();
+                // Re-number remaining badges
+                document.querySelectorAll('.myroll-grid__item.selected .badge').forEach((b, i) => {
+                    b.textContent = i + 1;
+                });
+            } else {
+                if (selectedPhotos.length >= PHOTOBOOTH_SLOTS) return;
+                selectedPhotos.push(photo);
+                el.classList.add('selected');
+                const badge = document.createElement('div');
+                badge.className = 'badge';
+                badge.textContent = selectedPhotos.length;
+                el.appendChild(badge);
+            }
+
+            // Update counter
+            document.getElementById('selCount').textContent = selectedPhotos.length;
+
+            if (selectedPhotos.length === PHOTOBOOTH_SLOTS) {
+                generatePhotobooth();
+            } else {
+                els.photoboothPreview.style.display = 'none';
+                els.myRollGrid.style.display = 'grid';
+                els.selectionHint.style.display = 'block';
+            }
+        }
+
+        const PHOTOBOOTH_SLOTS = 4;
+
+        async function generatePhotobooth() {
+            const canvas = els.boothCanvas;
+            const ctx = canvas.getContext('2d');
+            const loading = document.getElementById('boothLoading');
+
+            // Show loading, hide canvas until done
+            els.myRollGrid.style.display = 'none';
+            els.selectionHint.style.display = 'none';
+            els.photoboothPreview.style.display = 'flex';
+            loading.style.display = 'flex';
+            canvas.style.display = 'none';
+            els.photoboothPreview.querySelector('.myroll-preview__actions').style.display = 'none';
+            
+            // Template: 338x1024. Scale up 3x for quality.
+            const scale = 3;
+            const templateW = 338 * scale;
+            const templateH = 1024 * scale;
+            
+            canvas.width = templateW;
+            canvas.height = templateH;
+            
+            // Step 1: Load template image
+            const template = new Image();
+            template.crossOrigin = 'anonymous';
+            template.src = '/images/photobooth-template.png';
+            
+            await new Promise(resolve => {
+                template.onload = resolve;
+                template.onerror = resolve;
+            });
+            
+            // Step 2: Draw template to a temp canvas, make black pixels transparent
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = templateW;
+            tempCanvas.height = templateH;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(template, 0, 0, templateW, templateH);
+            
+            const imageData = tempCtx.getImageData(0, 0, templateW, templateH);
+            const data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i], g = data[i+1], b = data[i+2];
+                // If pixel is near-black, make it transparent
+                if (r < 30 && g < 30 && b < 30) {
+                    data[i+3] = 0; // Set alpha to 0
+                }
+            }
+            tempCtx.putImageData(imageData, 0, 0);
+            
+            // Step 3: Draw photos on main canvas (they go behind)
+            // Frame positions for the 4 black slots (measured as fractions)
+            const frames = [
+                { x: 0.03, y: 0.015, w: 0.94, h: 0.195 },
+                { x: 0.03, y: 0.225, w: 0.94, h: 0.195 },
+                { x: 0.03, y: 0.435, w: 0.94, h: 0.195 },
+                { x: 0.03, y: 0.645, w: 0.94, h: 0.195 }
+            ];
+            
+            for (let i = 0; i < PHOTOBOOTH_SLOTS; i++) {
+                const frame = frames[i];
+                const fx = frame.x * templateW;
+                const fy = frame.y * templateH;
+                const fw = frame.w * templateW;
+                const fh = frame.h * templateH;
+                
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.src = selectedPhotos[i].public_url;
+                
+                await new Promise(resolve => {
+                    img.onload = () => {
+                        // Center-crop to fill
+                        const aspect = img.width / img.height;
+                        const targetAspect = fw / fh;
+                        let sx, sy, sw, sh;
+                        if (aspect > targetAspect) {
+                            sh = img.height;
+                            sw = img.height * targetAspect;
+                            sx = (img.width - sw) / 2;
+                            sy = 0;
+                        } else {
+                            sw = img.width;
+                            sh = img.width / targetAspect;
+                            sx = 0;
+                            sy = (img.height - sh) / 2;
+                        }
+                        ctx.drawImage(img, sx, sy, sw, sh, fx, fy, fw, fh);
+                        resolve();
+                    };
+                    img.onerror = () => resolve();
+                });
+            }
+            
+            // Step 4: Draw the processed template ON TOP (black areas are now transparent)
+            ctx.drawImage(tempCanvas, 0, 0);
+
+            // Hide loading, reveal canvas and actions
+            loading.style.display = 'none';
+            canvas.style.display = 'block';
+            els.photoboothPreview.querySelector('.myroll-preview__actions').style.display = 'flex';
+        }
+
+        els.viewMyRollBtn.onclick = () => {
+            els.myRollModal.classList.add('show');
+            loadMyRoll();
+        };
+
+        els.closeMyRollBtn.onclick = () => {
+            els.myRollModal.classList.remove('show');
+            selectedPhotos = [];
+            els.photoboothPreview.style.display = 'none';
+            els.myRollGrid.style.display = 'grid';
+            els.selectionHint.style.display = 'block';
+            document.getElementById('selCount').textContent = '0';
+        };
+
+        els.resetBoothBtn.onclick = () => {
+            selectedPhotos = [];
+            els.photoboothPreview.style.display = 'none';
+            els.myRollGrid.style.display = 'grid';
+            els.selectionHint.style.display = 'block';
+            document.getElementById('selCount').textContent = '0';
+            loadMyRoll();
+        };
+
+        els.downloadBoothBtn.onclick = async () => {
+            const blob = await new Promise(resolve => els.boothCanvas.toBlob(resolve, 'image/jpeg', 0.9));
+            const file = new File([blob], `wedding-photobooth-${Date.now()}.jpg`, { type: 'image/jpeg' });
+            
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        files: [file],
+                        title: 'Our Wedding Photobooth',
+                        text: 'Check out our photobooth strip from Minh & Đài\'s wedding!'
+                    });
+                } catch (err) {
+                    if (err.name !== 'AbortError') console.error('Share failed:', err);
+                    // Fallback to download
+                    const link = document.createElement('a');
+                    link.download = file.name;
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                }
+            } else {
+                const link = document.createElement('a');
+                link.download = file.name;
+                link.href = URL.createObjectURL(blob);
+                link.click();
+            }
+        };
+
         // ─── Wire up ──────────────────────────────
         function setActiveFilm(film, opts = {}) {
             const cfg = FILM_PREVIEWS[film] || FILM_PREVIEWS.off;
@@ -973,20 +1471,64 @@
             els.captured.style.filter = cfg.css;
             if (els.filmLabel) els.filmLabel.textContent = cfg.label;
             if (els.filmIso)   els.filmIso.textContent   = cfg.iso;
-            if (els.filmPicker) {
-                els.filmPicker.querySelectorAll('.film-chip').forEach(chip => {
-                    chip.setAttribute('aria-pressed', chip.dataset.film === name ? 'true' : 'false');
+            
+            if (els.filmTrack) {
+                const chips = els.filmTrack.querySelectorAll('.film-chip');
+                chips.forEach(chip => {
+                    const isActive = chip.dataset.film === name;
+                    chip.classList.toggle('is-active', isActive);
+                    if (isActive && opts.scroll !== false) {
+                        // Center the active chip in the track
+                        const trackWidth = els.filmTrack.offsetWidth;
+                        const chipLeft = chip.offsetLeft;
+                        const chipWidth = chip.offsetWidth;
+                        els.filmTrack.scrollTo({
+                            left: chipLeft - (trackWidth / 2) + (chipWidth / 2),
+                            behavior: 'smooth'
+                        });
+                    }
                 });
             }
             if (opts.persist !== false) saveLocal({ film: name });
         }
 
         function setupFilmPicker() {
-            if (!els.filmPicker) return;
-            els.filmPicker.addEventListener('click', e => {
+            if (!els.filmTrack) return;
+            
+            // Handle clicks on chips
+            els.filmTrack.addEventListener('click', e => {
                 const chip = e.target.closest('.film-chip');
                 if (!chip) return;
                 setActiveFilm(chip.dataset.film);
+            });
+
+            // Handle scroll to snap to nearest film
+            let scrollTimeout;
+            els.filmTrack.addEventListener('scroll', () => {
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    const trackRect = els.filmTrack.getBoundingClientRect();
+                    const centerX = trackRect.left + trackRect.width / 2;
+                    
+                    let closestChip = null;
+                    let minDistance = Infinity;
+
+                    els.filmTrack.querySelectorAll('.film-chip').forEach(chip => {
+                        const chipRect = chip.getBoundingClientRect();
+                        const chipCenterX = chipRect.left + chipRect.width / 2;
+                        const distance = Math.abs(centerX - chipCenterX);
+                        
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            closestChip = chip;
+                        }
+                    });
+
+                    if (closestChip && closestChip.dataset.film !== activeFilm) {
+                        setActiveFilm(closestChip.dataset.film, { scroll: true });
+                        showFilmToast(closestChip.dataset.film);
+                    }
+                }, 100);
             });
         }
 

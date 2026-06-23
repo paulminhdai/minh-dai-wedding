@@ -240,6 +240,20 @@ router.get('/', galleryLimiter, async (req, res) => {
 });
 
 // ============================================
+// PUBLIC: list MY photos (for photobooth)
+// ============================================
+router.get('/my-roll', galleryLimiter, async (req, res) => {
+    try {
+        const deviceId = getOrIssueDeviceId(req, res);
+        const photos = await photoService.listMyPhotos(deviceId);
+        res.json({ success: true, photos });
+    } catch (error) {
+        console.error('List my photos error:', error);
+        res.status(500).json({ error: 'Failed to load your photos' });
+    }
+});
+
+// ============================================
 // ADMIN: list photos (incl. hidden), photographers, moderation
 // Mounted under /api/admin/* by server.js for path consistency.
 // ============================================
