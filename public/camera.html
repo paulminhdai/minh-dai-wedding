@@ -844,6 +844,7 @@
         <div class="roll-full__card">
             <h2>🎞 That's a wrap!</h2>
             <p id="rollFullMsg">You've used all 24 shots from your roll. Thanks for sharing your view of the night!</p>
+            <button type="button" id="viewMyRollFromWrapBtn" style="background:var(--gold);color:var(--neptune-navy);border:none;border-radius:999px;padding:12px 24px;font-family:'Special Elite',monospace;font-size:0.9rem;font-weight:700;letter-spacing:0.05em;cursor:pointer;margin:4px;">🎬 Create Photobooth Strip</button>
             <a href="/gallery">See the gallery</a>
             <a href="/" class="secondary">Back home</a>
         </div>
@@ -1413,6 +1414,11 @@
         }
 
         els.viewMyRollBtn.onclick = () => {
+            els.myRollModal.classList.add('show');
+            loadMyRoll();
+        };
+
+        document.getElementById('viewMyRollFromWrapBtn').onclick = () => {
             els.myRollModal.classList.add('show');
             loadMyRoll();
         };

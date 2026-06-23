@@ -61,16 +61,17 @@ const loginLimiter = rateLimit({
 
 /**
  * Rate limiter for general admin operations
- * Prevents API abuse
+ * Skipped entirely for verified admins (verifyToken runs before this).
  */
 const adminLimiter = rateLimit({
-    windowMs: 1 * 60 * 1000, // 1 minute
-    max: 30, // Limit each IP to 30 requests per minute
+    windowMs: 1 * 60 * 1000,
+    max: 30,
     message: {
         error: 'Too many requests. Please slow down.'
     },
     standardHeaders: true,
-    legacyHeaders: false
+    legacyHeaders: false,
+    skip: (req) => !!req.user // verified admin token → skip rate limit
 });
 
 /**
