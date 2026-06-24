@@ -605,7 +605,7 @@ a:hover, a:focus {
 }
 
 .hero__names {
-  font-family: 'Dancing Script', cursive;
+  font-family: 'Inspiration', cursive;
   font-size: 5rem;
   margin-bottom: var(--space-md);
   color: var(--primary);
