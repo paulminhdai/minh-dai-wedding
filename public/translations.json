@@ -18,6 +18,9 @@
       },
       "rsvpNow": "RSVP Now",
       "findTable": "Find Your Table",
+      "findTableSub": "Tìm bàn tiệc",
+      "takePhoto": "Take a Photo",
+      "takePhotoSub": "Chụp ảnh kỉ niệm",
       "scrollToExplore": "Scroll to explore"
     },
     "story": {
@@ -171,6 +174,9 @@
       },
       "rsvpNow": "Phúc Đáp Ngay",
       "findTable": "Tìm Bàn Tiệc",
+      "findTableSub": "Find your seat",
+      "takePhoto": "Chụp Ảnh",
+      "takePhotoSub": "Lưu khoảnh khắc kỉ niệm",
       "scrollToExplore": "Vuốt lên"
     },
     "story": {

@@ -393,40 +393,68 @@
         </div>
     </footer>
 
-    <!-- Disposable Camera "what's new" popup. Hidden by default, shown by JS
-         on first visit when admin has enabled it. -->
+    <!-- Two-slide swipeable popup. Hidden by default, shown by JS when admin enables it. -->
     <div class="camera-popup" id="cameraPopup" role="dialog" aria-modal="true"
-         aria-labelledby="cameraPopupTitle" aria-describedby="cameraPopupBody"
-         hidden>
+         aria-label="Welcome" hidden>
         <div class="camera-popup__backdrop" data-popup-close="1"></div>
         <div class="camera-popup__card">
             <button class="camera-popup__close" type="button"
                     data-popup-close="1" aria-label="Close">×</button>
-            <div class="camera-popup__icon" aria-hidden="true">🎞</div>
-            <div class="camera-popup__eyebrow">New for our day</div>
-            <h2 class="camera-popup__title" id="cameraPopupTitle">📷 POV: You're our photographer</h2>
-            <p class="camera-popup__body" id="cameraPopupBody">
-                We need your perspective. You have 12 shots on your digital disposable film roll
-                to capture the moments of our day. Snap candid moments throughout the wedding.
-                Photo need to be developed and revealed right after the wedding.
-            </p>
-            <div class="camera-popup__actions">
-                <a href="/camera" class="camera-popup__cta" id="cameraPopupCta">Let's cook</a>
-                <button type="button" class="camera-popup__skip" data-popup-close="1">Skip</button>
+
+            <!-- Dot indicators -->
+            <div class="popup-dots" aria-hidden="true">
+                <span class="popup-dot popup-dot--active" data-slide="0"></span>
+                <span class="popup-dot" data-slide="1"></span>
             </div>
+
+            <!-- Swipe track -->
+            <div class="popup-track" id="popupTrack">
+
+                <!-- Slide 1: Find Your Table -->
+                <div class="popup-slide" id="popupSlide0">
+                    <div class="camera-popup__icon" aria-hidden="true">🪑</div>
+                    <div class="camera-popup__eyebrow">For our guests</div>
+                    <h2 class="camera-popup__title">Find Your Table</h2>
+                    <p class="camera-popup__body">
+                        Look up your table by search your first name with diacritics /
+                        Tìm bàn của bạn bằng cách nhập vào thanh tìm kiếm tên riêng có dấu
+                    </p>
+                    <div class="camera-popup__actions">
+                        <a href="/yourtable" class="camera-popup__cta camera-popup__cta--gold">🪑 Find My Table</a>
+                        <button type="button" class="camera-popup__skip popup-next-btn">
+                            See what else →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Slide 2: Disposable Camera -->
+                <div class="popup-slide" id="popupSlide1">
+                    <div class="camera-popup__icon" aria-hidden="true">🎞</div>
+                    <div class="camera-popup__eyebrow">New for our day</div>
+                    <h2 class="camera-popup__title" id="cameraPopupTitle">📷 POV: You're our photographer</h2>
+                    <p class="camera-popup__body" id="cameraPopupBody">
+                        You have 12 shots on your digital disposable film roll to capture the
+                        moments of our day. Snap candid moments throughout the wedding.
+                    </p>
+                    <div class="camera-popup__actions">
+                        <a href="/camera" class="camera-popup__cta" id="cameraPopupCta">Let's cook 📷</a>
+                        <button type="button" class="camera-popup__skip" data-popup-close="1">Skip</button>
+                    </div>
+                </div>
+
+            </div><!-- /.popup-track -->
+
+            <!-- Swipe hint (fades after first interaction) -->
+            <p class="popup-swipe-hint" aria-hidden="true">← swipe to explore →</p>
         </div>
     </div>
 
     <style>
+        /* ── Swipeable two-slide popup ─────────────────────── */
         .camera-popup[hidden] { display: none !important; }
-        /* Anchor explicitly to the viewport (avoid `inset: 0` which can be
-           miscomputed on iOS Safari when an ancestor creates a containing
-           block). Using dvh keeps the popup centered even as Safari's
-           address bar shows/hides. */
         .camera-popup {
             position: fixed;
-            top: 0;
-            left: 0;
+            top: 0; left: 0;
             width: 100vw;
             height: 100vh;
             height: 100dvh;
@@ -441,16 +469,12 @@
         .camera-popup.is-open { opacity: 1; }
         .camera-popup__backdrop {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: rgba(10, 18, 28, 0.78);
             backdrop-filter: blur(6px);
             -webkit-backdrop-filter: blur(6px);
         }
-        /* Card is always light-themed regardless of site theme so it stays
-           legible on the dark, blurred backdrop on every device. */
         .camera-popup__card {
             position: relative;
             max-width: 440px;
@@ -458,10 +482,10 @@
             background: #ffffff;
             color: #2c3e50;
             border-radius: 16px;
-            padding: 36px 28px 28px;
+            padding: 32px 0 24px;
             text-align: center;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(212, 175, 55, 0.5);
-            border: 1px solid rgba(212, 175, 55, 0.6);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.55), 0 0 0 1px rgba(212,175,55,0.5);
+            border: 1px solid rgba(212,175,55,0.6);
             transform: translateY(16px) scale(0.97);
             transition: transform 0.35s cubic-bezier(.2,.8,.2,1);
             overflow: hidden;
@@ -476,10 +500,58 @@
             height: 4px;
             background: linear-gradient(90deg, #d4af37, #a8c0d4, #d4af37);
         }
-        .camera-popup__icon {
-            font-size: 2.2rem;
-            margin-bottom: 4px;
+        .camera-popup__close {
+            position: absolute;
+            top: 10px; right: 12px;
+            background: none;
+            border: none;
+            font-size: 1.6rem;
+            line-height: 1;
+            color: #8e9aaf;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 6px;
+            z-index: 2;
         }
+        .camera-popup__close:hover { color: #2c3e50; background: rgba(0,0,0,0.04); }
+
+        /* Dot indicators */
+        .popup-dots {
+            display: flex;
+            justify-content: center;
+            gap: 7px;
+            margin-bottom: 18px;
+        }
+        .popup-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #d1d8e0;
+            transition: background 0.25s, transform 0.25s;
+            cursor: pointer;
+        }
+        .popup-dot--active {
+            background: #d4af37;
+            transform: scale(1.25);
+        }
+
+        /* Swipe track — horizontal scroll snap */
+        .popup-track {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .popup-track::-webkit-scrollbar { display: none; }
+        .popup-slide {
+            flex: 0 0 100%;
+            scroll-snap-align: start;
+            padding: 0 28px 4px;
+            box-sizing: border-box;
+        }
+
+        /* Shared slide content */
+        .camera-popup__icon { font-size: 2.2rem; margin-bottom: 4px; }
         .camera-popup__eyebrow {
             font-size: 0.7rem;
             text-transform: uppercase;
@@ -490,16 +562,16 @@
         }
         .camera-popup__title {
             font-family: var(--font-serif, 'Playfair Display', serif);
-            font-size: 1.6rem;
-            margin: 0 0 12px;
+            font-size: 1.5rem;
+            margin: 0 0 10px;
             color: #2c3e50;
             line-height: 1.25;
         }
         .camera-popup__body {
-            font-size: 0.95rem;
+            font-size: 0.93rem;
             line-height: 1.55;
             color: #5a6c7d;
-            margin: 0 0 22px;
+            margin: 0 0 20px;
         }
         .camera-popup__actions {
             display: flex;
@@ -516,12 +588,15 @@
             font-weight: 700;
             letter-spacing: 0.02em;
             transition: transform 0.15s ease, box-shadow 0.15s ease;
-            box-shadow: 0 6px 18px rgba(44, 62, 80, 0.25);
+            box-shadow: 0 6px 18px rgba(44,62,80,0.25);
         }
-        .camera-popup__cta:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 10px 22px rgba(44, 62, 80, 0.35);
+        .camera-popup__cta:hover { transform: translateY(-1px); box-shadow: 0 10px 22px rgba(44,62,80,0.35); }
+        .camera-popup__cta--gold {
+            background: #d4af37;
+            color: #1a252f;
+            box-shadow: 0 6px 18px rgba(212,175,55,0.35);
         }
+        .camera-popup__cta--gold:hover { box-shadow: 0 10px 22px rgba(212,175,55,0.5); }
         .camera-popup__skip {
             background: none;
             border: none;
@@ -532,39 +607,31 @@
             padding: 8px;
         }
         .camera-popup__skip:hover { color: #5a6c7d; }
-        .camera-popup__close {
-            position: absolute;
-            top: 10px;
-            right: 12px;
-            background: none;
-            border: none;
-            font-size: 1.6rem;
-            line-height: 1;
-            color: #8e9aaf;
-            cursor: pointer;
-            padding: 6px 10px;
-            border-radius: 6px;
+
+        /* Swipe hint */
+        .popup-swipe-hint {
+            font-size: 0.72rem;
+            color: #aab4c0;
+            letter-spacing: 0.08em;
+            margin: 10px 0 0;
+            transition: opacity 0.4s ease;
         }
-        .camera-popup__close:hover {
-            color: #2c3e50;
-            background: rgba(0,0,0,0.04);
-        }
+        .popup-swipe-hint.is-hidden { opacity: 0; pointer-events: none; }
 
         @media (max-width: 480px) {
-            .camera-popup__card { padding: 32px 22px 22px; }
-            .camera-popup__title { font-size: 1.35rem; }
+            .camera-popup__card { padding: 28px 0 20px; }
+            .popup-slide { padding: 0 20px 4px; }
+            .camera-popup__title { font-size: 1.3rem; }
         }
     </style>
 
     <script>
-    // Disposable Camera popup. Loads /api/settings and shows the popup on
-    // every home-page load when enabled, so guests are reminded to contribute
-    // photos no matter how many times they visit.
+    // Two-slide swipeable popup. Loads /api/settings to customise the camera
+    // slide text; the table slide is always shown as the first slide.
     (function() {
         'use strict';
 
         async function init() {
-            // Don't disrupt the experience if the API is unreachable
             let settings;
             try {
                 const res = await fetch('/api/settings', { credentials: 'same-origin' });
@@ -575,30 +642,76 @@
             const popupCfg = settings && settings.cameraPopup;
             if (!popupCfg || !popupCfg.enabled) return;
 
-            const popup = document.getElementById('cameraPopup');
+            const popup  = document.getElementById('cameraPopup');
+            const track  = document.getElementById('popupTrack');
             const titleEl = document.getElementById('cameraPopupTitle');
-            const bodyEl = document.getElementById('cameraPopupBody');
-            const ctaEl = document.getElementById('cameraPopupCta');
-            if (!popup) return;
+            const bodyEl  = document.getElementById('cameraPopupBody');
+            const ctaEl   = document.getElementById('cameraPopupCta');
+            if (!popup || !track) return;
 
-            titleEl.textContent = popupCfg.title || titleEl.textContent;
-            bodyEl.textContent = popupCfg.body || bodyEl.textContent;
-            ctaEl.textContent = popupCfg.cta || ctaEl.textContent;
+            if (popupCfg.title) titleEl.textContent = popupCfg.title;
+            if (popupCfg.body)  bodyEl.textContent  = popupCfg.body;
+            if (popupCfg.cta)   ctaEl.textContent   = popupCfg.cta;
 
-            // Slight delay so it doesn't fight with the initial paint or
-            // landing animations.
+            // --- dot / active-slide sync ---
+            const dots      = popup.querySelectorAll('.popup-dot');
+            const hint      = popup.querySelector('.popup-swipe-hint');
+            const slides    = popup.querySelectorAll('.popup-slide');
+            let   hintDone  = false;
+
+            function setActive(idx) {
+                dots.forEach((d, i) => d.classList.toggle('popup-dot--active', i === idx));
+            }
+
+            // Sync dots on scroll (scroll-snap handles the snapping itself)
+            track.addEventListener('scroll', () => {
+                const idx = Math.round(track.scrollLeft / track.clientWidth);
+                setActive(idx);
+                if (!hintDone) {
+                    hintDone = true;
+                    hint && hint.classList.add('is-hidden');
+                }
+            }, { passive: true });
+
+            // Clicking a dot scrolls to that slide
+            dots.forEach((dot, i) => {
+                dot.addEventListener('click', () => {
+                    track.scrollTo({ left: i * track.clientWidth, behavior: 'smooth' });
+                });
+            });
+
+            // "See what else" button on slide 1 → scroll to slide 2
+            const nextBtn = popup.querySelector('.popup-next-btn');
+            if (nextBtn) {
+                nextBtn.addEventListener('click', () => {
+                    track.scrollTo({ left: track.clientWidth, behavior: 'smooth' });
+                });
+            }
+
+            // Touch/mouse swipe on the card (fallback for very old browsers)
+            let startX = null;
+            popup.querySelector('.camera-popup__card').addEventListener('touchstart', e => {
+                startX = e.touches[0].clientX;
+            }, { passive: true });
+            popup.querySelector('.camera-popup__card').addEventListener('touchend', e => {
+                if (startX === null) return;
+                const dx = e.changedTouches[0].clientX - startX;
+                startX = null;
+                if (Math.abs(dx) < 40) return;
+                const cur = Math.round(track.scrollLeft / track.clientWidth);
+                const next = dx < 0
+                    ? Math.min(cur + 1, slides.length - 1)
+                    : Math.max(cur - 1, 0);
+                track.scrollTo({ left: next * track.clientWidth, behavior: 'smooth' });
+            }, { passive: true });
+
+            // --- open popup ---
             setTimeout(() => {
-                // Scroll back to the top first so any iOS quirks around
-                // position:fixed (or transformed ancestors creating their own
-                // containing block) can't park the popup off-screen.
                 try { window.scrollTo({ top: 0, behavior: 'instant' }); }
                 catch (_) { window.scrollTo(0, 0); }
                 popup.hidden = false;
                 requestAnimationFrame(() => {
                     popup.classList.add('is-open');
-                    // Belt-and-suspenders: if the popup still ends up off-screen
-                    // due to an unexpected containing block, this brings the
-                    // card into view.
                     const card = popup.querySelector('.camera-popup__card');
                     if (card && typeof card.scrollIntoView === 'function') {
                         card.scrollIntoView({ block: 'center', inline: 'center' });
@@ -613,11 +726,19 @@
                 setTimeout(() => { popup.hidden = true; }, 300);
             }
 
-            popup.addEventListener('click', (e) => {
+            popup.addEventListener('click', e => {
                 if (e.target.closest('[data-popup-close]')) close();
             });
-            document.addEventListener('keydown', (e) => {
+            document.addEventListener('keydown', e => {
                 if (e.key === 'Escape' && !popup.hidden) close();
+                if (e.key === 'ArrowRight' && !popup.hidden) {
+                    const cur = Math.round(track.scrollLeft / track.clientWidth);
+                    track.scrollTo({ left: (cur + 1) * track.clientWidth, behavior: 'smooth' });
+                }
+                if (e.key === 'ArrowLeft' && !popup.hidden) {
+                    const cur = Math.round(track.scrollLeft / track.clientWidth);
+                    track.scrollTo({ left: (cur - 1) * track.clientWidth, behavior: 'smooth' });
+                }
             });
         }
 
