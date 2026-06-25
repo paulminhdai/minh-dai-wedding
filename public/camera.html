@@ -1090,6 +1090,7 @@
                 els.retakeBtn.disabled = true;
                 els.submitBtn.disabled = true;
                 state.capturedBlob = null;
+                applyViewfinderMirror();
             } catch (e) {
                 console.error('Camera error', e);
                 if (e.name === 'NotAllowedError') {
@@ -1100,6 +1101,13 @@
                     showToast('Camera unavailable. Use UPLOAD instead.', 'error');
                 }
             }
+        }
+
+        // Mirror the live viewfinder when using the front camera so what the
+        // guest sees in preview matches the captured/saved image (both mirrored).
+        function applyViewfinderMirror() {
+            const mirrored = state.facingMode === 'user';
+            els.preview.style.transform = mirrored ? 'scaleX(-1)' : '';
         }
 
         async function flipLens() {

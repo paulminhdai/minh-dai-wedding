@@ -199,11 +199,17 @@
         .page-header__couple {
             font-family: 'Inspiration', cursive;
             font-size: 2.5rem;
-            color: #D4AF37; /* Gold reserved for headers */
+            color: #D4AF37;
             margin: 0 0 var(--space-md) 0;
             font-weight: 400;
             letter-spacing: 0.05em;
+            text-decoration: none;
+            display: block;
+            cursor: pointer;
+            transition: opacity 0.15s ease;
         }
+        .page-header__couple:hover { opacity: 0.75; }
+        .page-header__couple:active { opacity: 0.5; }
 
         .page-header__date {
             font-family: var(--font-sans);
@@ -943,7 +949,7 @@
     <!-- Header Section with Search -->
     <header class="page-header">
         <p class="page-header__welcome">Welcome to Our Wedding</p>
-        <p class="page-header__couple">Đại & Minh</p>
+        <a href="/" class="page-header__couple" aria-label="Back to home">Đại & Minh</a>
         <p class="page-header__date">June 26, 2026</p>
         
         <!-- Search Box in Header -->
